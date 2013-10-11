@@ -1,0 +1,25 @@
+
+
+<h1>HI!!</h1>
+
+<button id="push_me">Push me</button>
+
+<script>
+
+    $(document).ready(function(){
+      $("#push_me").click(function(){
+        $.ajax(
+           {   
+               url: "/logs", 
+               type: "POST",
+               data: {message: "Button was pushed"}, 
+               success:function(){
+                  console.log("Success");
+               }
+           }
+        );
+      });
+    });
+
+</script>
+
