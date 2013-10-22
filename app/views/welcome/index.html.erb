@@ -1,17 +1,18 @@
 
-
-
 <button id="push_me">Push me</button>
 
 <script>
 
+
     $(document).ready(function(){
+      var group_name = qs("group_name")
+
       $("#push_me").click(function(){
         $.ajax(
            {   
                url: "/logs", 
                type: "POST",
-               data: {message: "Button was pushed"}, 
+               data: {group_name: group_name, message: "Button was pushed"}, 
                success:function(){
                   console.log("Success");
                }
@@ -19,6 +20,12 @@
         );
       });
     });
+
+    function qs(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
 
 </script>
 

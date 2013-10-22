@@ -1,4 +1,7 @@
 AjaxTest::Application.routes.draw do
+  resources :groups
+
+
   resources :logs
 
 
