@@ -1073,7 +1073,7 @@ Game = {
         MetaVarManager.init();
         Game.current_rule = null;
         Game.solved_text = null;
-        Crafty.init(1300, 800);
+        Crafty.init(800, 800);
         Crafty.background('rgb(240,240,240)');
         Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
