@@ -1075,7 +1075,7 @@ Game = {
         Game.solved_text = null;
         Crafty.init(1300, 600);
         Crafty.background('rgb(240,240,240)');
-        Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
+        //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
         //Game.mouseWheelDispatch({wheelDelta:-120});
     },
