@@ -1,6 +1,8 @@
 
 <!-- <button id="push_me">Push me</button> -->
 
+<a target="_blank" style="display:none" href="http://www.youtube.com/watch?v=4xrLGSSLeXY&feature=youtu.be" id="demo">Click here for a demo video</a>
+
 <script>
     $(document).ready(function(){
       var group_name = qs("group_name")
@@ -22,6 +24,11 @@
 
       setTimeout(function(){
           eval("Game.puzzle"+puzzle_number+"()");
+      }, 1000);
+
+
+      setTimeout(function(){
+          $("#demo").fadeIn("slow");
       }, 1000);
 
     });
