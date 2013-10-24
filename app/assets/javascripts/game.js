@@ -1073,7 +1073,7 @@ Game = {
         MetaVarManager.init();
         Game.current_rule = null;
         Game.solved_text = null;
-        Crafty.init(800, 800);
+        Crafty.init(1300, 600);
         Crafty.background('rgb(240,240,240)');
         Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
@@ -1092,7 +1092,7 @@ Game = {
 
     puzzle1: function() {
         Game.clear();
-        build_judgement_piece("|- imp(a, imp(b,a))", 400, 650);
+        build_judgement_piece("|- imp(a, imp(b,a))", 400, 450);
         // inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 400);
         // inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 200);
         // inference_rule_piece([], "A, B |- A", 450, 20);
@@ -1100,7 +1100,7 @@ Game = {
 
     puzzle2: function() {
         Game.clear();
-        build_judgement_piece("|- imp(a, imp(imp(a,b), b))", 400, 650);
+        build_judgement_piece("|- imp(a, imp(imp(a,b), b))", 400, 450);
         // inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 450);
         // inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 250);
         // inference_rule_piece(["G1, G2 |- A", "G1, G2 |- imp(A,B)"], "G1, G2 |- B", 50, 50);
@@ -1110,7 +1110,7 @@ Game = {
 
     puzzle3: function() {
         Game.clear();
-        build_judgement_piece("and(a,b) |- and(b,a)", 400, 650);
+        build_judgement_piece("and(a,b) |- and(b,a)", 400, 450);
         // inference_rule_piece(["G |- A", "G |- B"], "G |- and(A,B)", 50, 450);
         // inference_rule_piece(["G |- and(A,B)"], "G |- A", 50, 250);
         // inference_rule_piece(["G |- and(A,B)"], "G |- B", 600, 250);
