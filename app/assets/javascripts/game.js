@@ -1065,6 +1065,12 @@ MetaVarManager = {
     }
 }
 
+function qs(key) {
+    key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+    var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+    return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+}
+
 Game = {
     // Initialize and start our game
     start: function() {
@@ -1072,9 +1078,27 @@ Game = {
         ColorManager.init();
         MetaVarManager.init();
         Game.current_rule = null;
-        Game.solved_text = null;
+	Game.puzzles = [];
+        Game.add_puzzle("a,b |- a", ["assumption", "add-context-left", "add-context-right"]);
+        Game.add_puzzle("a,b |- b", ["assumption", "add-context-left", "add-context-right"]);
+	Game.add_puzzle("a,b |- and(a, b)", ["assumption", "and-intro", "add-context-left", "add-context-right"]);
+	Game.add_puzzle("and(a,b) |- a", ["assumption", "and-elim-1", "add-context-left", "add-context-right"]);
+	Game.add_puzzle("and(a,b) |- b", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
+        var current_puzzle = qs("puzzle_id");
+        if (current_puzzle == null)
+            current_puzzle = 0;
+        else {
+            current_puzzle = parseInt(current_puzzle) - 1;
+            if (current_puzzle < 0)
+                current_puzzle = 0;
+            if (current_puzzle > Game.puzzles.length-1)
+                current_puzzle = Game.puzzles.length-1;
+        }
+	Game.current_puzzle = current_puzzle;
+
         Crafty.init(1300, 600);
         Crafty.background('rgb(240,240,240)');
+        Game.show_current_puzzle();
         //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
         //Game.mouseWheelDispatch({wheelDelta:-120});
@@ -1083,11 +1107,46 @@ Game = {
     clear: function() {
         Game.current_rule = null;
         Game.foreach_piece(function (p) { p.destroy() });
-        if (Game.solved_text != null) {
-            Game.solved_text.destroy();
-            Game.solved_text = null;
-        }
         MetaVarManager.garbage_collect();
+    },
+
+    add_puzzle: function(goal, pieces) {
+        Game.puzzles.push({goal: goal, pieces:pieces});
+    },
+
+    next_puzzle: function() {
+        if (Game.current_puzzle < Game.puzzles.length-1)
+            Game.current_puzzle++;
+        Game.show_current_puzzle();
+    },
+
+    prev_puzzle: function() {
+        if (Game.current_puzzle > 0)
+            Game.current_puzzle--;
+        Game.show_current_puzzle();
+    },
+
+    show_current_puzzle: function() {
+        Game.clear();
+        var current_puzzle = Game.current_puzzle;
+        build_judgement_piece(Game.puzzles[current_puzzle].goal, 400,450);
+        var pieces = Game.puzzles[current_puzzle].pieces;
+        var all_pieces = ["assumption",
+                          "and-intro",
+                          "and-elim-1",
+                          "and-elim-2",
+                          "imp-intro",
+                          "imp-elim",
+                          "add-context-left",
+                          "add-context-right"];
+        if (pieces == [])
+            pieces = all_pieces;
+        for (var i = 0; i < all_pieces.length; i++) {
+            document.getElementById(all_pieces[i]).style.visibility="hidden";
+        }
+        for (var i = 0; i < pieces.length; i++) {
+            document.getElementById(pieces[i]).style.visibility="visible";
+        }
     },
 
     puzzle1: function() {
@@ -1192,12 +1251,18 @@ Game = {
     },
 
     check_if_solved: function() {
-        if (Game.puzzle_solved())
-            Game.solved_text = 
-            Crafty.e("2D, Canvas, Text")
-            .attr({x: 300, y: 300})
-            .textFont({ size : "50px", weight: "bold"})
-            .text("Puzzled Solved!!!");
+        if (Game.puzzle_solved()) {
+            setTimeout(function(){
+                var display_number = Game.current_puzzle + 1;
+                if (Game.current_puzzle < Game.puzzles.length-1) {
+                    alert("Puzzle " + display_number + " Solved!!!\n On to the next puzzle!");
+                    Game.next_puzzle();
+                } else {
+                    alert("Puzzle " + display_number + " Solved!!!\n Congrats, you solved all the puzzles!");
+                    Game.clear();
+                }
+            }, 250);
+        }
     },
 
 

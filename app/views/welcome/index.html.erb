@@ -1,7 +1,8 @@
 
 <!-- <button id="push_me">Push me</button> -->
 
-<a target="_blank" style="display:none" href="http://www.youtube.com/watch?v=4xrLGSSLeXY&feature=youtu.be" id="demo">Click here for a demo video ()</a>
+<!-- <a target="_blank" style="display:none" href="http://www.youtube.com/watch?v=4xrLGSSLeXY&feature=youtu.be" id="demo">Click here for a demo video</a> -->
+<a target="_blank" href="http://www.youtube.com/watch?v=4xrLGSSLeXY&feature=youtu.be" id="demo">Click here for a demo video</a>
 
 <script>
     $(document).ready(function(){
@@ -20,16 +21,16 @@
         );
       });
 
-      var puzzle_number = qs("puzzle_id")
+      <!-- var puzzle_number = qs("puzzle_id") -->
+      <!-- console.log(puzzle_number); -->
+      <!-- setTimeout(function(){ -->
+      <!--     eval("Game.puzzle"+puzzle_number+"()"); -->
+      <!-- }, 1000); -->
 
-      setTimeout(function(){
-          eval("Game.puzzle"+puzzle_number+"()");
-      }, 1000);
 
-
-      setTimeout(function(){
-          $("#demo").fadeIn("slow");
-      }, 1000);
+      <!-- setTimeout(function(){ -->
+      <!--     $("#demo").fadeIn("slow"); -->
+      <!-- }, 1000); -->
 
     });
 
@@ -59,27 +60,27 @@
 </style>
 
 <p>
-    <!--<button onclick="Game.puzzle1()">Puzzle 1</button>
-    <button onclick="Game.puzzle2()">Puzzle 2</button>
-    <button onclick="Game.puzzle3()">Puzzle 3</button>-->
-    <!-- <div class="sidebar" > -->
-    <!--     <img width="200px" src="<%= asset_path 'Assumption.png' %>" onclick="Game.create_assumption_piece()"></img> -->
-    <!--     <img width="200px" src="<%= asset_path 'AndIntro.png' %>" onclick="Game.create_and_intro_piece()"></img> -->
-    <!--     <img width="100px" src="<%= asset_path 'AndElim.png' %>" onclick="Game.create_and_elim_piece_1()"></img> -->
-    <!--     <img width="100px" src="<%= asset_path 'AndElim2.png' %>" onclick="Game.create_and_elim_piece_2()"></img> -->
-    <!--     <img width="200px" src="<%= asset_path 'ImplIntro.png' %>" onclick="Game.create_imp_intro_piece()"></img> -->
-    <!--     <img width="200px" src="<%= asset_path 'ImplElim.png' %>" onclick="Game.create_imp_elim_piece()"></img> -->
-    <!-- 	<button onclick="Game.add_context_left()">Add Context Left</button> -->
-    <!-- 	<button onclick="Game.add_context_right()">Add Context Right</button> -->
-    <!-- </div> -->
+  <!--<button onclick="Game.puzzle1()">Puzzle 1</button>
+      <button onclick="Game.puzzle2()">Puzzle 2</button>
+      <button onclick="Game.puzzle3()">Puzzle 3</button>-->
+  <!-- <div class="sidebar" > -->
+  <!--     <img width="200px" src="<%= asset_path 'Assumption.png' %>" onclick="Game.create_assumption_piece()"></img> -->
+  <!--     <img width="200px" src="<%= asset_path 'AndIntro.png' %>" onclick="Game.create_and_intro_piece()"></img> -->
+  <!--     <img width="100px" src="<%= asset_path 'AndElim.png' %>" onclick="Game.create_and_elim_piece_1()"></img> -->
+  <!--     <img width="100px" src="<%= asset_path 'AndElim2.png' %>" onclick="Game.create_and_elim_piece_2()"></img> -->
+  <!--     <img width="200px" src="<%= asset_path 'ImplIntro.png' %>" onclick="Game.create_imp_intro_piece()"></img> -->
+  <!--     <img width="200px" src="<%= asset_path 'ImplElim.png' %>" onclick="Game.create_imp_elim_piece()"></img> -->
+  <!-- 	<button onclick="Game.add_context_left()">Add Context Left</button> -->
+  <!-- 	<button onclick="Game.add_context_right()">Add Context Right</button> -->
+  <!-- </div> -->
 
-    <button onclick="Game.create_assumption_piece()"><img src="<%= asset_path 'assumption.png' %>" height=55></button>
-    <button onclick="Game.create_and_intro_piece()"><img src="<%= asset_path 'and-intro.png' %>" height=55></button>
-    <button onclick="Game.create_and_elim_piece_1()"><img src="<%= asset_path 'and-elim-1.png' %>" height=55></button>
-    <button onclick="Game.create_and_elim_piece_2()"><img src="<%= asset_path 'and-elim-2.png' %>" height=55></button>
-    <button onclick="Game.create_imp_intro_piece()"><img src="<%= asset_path 'imp-intro.png' %>" height=55></button>
-    <button onclick="Game.create_imp_elim_piece()"><img src="<%= asset_path 'imp-elim.png' %>" height=55></button>
-    <button onclick="Game.add_context_left()"><img src="<%= asset_path 'add-context-left.png' %>" height=55></button>
-    <button onclick="Game.add_context_right()"><img src="<%= asset_path 'add-context-right.png' %>" height=55></button>
+  <button id="assumption" onclick="Game.create_assumption_piece()"><img src="<%= asset_path 'assumption.png' %>" height=55></button>
+  <button id="and-intro" onclick="Game.create_and_intro_piece()"><img src="<%= asset_path 'and-intro.png' %>" height=55></button>
+  <button id="and-elim-1" onclick="Game.create_and_elim_piece_1()"><img src="<%= asset_path 'and-elim-1.png' %>" height=55></button>
+  <button id="and-elim-2" onclick="Game.create_and_elim_piece_2()"><img src="<%= asset_path 'and-elim-2.png' %>" height=55></button>
+  <button id="imp-intro" onclick="Game.create_imp_intro_piece()"><img src="<%= asset_path 'imp-intro.png' %>" height=55></button>
+  <button id="imp-elim" onclick="Game.create_imp_elim_piece()"><img src="<%= asset_path 'imp-elim.png' %>" height=55></button>
+  <button id="add-context-left" onclick="Game.add_context_left()"><img src="<%= asset_path 'add-context-left.png' %>" height=55></button>
+  <button id="add-context-right" onclick="Game.add_context_right()"><img src="<%= asset_path 'add-context-right.png' %>" height=55></button>
 
 </p>
