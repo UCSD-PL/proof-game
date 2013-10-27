@@ -1133,9 +1133,9 @@ Game = {
         //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
         Game.add_puzzle("and(a,b) |- a", ["assumption", "and-elim-1", "add-context-left", "add-context-right"]); // 4 
         Game.add_puzzle("and(a,b) |- b", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]); // 5
-        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 6
-        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 7
-        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 8
+        //Game.add_puzzle("|- imp(a, imp(b,a))", []); // 6
+        //Game.add_puzzle("and(a,b) |- and(b,a)", []); // 7
+        //Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 8
         var current_puzzle = qs("puzzle_id");
         if (current_puzzle == null)
             current_puzzle = 0;
