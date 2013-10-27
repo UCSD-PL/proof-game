@@ -625,19 +625,47 @@ Crafty.c('JudgementPuzzlePiece', {
         this.bind("StartDrag", function(e) {
             self.drag_x = e.clientX;
             self.drag_y = e.clientY;
+            self.open_on_bottom = [];
+            Game.foreach_piece(function(p) { 
+                if (p.connected == null && !p.on_top) 
+                    self.open_on_bottom.push(p);
+            });
+            self.open_on_top = [];
+            Game.foreach_piece(function(p) { 
+                if (p.connected == null && p.on_top) 
+                    self.open_on_top.push(p);
+            });
         });
         this.bind("StopDrag", function(e) {
-            if (!self.selected) 
-                Game.foreach_piece(function(p) { p.set_selected(false) });
-            var other = null;
-            Game.foreach_piece(function(p) { 
-                if (p != self && p.selected)
-                    other = other == null ? p : "more than one"
-                p.set_selected(false)
-            });
-            if (other != null && other != "more than one") {
-                self.connect_if_match(other)
+            var selected_bottom = null;
+            var selected_top = null;
+            for (var i = 0; i < self.open_on_bottom.length; i++) {
+                var bottom = self.open_on_bottom[i];
+                if (bottom.selected) 
+                    selected_bottom = selected_bottom == null ? bottom : "more than one";
+                bottom.set_selected(false);
             }
+            for (var i = 0; i < self.open_on_top.length; i++) {
+                var top = self.open_on_top[i];
+                if (top.selected) 
+                    selected_top = selected_top == null ? top : "more than one";
+                top.set_selected(false);
+            }
+            if (selected_bottom != null && selected_bottom != "more than one" &&
+                selected_top != null && selected_top != "more than one") {
+                selected_bottom.connect_if_match(selected_top)
+            };
+            // if (!self.selected) 
+            //     Game.foreach_piece(function(p) { p.set_selected(false) });
+            // var other = null;
+            // Game.foreach_piece(function(p) { 
+            //     if (p != self && p.selected)
+            //         other = other == null ? p : "more than one"
+            //     p.set_selected(false)
+            // });
+            // if (other != null && other != "more than one") {
+            //     self.connect_if_match(other)
+            // }
         });
         this.bind("Dragging", function(e) {
             var dx = (e.clientX - self.drag_x) / Crafty.viewport._zoom;
@@ -648,17 +676,20 @@ Crafty.c('JudgementPuzzlePiece', {
                     self.connected.move_from_bottom(dx, dy);
                 }
                 if (self.inference_rule != null) {
-                    self.inference_rule.bottom.move_from_top(0, dy);
+                    //self.inference_rule.bottom.move_from_top(0, dy);
+                    self.inference_rule.bottom.move_from_top(dx, dy);
                     for (var i = 0; i < this.inference_rule.top.length; i++) {
                         var other = self.inference_rule.top[i];
                         if (other != self) {
-                            other.move_from_bottom(0, dy);
+                            //other.move_from_bottom(0, dy);
+                            other.move_from_bottom(dx, dy);
                         }
                     }
                 }
             } else {
                 if (self.connected != null) {
-                    self.connected.move_from_top_adjusted(dx, dy);
+                    //self.connected.move_from_top_adjusted(dx, dy);
+                    self.connected.move_from_top(dx, dy);
                 }
                 if (self.inference_rule != null) {
                     for (var i = 0; i < this.inference_rule.top.length; i++) {
@@ -667,21 +698,38 @@ Crafty.c('JudgementPuzzlePiece', {
                 }
                 
             }
-            var selected_some = false;
-            Game.foreach_piece(function(other) { 
-                if (self != other) { 
-                    var delta = self.distance_from_other(other);
-                    if (Math.abs(delta.x) < 30 && Math.abs(delta.y) < 30) {
-                        if (self.superficial_match(other)) {
-                            other.set_selected(true);
-                            selected_some = true;
+
+            for (var i = 0; i < self.open_on_bottom.length; i++) {
+                var bottom = self.open_on_bottom[i];
+                bottom.set_selected(false);
+                for (var j = 0; j < self.open_on_top.length; j++) {
+                    var top = self.open_on_top[j];
+                    top.set_selected(false);
+                    if (top.superficial_match(bottom)) {
+                        var delta = top.distance_from_other(bottom);
+                        if (Math.abs(delta.x) < 30 && Math.abs(delta.y) < 30) {
+                            top.set_selected(true);
+                            bottom.set_selected(true);
                         }
-                    } else {
-                        other.set_selected(false);
                     }
                 }
-            });
-            self.set_selected(selected_some);
+            }
+            
+            // var selected_some = false;
+            // Game.foreach_piece(function(other) { 
+            //     if (self != other) { 
+            //         var delta = self.distance_from_other(other);
+            //         if (Math.abs(delta.x) < 30 && Math.abs(delta.y) < 30) {
+            //             if (self.superficial_match(other)) {
+            //                 other.set_selected(true);
+            //                 selected_some = true;
+            //             }
+            //         } else {
+            //             other.set_selected(false);
+            //         }
+            //     }
+            // });
+            // self.set_selected(selected_some);
 
             // ids = Crafty("JudgementPuzzlePiece");
             // for (var i = 0; i < ids.length; i++) {
@@ -972,7 +1020,7 @@ function build_judgement_piece(s) {
     return p;
 }
 
-function inference_rule_piece(top, bottom, x, y) {
+function build_inference_rule_piece(top, bottom, x, y) {
     var r = new InferenceRule(top.map(function (s) { return build_judgement_piece(s) }), 
                               build_judgement_piece(bottom));
     r.make_fresh()
@@ -1078,12 +1126,16 @@ Game = {
         ColorManager.init();
         MetaVarManager.init();
         Game.current_rule = null;
-	Game.puzzles = [];
-        Game.add_puzzle("a,b |- a", ["assumption", "add-context-left", "add-context-right"]);
-        Game.add_puzzle("a,b |- b", ["assumption", "add-context-left", "add-context-right"]);
-	Game.add_puzzle("a,b |- and(a, b)", ["assumption", "and-intro", "add-context-left", "add-context-right"]);
-	Game.add_puzzle("and(a,b) |- a", ["assumption", "and-elim-1", "add-context-left", "add-context-right"]);
-	Game.add_puzzle("and(a,b) |- b", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
+        Game.puzzles = [];
+        Game.add_puzzle("a,b |- a", ["assumption", "add-context-left", "add-context-right"]); // 1
+        Game.add_puzzle("a,b |- b", ["assumption", "add-context-left", "add-context-right"]); // 2
+        Game.add_puzzle("a,b |- and(a, b)", ["assumption", "and-intro", "add-context-left", "add-context-right"]); // 3
+        //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
+        Game.add_puzzle("and(a,b) |- a", ["assumption", "and-elim-1", "add-context-left", "add-context-right"]); // 4 
+        Game.add_puzzle("and(a,b) |- b", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]); // 5
+        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 6
+        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 7
+        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 8
         var current_puzzle = qs("puzzle_id");
         if (current_puzzle == null)
             current_puzzle = 0;
@@ -1094,7 +1146,7 @@ Game = {
             if (current_puzzle > Game.puzzles.length-1)
                 current_puzzle = Game.puzzles.length-1;
         }
-	Game.current_puzzle = current_puzzle;
+        Game.current_puzzle = current_puzzle;
 
         Crafty.init(1300, 600);
         Crafty.background('rgb(240,240,240)');
@@ -1139,7 +1191,7 @@ Game = {
                           "imp-elim",
                           "add-context-left",
                           "add-context-right"];
-        if (pieces == [])
+        if (pieces.length == 0)
             pieces = all_pieces;
         for (var i = 0; i < all_pieces.length; i++) {
             document.getElementById(all_pieces[i]).style.visibility="hidden";
@@ -1152,29 +1204,29 @@ Game = {
     puzzle1: function() {
         Game.clear();
         build_judgement_piece("|- imp(a, imp(b,a))", 400, 450);
-        // inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 400);
-        // inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 200);
-        // inference_rule_piece([], "A, B |- A", 450, 20);
+        // build_inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 400);
+        // build_inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 200);
+        // build_inference_rule_piece([], "A, B |- A", 450, 20);
     },
 
     puzzle2: function() {
         Game.clear();
         build_judgement_piece("|- imp(a, imp(imp(a,b), b))", 400, 450);
-        // inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 450);
-        // inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 250);
-        // inference_rule_piece(["G1, G2 |- A", "G1, G2 |- imp(A,B)"], "G1, G2 |- B", 50, 50);
-        // inference_rule_piece([], "A, B |- A", 900, 500);
-        // inference_rule_piece([], "A, B |- B", 900, 400);
+        // build_inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 450);
+        // build_inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 250);
+        // build_inference_rule_piece(["G1, G2 |- A", "G1, G2 |- imp(A,B)"], "G1, G2 |- B", 50, 50);
+        // build_inference_rule_piece([], "A, B |- A", 900, 500);
+        // build_inference_rule_piece([], "A, B |- B", 900, 400);
     },
 
     puzzle3: function() {
         Game.clear();
         build_judgement_piece("and(a,b) |- and(b,a)", 400, 450);
-        // inference_rule_piece(["G |- A", "G |- B"], "G |- and(A,B)", 50, 450);
-        // inference_rule_piece(["G |- and(A,B)"], "G |- A", 50, 250);
-        // inference_rule_piece(["G |- and(A,B)"], "G |- B", 600, 250);
-        // inference_rule_piece([], "A |- A", 300, 50);
-        // inference_rule_piece([], "A |- A", 900, 50);
+        // build_inference_rule_piece(["G |- A", "G |- B"], "G |- and(A,B)", 50, 450);
+        // build_inference_rule_piece(["G |- and(A,B)"], "G |- A", 50, 250);
+        // build_inference_rule_piece(["G |- and(A,B)"], "G |- B", 600, 250);
+        // build_inference_rule_piece([], "A |- A", 300, 50);
+        // build_inference_rule_piece([], "A |- A", 900, 50);
     },
     // puzzle3: function() {
     //     build_judgement_piece("|- imp(a, imp(b,a))", 50, 600);
@@ -1192,7 +1244,7 @@ Game = {
 
     set_current_rule: function(top, bottom) {
         Game.remove_current_rule();
-        Game.current_rule = inference_rule_piece(top, bottom, 50, 50);
+        Game.current_rule = build_inference_rule_piece(top, bottom, 50, 50);
     },
 
     create_assumption_piece: function() {
