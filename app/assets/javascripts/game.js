@@ -75,6 +75,17 @@ InferenceRule.prototype.foreach_piece = function(f) {
     this.top.map(function (e) { f(e) });
     f(this.bottom);
 }
+
+InferenceRule.prototype.add_context = function(left) {
+    var new_context_var = MetaVarManager.next_var("G");
+    this.foreach_piece(function (p) {
+        if (left) 
+            p.judgement.left.unshift(Var(new_context_var));
+        else
+            p.judgement.left.push(Var(new_context_var));
+        p.trigger("Change");
+    });
+}
 // InferenceRule.prototype.get_top_width = function() {
 //     var top = this.top;
 //     if (top.length == 0) { return 0 }
@@ -779,6 +790,50 @@ Crafty.c('JudgementPuzzlePiece', {
         //     console.log("Click");
         //     console.log(e);
         // });
+        this.bind("DoubleClick", function(e) {
+            console.log("DoubleClick");
+            if (self.on_top && self.connected == null) {
+                var pos = Crafty.DOM.translate(e.clientX, e.clientY);
+                var y = pos.y - self.y;
+                if (y < Globals.YTopBufferSpace*2) {
+                    var x = pos.x - self.x;
+                    var i = Math.floor(x/Globals.FormulaWidth);
+                    var local_x = x%Globals.FormulaWidth;
+                    if (Game.double_clicked_piece == undefined || Game.double_clicked_piece == null) {
+                        var cube_w = 15;
+                        var cube_h = 15;
+                        var marker = 
+                            Crafty.e("2D, Canvas, Color")
+                            .attr({x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2), y: self.y-cube_h, w: cube_w, h: cube_h})
+                            .color("red");
+                        Game.double_clicked_piece = {piece:self, i:i, marker: marker};
+                    } else {
+                        if (Game.double_clicked_piece.piece == self) {
+                            var i1 = Game.double_clicked_piece.i;
+                            var i2 = i;
+                            var last_pos = self.judgement.left.length;
+                            if (i1 != i2 && (i1 == last_pos || i2 == last_pos)) {
+                                var i = (i1 == last_pos) ? i2 : i1;
+                                console.log(i);
+                                Game.create_assumption_piece();
+                                for (var k = 0; k < i; k++)
+                                    Game.add_context_left();
+                                for (var k = i+1; k < self.judgement.left.length; k++)
+                                    Game.add_context_right();
+                                var success = Game.current_rule.bottom.connect_if_match(self);
+                                console.log(success);
+                                if (!success) {
+                                    console.log("no match")
+                                    Game.remove_current_rule();
+                                }
+                            }
+                        }
+                        Game.double_clicked_piece.marker.destroy();
+                        Game.double_clicked_piece = null;
+                    }
+                }
+            };
+        });
         this.bind("Draw", function(obj) {
             // Pass the Canvas context and the drawing region.
             this._draw(obj.ctx, obj.pos);
@@ -927,22 +982,22 @@ Crafty.c('JudgementPuzzlePiece', {
     },
 
     connect_if_match: function(other) {
-        if (this.superficial_match(other)) {
-            s = this.judgement.unify(other.judgement);
-            if (s === false) return;
-            this.connect_to(other);
-            if (this.inference_rule != null)
-                this.inference_rule.apply(s)
-            else
-                this.apply(s);
-            if (other.inference_rule != null)
-                other.inference_rule.apply(s)
-            else
-                other.apply(s);
-            MetaVarManager.garbage_collect();
-            Game.current_rule = null;
-            Game.check_if_solved();
-        }
+        if (!this.superficial_match(other)) return false;
+        s = this.judgement.unify(other.judgement);
+        if (s === false) return false;
+        this.connect_to(other);
+        if (this.inference_rule != null)
+            this.inference_rule.apply(s)
+        else
+            this.apply(s);
+        if (other.inference_rule != null)
+            other.inference_rule.apply(s)
+        else
+            other.apply(s);
+        MetaVarManager.garbage_collect();
+        Game.current_rule = null;
+        Game.check_if_solved();
+        return true;
     },
 
     make_fresh: function() {
@@ -1127,15 +1182,19 @@ Game = {
         MetaVarManager.init();
         Game.current_rule = null;
         Game.puzzles = [];
-        Game.add_puzzle("a,b |- a", ["assumption", "add-context-left", "add-context-right"]); // 1
-        Game.add_puzzle("a,b |- b", ["assumption", "add-context-left", "add-context-right"]); // 2
-        Game.add_puzzle("a,b |- and(a, b)", ["assumption", "and-intro", "add-context-left", "add-context-right"]); // 3
+        Game.add_puzzle("a,b |- a", []); // 1
+        Game.add_puzzle("a,b |- b", []); // 2
+        Game.add_puzzle("a,b,c |- a", []); // 3
+        Game.add_puzzle("a,b,c |- b", []); // 4
+        Game.add_puzzle("a,b,c |- c", []); // 5
+        Game.add_puzzle("a,b |- and(a, b)", ["and-intro", "add-context"]); // 6
         //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
-        Game.add_puzzle("and(a,b) |- a", ["assumption", "and-elim-1", "add-context-left", "add-context-right"]); // 4 
-        Game.add_puzzle("and(a,b) |- b", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]); // 5
-        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 6
-        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 7
-        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 8
+        Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 7
+        Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 8
+        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 9
+        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 10
+        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 11
+
         var current_puzzle = qs("puzzle_id");
         if (current_puzzle == null)
             current_puzzle = 0;
@@ -1151,6 +1210,7 @@ Game = {
         Crafty.init(1300, 600);
         Crafty.background('rgb(240,240,240)');
         Game.show_current_puzzle();
+
         //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
         //Game.mouseWheelDispatch({wheelDelta:-120});
@@ -1183,14 +1243,12 @@ Game = {
         var current_puzzle = Game.current_puzzle;
         build_judgement_piece(Game.puzzles[current_puzzle].goal, 400,450);
         var pieces = Game.puzzles[current_puzzle].pieces;
-        var all_pieces = ["assumption",
-                          "and-intro",
+        var all_pieces = ["and-intro",
                           "and-elim-1",
                           "and-elim-2",
                           "imp-intro",
-                          "imp-elim",
-                          "add-context-left",
-                          "add-context-right"];
+                          "imp-elim", 
+                          "add-context"];
         if (pieces.length == 0)
             pieces = all_pieces;
         for (var i = 0; i < all_pieces.length; i++) {
@@ -1239,36 +1297,37 @@ Game = {
         if (Game.current_rule != null) {
             Game.current_rule.destroy();
             MetaVarManager.garbage_collect();
+            Game.current_rule = null;
         }
     },
 
-    set_current_rule: function(top, bottom) {
+    replace_current_rule: function(top, bottom) {
         Game.remove_current_rule();
         Game.current_rule = build_inference_rule_piece(top, bottom, 50, 50);
     },
 
     create_assumption_piece: function() {
-        Game.set_current_rule([], "A |- A");
+        Game.replace_current_rule([], "A |- A");
     },
 
     create_and_intro_piece: function() {
-        Game.set_current_rule(["|- A", "|- B"], "|- and(A,B)");
+        Game.replace_current_rule(["|- A", "|- B"], "|- and(A,B)");
     },
 
     create_and_elim_piece_1: function() {
-        Game.set_current_rule(["|- and(A,B)"], "|- A");
+        Game.replace_current_rule(["|- and(A,B)"], "|- A");
     },
 
     create_and_elim_piece_2: function() {
-        Game.set_current_rule(["|- and(A,B)"], "|- B");
+        Game.replace_current_rule(["|- and(A,B)"], "|- B");
     },
 
     create_imp_intro_piece: function() {
-        Game.set_current_rule(["A |- B"], "|- imp(A,B)");
+        Game.replace_current_rule(["A |- B"], "|- imp(A,B)");
     },
 
     create_imp_elim_piece: function() {
-        Game.set_current_rule(["|- A", "|- imp(A,B)"], "|- B");
+        Game.replace_current_rule(["|- A", "|- imp(A,B)"], "|- B");
     },
 
     add_context_left: function() {
@@ -1281,14 +1340,15 @@ Game = {
 
     add_context: function(left) {
         if (Game.current_rule != null) {
-            var new_context_var = MetaVarManager.next_var("G");
-            Game.current_rule.foreach_piece(function (p) {
-                if (left) 
-                    p.judgement.left.unshift(Var(new_context_var));
-                else
-                    p.judgement.left.push(Var(new_context_var));
-                p.trigger("Change");
-            });
+            Game.current_rule.add_context(left);
+            // var new_context_var = MetaVarManager.next_var("G");
+            // Game.current_rule.foreach_piece(function (p) {
+            //     if (left) 
+            //         p.judgement.left.unshift(Var(new_context_var));
+            //     else
+            //         p.judgement.left.push(Var(new_context_var));
+            //     p.trigger("Change");
+            // });
             Game.current_rule.place(50,50);
         }
     },
