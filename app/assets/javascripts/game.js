@@ -1367,10 +1367,10 @@ Game = {
             setTimeout(function(){
                 var display_number = Game.current_puzzle + 1;
                 if (Game.current_puzzle < Game.puzzles.length-1) {
-                    alert("Puzzle " + display_number + " Solved!!!\n On to the next puzzle!");
+                    alert("Puzzle " + display_number + " !Solved!!!\n On to the next puzzle!");
                     Game.next_puzzle();
                 } else {
-                    alert("Puzzle " + display_number + " Solved!!!\n Congrats, you solved all the puzzles!");
+                    alert("Puzzle " + display_number + " !Solved!!!\n Congrats, you solved all the puzzles!");
                     Game.clear();
                 }
             }, 250);
