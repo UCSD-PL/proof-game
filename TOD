@@ -1,0 +1,8 @@
+
+Do tutorial for puzzle with all buttons called out
+
+
+Refactor such that we don't inadverently break the tutorials if we change the puzzle's ordering, details, etc.
+
+
+Do P7's tut
