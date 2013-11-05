@@ -1202,8 +1202,11 @@ Game = {
         Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 7
         Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 8
         Game.add_puzzle("|- imp(a, imp(b,a))", []); // 9
+        Game.add_puzzle("", []); // 10
+        /*
         Game.add_puzzle("and(a,b) |- and(b,a)", []); // 10
         Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 11
+        */
 
 
         var current_puzzle = qs("puzzle_id");
@@ -1273,6 +1276,7 @@ Game = {
               result: function(){
                 Game.clear_callouts()
                 Game.shape_sprite_callout(0,2, down_arrow);
+                Game.shape_sprite_callout(0,0, down_arrow);
                 Game.piece_text_callout(0, text_above_arrows)
               }
             }
@@ -1282,6 +1286,7 @@ Game = {
               condition: Game.double_click_shape_condition({puzzle_id: 0, piece: Game.piece(0), shape_id: 2}),
               result: function(){
                 Game.clear_callouts()
+                Game.shape_sprite_callout(0,2, down_arrow);
                 Game.shape_sprite_callout(0,0, down_arrow);
                 Game.piece_text_callout(0, text_above_arrows)
               }
@@ -1312,6 +1317,7 @@ Game = {
               result: function(){
                 Game.clear_callouts()
                 Game.shape_sprite_callout(0,2, down_arrow);
+                Game.shape_sprite_callout(0, 1, down_arrow);
                 Game.piece_text_callout(0, text_above_arrows)
               }
             });
@@ -1320,6 +1326,7 @@ Game = {
               condition: Game.double_click_shape_condition({puzzle_id: 1, piece: Game.piece(0), shape_id: 2}),
               result: function(){
                 Game.clear_callouts()
+                Game.shape_sprite_callout(0,2, down_arrow);
                 Game.shape_sprite_callout(0, 1, down_arrow);
                 Game.piece_text_callout(0, text_above_arrows)
               }
@@ -1631,9 +1638,12 @@ Game = {
           result: function(){
             Game.clear_callouts();
 
+            alert("Okay.  Stop your recording and upload it to Mechanical Turk")
           }
         });
           
+
+
     },
 
     context_added_condition: function(){
