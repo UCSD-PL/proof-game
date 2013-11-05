@@ -679,8 +679,11 @@ Crafty.c('JudgementPuzzlePiece', {
             // if (other != null && other != "more than one") {
             //     self.connect_if_match(other)
             // }
-            Game.current_rule.x = this.x
-            Game.current_rule.y = this.y
+            if(Game.current_rule)
+            {
+                Game.current_rule.x = this.x
+                Game.current_rule.y = this.y
+            }
         });
         this.bind("Dragging", function(e) {
             var dx = (e.clientX - self.drag_x) / Crafty.viewport._zoom;
@@ -1531,10 +1534,8 @@ Game = {
               predecessors: [create_piece],
               result: function(){
                 Game.clear_callouts()
-                text_above_arrows.message = "Now connect the two pieces."
+                text_above_arrows.message = "Now connect the two pieces.  Keep your eye on the red areas.  Notice how they change shape when you connect the two pieces."
                 Game.piece_text_callout(1, text_above_arrows)
-                Game.shape_sprite_callout(0, 0, down_arrow)
-                Game.shape_sprite_callout(1, 0, down_arrow)
               }
             }
                 
@@ -1606,7 +1607,7 @@ Game = {
               result: function(){
                 Game.clear_callouts()
 
-                text_above_arrows.message = "One last tip: If you ever feel you've gone down the wrong path, use the restart button."
+                text_above_arrows.message = "One last tip: If you ever feel you've gone down the wrong path, use the restart button.  Each of these puzzles should take no more than 5 moves."
                 Game.piece_text_callout(0, text_above_arrows)
                 Game.dom_sprite_callout("restart", up_arrow);
               }
@@ -1789,13 +1790,8 @@ Game = {
     restart: function(){
         Game.show_current_puzzle();
         var transitions_to_keep = []
-        for(var i = 0; i < Game.callout_transitions.length; i++)
-        {
-          var current = Game.callout_transitions[i]
-          if(current.condition.name == "PuzzleChangeCondition")
-              transitions_to_keep.push(current)
-        }
-        Game.callout_transitions = transitions_to_keep
+        Game.callout_transitions = []
+        Game.setup_tutorial();
         Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
     },
 
