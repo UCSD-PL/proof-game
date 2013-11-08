@@ -1,3 +1,4 @@
+var blah
 /**************************************************/
 //
 // Globals
@@ -229,10 +230,22 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected) {
         c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_loc.n);
         c.beginPath();
         t.move_to(meta_var_loc.x, meta_var_loc.y);
-        t.up(15);
+
+        var height = 40
+        t.up(height);
         t.right(meta_var_loc.w);
-        t.down(15);
+        t.down(height);
+
         c.stroke();
+
+        var grd=c.createLinearGradient(meta_var_loc.x,meta_var_loc.y,meta_var_loc.x,meta_var_loc.y-height);
+        grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_loc.n), .5))
+        grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_loc.n))
+
+        c.fillStyle = grd;
+        c.fillRect(meta_var_loc.x,meta_var_loc.y,meta_var_loc.w,-height);
+
+
     }
 }
 
@@ -287,11 +300,23 @@ Judgement.prototype.draw_on_bottom = function(t, x, y, selected) {
         c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_loc.n);
         c.beginPath();
         t.move_to(meta_var_loc.x, meta_var_loc.y);
-        t.up(15);
+
+        var height = 40
+        t.up(height);
         t.right(meta_var_loc.w);
-        t.down(15);
+        t.down(height);
+
+
         c.stroke();
+
+        var grd=Game.effects_canvas.createLinearGradient(meta_var_loc.x,meta_var_loc.y,meta_var_loc.x,meta_var_loc.y-height);
+        grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_loc.n), .5))
+        grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_loc.n))
+
+        Game.effects_canvas.fillStyle = grd;
+        Game.effects_canvas.fillRect(meta_var_loc.x,meta_var_loc.y,meta_var_loc.w,-height);
     }
+
 }
 
 Judgement.prototype.clear_meta_var_locs = function () {
@@ -595,7 +620,7 @@ Turtle.prototype.sqcup = function (w) {
     this.up(h);
 }
 Turtle.prototype.flatsqcap = function (w) {
-    var h = 15;
+    var h = 40;
     this.up(h);
     this.right(w);
     this.down(h);
@@ -816,6 +841,7 @@ Crafty.c('JudgementPuzzlePiece', {
                         Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i})
                     } else {
                         if (Game.double_clicked_piece.piece == self) {
+                            Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i2})
                             var i1 = Game.double_clicked_piece.i;
                             var i2 = i;
                             var last_pos = self.judgement.left.length;
@@ -829,11 +855,11 @@ Crafty.c('JudgementPuzzlePiece', {
                                 var success = Game.current_rule.bottom.connect_if_match(self);
                                 if (!success) {
                                     Game.remove_current_rule();
+                                    Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"FailedMatch", piece: this, shape_id: i2})
                                 }
 
 
                             }
-                            Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i2})
                         }
                         Game.double_clicked_piece.marker.destroy();
                         Game.double_clicked_piece = null;
@@ -842,15 +868,20 @@ Crafty.c('JudgementPuzzlePiece', {
             };
         });
         this.bind("Draw", function(obj) {
-            // Pass the Canvas context and the drawing region.
+            Game.effects_canvas.clearRect(0,0,Crafty.viewport.width, Crafty.viewport.height);
             this._draw(obj.ctx, obj.pos);
         });
+
+
     },
     _draw: function(c, pos) {
+        this.last_draw_pos = pos
+
         var x = pos._x + 1;
         var y = pos._y + 1;
         var w = pos._w - 2;
         var h = pos._h - 2;
+
         
         t = new Turtle(c);
         if (this.on_top) {
@@ -1095,21 +1126,19 @@ ColorManager = {
     init: function() {
         ColorManager.colors = {};
 
-        ColorManager.add_color("Red");
-        ColorManager.add_color("Blue");
-        ColorManager.add_color("Green");
-        ColorManager.add_color("Cyan");
-        ColorManager.add_color("Magenta");
-        ColorManager.add_color("Lime");
-        ColorManager.add_color("Yellow");
-        //ColorManager.add_color("Silver");
-        //ColorManager.add_color("Gray");
-        ColorManager.add_color("Maroon");
-        ColorManager.add_color("Olive");
-        ColorManager.add_color("Purple");
-        ColorManager.add_color("Teal");
-        ColorManager.add_color("Navy");
-        ColorManager.add_color("Pink");
+        ColorManager.add_color("rgba(255,0,0,1)");
+        ColorManager.add_color("rgba(0,0,255,1)");
+        ColorManager.add_color("rgba(0,255,0,1)");
+        ColorManager.add_color("rgba(0,255,255,1)");
+        ColorManager.add_color("rgba(255,255,0,1)");
+        ColorManager.add_color("rgba(0,64,0,1)");
+        ColorManager.add_color("rgba(255,0,255,1)");
+        ColorManager.add_color("rgba(64,0,0,1)");
+        ColorManager.add_color("rgba(64,64,0,1)");
+        ColorManager.add_color("rgba(0,64,64,1)");
+        ColorManager.add_color("rgba(64,0,64,1)");
+        ColorManager.add_color("rgba(0,0,64,1)");
+        ColorManager.add_color("rgba(20,20,64,1)");
     },
     add_color: function(color) {
         ColorManager.colors[color] = false;
@@ -1186,6 +1215,7 @@ function qs(key) {
 Game = {
     // Initialize and start our game
     start: function() {
+               
 
         // Start crafty and set a background color so that we can see it's working
         ColorManager.init();
@@ -1232,13 +1262,51 @@ Game = {
         //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
         //Game.mouseWheelDispatch({wheelDelta:-120});
+        
+
+        //Create a canvas for special effects.
+        var c = document.createElement("canvas");
+        c.width = Crafty.viewport.width;
+        c.height = Crafty.viewport.height;
+        c.style.position = 'absolute';
+
+        Crafty.stage.elem.appendChild(c);
+
+        ctx = c.getContext('2d');
+
+        Game.effects_canvas = ctx
+        Game.effects_image_data = Game.effects_canvas.getImageData(0,0,Crafty.viewport.width,Crafty.viewport.height);
+
 
     },
 
     callouts: [],
 
     setup_tutorial: function(){
-        //Instatiate callouts
+
+        //General callouts to correct bad behaviour
+
+        Game.callout_transitions.push({
+           condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
+           persist: true,
+           result: function(){
+            Game.clear_callouts()
+
+
+            var m = {
+              message: "The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.",
+              y_offset: -210,
+              x_offset: 50
+            }
+
+            Game.piece_text_callout(0, m)
+            
+           }
+        });
+
+
+
+        //Tutorial
 
         Crafty.sprite("/assets/DownArrow.gif", {down_arrow:[0,0,128,128]});
         Crafty.sprite("/assets/UpArrow.gif", {up_arrow:[0,0,128,128]});
@@ -1541,7 +1609,7 @@ Game = {
               predecessors: [create_piece],
               result: function(){
                 Game.clear_callouts()
-                text_above_arrows.message = "Now connect the two pieces.  Keep your eye on the red areas.  Notice how they change shape when you connect the two pieces."
+                text_above_arrows.message = "Keep your eye on the red areas.  Notice how they change shape when you connect the two pieces.  Drag the pieces together to connect them."
                 Game.piece_text_callout(1, text_above_arrows)
               }
             }
@@ -1619,7 +1687,9 @@ Game = {
                 Game.dom_sprite_callout("restart", up_arrow);
               }
             }
-            Game.callout_transitions.push(create_piece);
+
+            if(!Game.restarted)
+                Game.callout_transitions.push(create_piece);
 
             var after_connect = {
               condition: Game.piece_connected_condition(),
@@ -1713,7 +1783,8 @@ Game = {
         if(Game.callout_transitions[i].condition.matches(condition))
         {
           var current = Game.callout_transitions[i]
-          Game.callout_transitions.splice(i,1)
+          if(!current.persist)
+              Game.callout_transitions.splice(i,1)
           current.result()
           current.satisfied = true
           Game.trigger_callout_transition({name: "ConditionSatisfied", condition: current})
@@ -1790,7 +1861,7 @@ Game = {
         for(var i = 0; i < Game.callout_transitions.length; i++)
         {
           var current = Game.callout_transitions[i]
-          if(current.condition.name == "PuzzleChangeCondition")
+          if(current.condition.name == "PuzzleChangeCondition" || current.persist == true)
               transitions_to_keep.push(current)
         }
         Game.callout_transitions = transitions_to_keep
@@ -1798,6 +1869,7 @@ Game = {
     },
 
     restart: function(){
+        Game.restarted = true
         Game.show_current_puzzle();
         var transitions_to_keep = []
         Game.callout_transitions = []
@@ -1987,7 +2059,10 @@ Game = {
 window.addEventListener('load', Game.start);
 
 
-
-
-
+function make_transparent(str, alpha)
+{
+  var split = str.split(",")
+  split[3] = alpha + ")"
+  return split.join(",")
+}
 
