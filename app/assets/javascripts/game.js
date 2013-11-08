@@ -393,7 +393,8 @@ Tree.prototype.toString = function() {
 
 Tree.prototype.draw = function(t, w, on_top) {
     if (this.left == null && this.right == null) {
-        var token_width = w * 0.60;
+
+        var token_width = this.is_meta_var() ? w * 0.80 : w * .60;
         if (token_width > Globals.MaxSingleVarWidth && !this.is_meta_var()) {
             token_width = Globals.MaxSingleVarWidth
         }
@@ -691,7 +692,11 @@ Crafty.c('JudgementPuzzlePiece', {
             }
             if (selected_bottom != null && selected_bottom != "more than one" &&
                 selected_top != null && selected_top != "more than one") {
-                selected_bottom.connect_if_match(selected_top)
+                var success = selected_bottom.connect_if_match(selected_top)
+
+                if(!success)
+                    Game.trigger_callout_transition({name: "PieceConnectionFailed", current: Game.current_rule});
+
             };
             // if (!self.selected) 
             //     Game.foreach_piece(function(p) { p.set_selected(false) });
@@ -1290,20 +1295,18 @@ Game = {
            condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
            persist: true,
            result: function(){
-            Game.clear_callouts()
-
-
-            var m = {
-              message: "The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.",
-              y_offset: -210,
-              x_offset: 50
-            }
-
-            Game.piece_text_callout(0, m)
-            
+             alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
            }
         });
 
+
+        Game.callout_transitions.push({
+           condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
+           persist: true,
+           result: function(){
+             alert("Those pieces do not fit together.")
+           }
+        });
 
 
         //Tutorial
