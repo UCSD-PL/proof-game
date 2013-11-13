@@ -20,7 +20,7 @@ Globals = {
     FormulaWidth: 200,
     JudgementHeight: 50,
     XSpaceBetweenJudgements: 20,
-    YTopBufferSpace: 40,
+    YTopBufferSpace: 50,
     YBottomBufferSpace: 20,
     MaxSingleVarWidth: 50
 }
@@ -132,7 +132,7 @@ InferenceRule.prototype.add_context = function(left) {
 //     var w = (top_w > bottom_w) ? top_w : bottom_w;
 //     var curr_x = x + (w-top_w)/2;
 //     t.inference_rule = this;
-//     this.clear_meta_var_locs();
+//     this.clear_meta_var_infos();
 //     for (var i = 0; i < this.top.length; i++) {
 //         top[i].draw_on_top(t, curr_x, y);
 //         curr_x = curr_x + top[i].get_width() + Globals.XSpaceBetweenJudgements;
@@ -141,15 +141,15 @@ InferenceRule.prototype.add_context = function(left) {
 //         curr_x = x + (w-bottom_w)/2;
 //         bottom.draw_on_bottom(t, curr_x, y + Globals.JudgementHeight);
 //     }
-//     for (var i = 0; i < this.meta_var_locs.length; i++) {
-//         var meta_var_loc = this.meta_var_locs[i];
+//     for (var i = 0; i < this.meta_var_infos.length; i++) {
+//         var meta_var_info = this.meta_var_infos[i];
 //         var c = t.c;
 //         c.lineWidth = 5;
-//         c.strokeStyle = Globals.MetaVarToColor[meta_var_loc.n];
+//         c.strokeStyle = Globals.MetaVarToColor[meta_var_info.t.n];
 //         c.beginPath();
-//         t.move_to(meta_var_loc.x, meta_var_loc.y);
+//         t.move_to(meta_var_info.x, meta_var_info.y);
 //         t.up(15);
-//         t.right(meta_var_loc.w);
+//         t.right(meta_var_info.w);
 //         t.down(15);
 //         c.stroke();
 //     }
@@ -190,7 +190,7 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected) {
     // var left_w = w - right_w;
 
     t.judgement = this;
-    this.clear_meta_var_locs();
+    this.clear_meta_var_infos();
 
     c.lineWidth = 2;
     c.strokeStyle = "rgb(0,0,0)";
@@ -223,27 +223,27 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected) {
     c.fill()
     c.stroke();
 
-    for (var i = 0; i < this.meta_var_locs.length; i++) {
-        var meta_var_loc = this.meta_var_locs[i];
+    for (var i = 0; i < this.meta_var_infos.length; i++) {
+        var meta_var_info = this.meta_var_infos[i];
         var c = t.c;
         c.lineWidth = 5;
-        c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_loc.n);
+        c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_info.t.n);
         c.beginPath();
-        t.move_to(meta_var_loc.x, meta_var_loc.y);
+        t.move_to(meta_var_info.x, meta_var_info.y);
 
-        var height = 40
+        var height = 20;
         t.up(height);
-        t.right(meta_var_loc.w);
+        t.right(meta_var_info.w);
         t.down(height);
 
         c.stroke();
 
-        var grd=c.createLinearGradient(meta_var_loc.x,meta_var_loc.y,meta_var_loc.x,meta_var_loc.y-height);
-        grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_loc.n), .5))
-        grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_loc.n))
+        // var grd=c.createLinearGradient(meta_var_info.x,meta_var_info.y,meta_var_info.x,meta_var_info.y-height);
+        // grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_info.t.n), .5))
+        // grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_info.t.n))
 
-        c.fillStyle = grd;
-        c.fillRect(meta_var_loc.x,meta_var_loc.y,meta_var_loc.w,-height);
+        // c.fillStyle = grd;
+        // c.fillRect(meta_var_info.x,meta_var_info.y,meta_var_info.w,-height);
 
 
     }
@@ -260,7 +260,7 @@ Judgement.prototype.draw_on_bottom = function(t, x, y, selected) {
     // var left_w = w - right_w;
 
     t.judgement = this;
-    this.clear_meta_var_locs();
+    this.clear_meta_var_infos();
 
     c.lineWidth = 2;
     c.strokeStyle = "rgb(0,0,0)";
@@ -293,38 +293,38 @@ Judgement.prototype.draw_on_bottom = function(t, x, y, selected) {
     c.fill()
     c.stroke();
 
-    for (var i = 0; i < this.meta_var_locs.length; i++) {
-        var meta_var_loc = this.meta_var_locs[i];
+    for (var i = 0; i < this.meta_var_infos.length; i++) {
+        var meta_var_info = this.meta_var_infos[i];
         var c = t.c;
         c.lineWidth = 5;
-        c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_loc.n);
+        c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_info.t.n);
         c.beginPath();
-        t.move_to(meta_var_loc.x, meta_var_loc.y);
+        t.move_to(meta_var_info.x, meta_var_info.y);
 
-        var height = 40
+        var height = 20;
         t.up(height);
-        t.right(meta_var_loc.w);
+        t.right(meta_var_info.w);
         t.down(height);
 
 
         c.stroke();
 
-        var grd=Game.effects_canvas.createLinearGradient(meta_var_loc.x,meta_var_loc.y,meta_var_loc.x,meta_var_loc.y-height);
-        grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_loc.n), .5))
-        grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_loc.n))
+        // var grd=Game.effects_canvas.createLinearGradient(meta_var_info.x,meta_var_info.y,meta_var_info.x,meta_var_info.y-height);
+        // grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_info.t.n), .5))
+        // grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_info.t.n))
 
-        Game.effects_canvas.fillStyle = grd;
-        Game.effects_canvas.fillRect(meta_var_loc.x,meta_var_loc.y,meta_var_loc.w,-height);
+        // Game.effects_canvas.fillStyle = grd;
+        // Game.effects_canvas.fillRect(meta_var_info.x,meta_var_info.y,meta_var_info.w,-height);
     }
 
 }
 
-Judgement.prototype.clear_meta_var_locs = function () {
-    this.meta_var_locs = [];
+Judgement.prototype.clear_meta_var_infos = function () {
+    this.meta_var_infos = [];
 }
 
-Judgement.prototype.add_meta_var_loc = function (n, x, y, w, on_top) {
-    this.meta_var_locs.push({n: n, x: x, y: y, w: w, on_top: on_top});
+Judgement.prototype.add_meta_var_info = function (t, x, y, w, orig_x, orig_y, full_w) {
+    this.meta_var_infos.push({t: t, x: x, y: y, w: w, orig_x: orig_x, orig_y: orig_y, full_w: full_w });
 }
 
 Judgement.prototype.make_fresh = function() {
@@ -393,7 +393,8 @@ Tree.prototype.toString = function() {
 
 Tree.prototype.draw = function(t, w, on_top) {
     if (this.left == null && this.right == null) {
-
+        var orig_x = t.x;
+        var orig_y = t.y;
         var token_width = this.is_meta_var() ? w * 0.80 : w * .60;
         if (token_width > Globals.MaxSingleVarWidth && !this.is_meta_var()) {
             token_width = Globals.MaxSingleVarWidth
@@ -403,7 +404,7 @@ Tree.prototype.draw = function(t, w, on_top) {
         var space2 = w - token_width - space1;
         t.right(space1);
         if (this.is_meta_var()) {
-            t.judgement.add_meta_var_loc(this.n, t.x, t.y, token_width, on_top);
+            t.judgement.add_meta_var_info(this, t.x, t.y, token_width, orig_x, orig_y, w);
             t.flatsqcap(token_width);
         } else {
             t[Globals.VarToShape[this.n]](token_width);
@@ -435,6 +436,12 @@ Tree.prototype.draw = function(t, w, on_top) {
             t.right(space2);
         }
     }
+}
+
+Tree.prototype.copy_from = function(other) {
+    this.n = other.n;
+    this.right = other.right;
+    this.left = other.left;
 }
 
 function apply_to_tree(t, s) {
@@ -621,7 +628,7 @@ Turtle.prototype.sqcup = function (w) {
     this.up(h);
 }
 Turtle.prototype.flatsqcap = function (w) {
-    var h = 40;
+    var h = 20;
     this.up(h);
     this.right(w);
     this.down(h);
@@ -692,7 +699,7 @@ Crafty.c('JudgementPuzzlePiece', {
             }
             if (selected_bottom != null && selected_bottom != "more than one" &&
                 selected_top != null && selected_top != "more than one") {
-                var success = selected_bottom.connect_if_match(selected_top)
+                var success = selected_bottom.connect_if_match_with_animation(selected_top)
 
                 if(!success)
                     Game.trigger_callout_transition({name: "PieceConnectionFailed", current: Game.current_rule});
@@ -836,11 +843,12 @@ Crafty.c('JudgementPuzzlePiece', {
                     var i = Math.floor(x/Globals.FormulaWidth);
                     var local_x = x%Globals.FormulaWidth;
                     if (Game.double_clicked_piece == undefined || Game.double_clicked_piece == null) {
-                        var cube_w = 15;
-                        var cube_h = 15;
+                        var cube_w = Globals.FormulaWidth *0.9;
+                        var cube_h = Globals.JudgementHeight*1.5;
                         var marker = 
                             Crafty.e("2D, Canvas, Color")
-                            .attr({x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2), y: self.y-cube_h, w: cube_w, h: cube_h})
+                            .attr({alpha: 0.2})
+                            .attr({x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2), y: self.y-10, w: cube_w, h: cube_h})
                             .color("red");
                         Game.double_clicked_piece = {piece:self, i:i, marker: marker};
                         Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i})
@@ -1024,6 +1032,77 @@ Crafty.c('JudgementPuzzlePiece', {
                 this.judgement.get_width() == other.judgement.get_width())
     },
 
+    connect_if_match_with_animation: function(other) {
+        if (!this.superficial_match(other)) return false;
+        s = this.judgement.unify(other.judgement);
+        if (s === false) return false;
+        this.connect_to(other);
+
+        var self = this;
+        setTimeout(function () {
+            var meta_var_infos = [];
+            if (self.inference_rule != null)
+                self.inference_rule.foreach_piece(function (p) {
+                    meta_var_infos = meta_var_infos.concat(p.judgement.meta_var_infos);
+                });
+            else
+                meta_var_infos = meta_var_infos.concat(self.judgement.meta_var_infos);
+            if (other.inference_rule != null)
+                other.inference_rule.foreach_piece(function (p) {
+                    meta_var_infos = meta_var_infos.concat(p.judgement.meta_var_infos)
+                });
+            else
+                meta_var_infos = meta_var_infos.concat(other.judgement.meta_var_infos);
+            
+            var mv_by_name = [];
+            for (var i = 0; i< meta_var_infos.length; i++) {
+                var meta_var_info = meta_var_infos[i];
+                var n = meta_var_info.t.n;
+                if (!(n in s)) continue;
+                if (!(n in mv_by_name)) { mv_by_name[n] = [] };
+                mv_by_name[n].push(meta_var_info);
+            };
+            for (n in mv_by_name) {
+                mv_by_name[n].sort(function(a,b) { return b.y - a.y });
+            }
+            for (n in mv_by_name) {
+                var bottom = mv_by_name[n][0];
+                bottom.t.copy_from(s[n]);
+                Crafty.e("AnimatedFormula")
+                    .attr({x: bottom.orig_x, 
+                           y: bottom.orig_y - 60, 
+                           w: bottom.full_w,
+                           h: 100})
+                    .set_formula(s[n])
+                    .set_color(MetaVarManager.get_meta_var_color(n));
+                for (var i = 1; i < mv_by_name[n].length; i++) {
+                    var cont = eval("(function() {" +
+                                    "   mv_by_name['" + n + "']["+i+"].t.copy_from(s['" + n + "']);" + 
+                                    "   Game.redraw_all(); " +
+                                    "   setTimeout(Game.destroy_all_animated_pieces, 2000);" +
+                                    "               MetaVarManager.garbage_collect();"+
+                                    " })");
+                    Crafty.e("AnimatedFormula")
+                        .attr({x: bottom.orig_x, 
+                               y: bottom.orig_y - 60, 
+                               w: bottom.full_w,
+                               h: 100})
+                        .set_formula(s[n])
+                        .set_color(MetaVarManager.get_meta_var_color(n))
+                        .animate_to(mv_by_name[n][i].orig_x, 
+                                    mv_by_name[n][i].orig_y - 60, 
+                                    mv_by_name[n][i].full_w, 
+                                    100, cont);
+                }
+            }
+            MetaVarManager.garbage_collect();
+        }, 50);
+        Game.trigger_callout_transition({name: "PieceConnected", current: Game.current_rule, other: other});
+        MetaVarManager.garbage_collect();
+        Game.current_rule = null;
+        Game.check_if_solved();
+        return true;
+    },
     connect_if_match: function(other) {
         if (!this.superficial_match(other)) return false;
         s = this.judgement.unify(other.judgement);
@@ -1056,12 +1135,12 @@ Crafty.c('JudgementPuzzlePiece', {
 
     distance_from_other: function(other) {
         return {x: this.x - other.x,
-                y: this.y - other.y + (this.on_top? -10:10) }
+                y: this.y - other.y + (this.on_top? -0:0) }
     },
 
     distance_to_other: function(other) {
         return {x: other.x - this.x,
-                y: other.y - this.y - (this.on_top? -10:10) }
+                y: other.y - this.y - (this.on_top? -0:0) }
     },
 
     add_live_vars: function(live_vars) {
@@ -1069,6 +1148,62 @@ Crafty.c('JudgementPuzzlePiece', {
     }
 
 })
+
+Crafty.c('AnimatedFormula', {
+    ready: true,
+    /*
+     * Initialize the component.
+     */
+    init: function() {
+        this.requires("2D, Canvas");
+        this.formula = null;
+        this.bind("Draw", function(obj) {
+            this._draw(obj.ctx, obj.pos);
+        });
+    },
+    _draw: function(c, pos) {
+        var x = pos._x + 1;
+        var y = pos._y + 1;
+        var w = pos._w - 2;
+        var h = pos._h - 2;
+        
+        t = new Turtle(c);
+        c.lineWidth = 5;
+        c.strokeStyle = this.color;
+        c.beginPath();
+        t.move_to(x, y+Globals.YTopBufferSpace+10);
+        this.formula.draw(t, w, false);
+        c.stroke();
+    },
+    set_formula: function(f) {
+        this.formula = f;
+        // with (JudgementConstruction) {
+        //     this.formula = eval(s)
+        // }
+        return this
+    },
+    set_color: function(c) {
+        this.color = c;
+        // with (JudgementConstruction) {
+        //     this.formula = eval(s)
+        // }
+        return this
+    },
+    animate_to: function(x, y, w, steps, cont) { 
+        if (this.x == x && this.y == y) return cont();
+        this.x = this.x + (x - this.x)/steps;
+        this.y = this.y + (y - this.y)/steps;
+        this.w = this.w + (w - this.w)/steps;
+        // if (x > this.x) this.x = this.x+1;
+        // if (x < this.x) this.x = this.x-1;
+        // if (y > this.y) this.y = this.y+1;
+        // if (y < this.y) this.y = this.y-1;
+        this.trigger("Change");
+        var self = this;
+        setTimeout(function() { self.animate_to(x, y, w, steps-1, cont) }, 10);
+    }
+})
+
 
 
 JudgementConstruction = {
@@ -1237,11 +1372,10 @@ Game = {
         Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 7
         Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 8
         Game.add_puzzle("|- imp(a, imp(b,a))", []); // 9
-        Game.add_puzzle("", []); // 10
-        /*
+        //Game.add_puzzle("", []); // 10
+        
         Game.add_puzzle("and(a,b) |- and(b,a)", []); // 10
         Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 11
-        */
 
 
         var current_puzzle = qs("puzzle_id");
@@ -1282,6 +1416,7 @@ Game = {
         Game.effects_canvas = ctx
         Game.effects_image_data = Game.effects_canvas.getImageData(0,0,Crafty.viewport.width,Crafty.viewport.height);
 
+        //Crafty.e("AnimatedFormula").attr({x: 200, y: 200, w:200, h:100}).set_formula("and(a, b)").animate_to(300, 400, 100, 100);
 
     },
 
@@ -1845,6 +1980,9 @@ Game = {
        Game.callouts = []
     },
 
+    redraw_all: function() {
+        Game.foreach_piece(function(p) { p.trigger("Change") });
+    },
 
     clear: function() {
         Game.current_rule = null;
@@ -2009,6 +2147,7 @@ Game = {
     },
 
     puzzle_solved: function() {
+        return false;
         var solved = true;
         Game.foreach_piece(function (p) {
             if (p.on_top && p.connected == null)
@@ -2034,7 +2173,7 @@ Game = {
 
 
     foreach_piece: function(f) {
-        ids = Crafty("JudgementPuzzlePiece");
+        var ids = Crafty("JudgementPuzzlePiece");
         for (var i = 0; i < ids.length; i++) {
             f(Crafty(ids[i]));
         }
@@ -2043,6 +2182,13 @@ Game = {
     piece: function(i){
         var ids = Crafty("JudgementPuzzlePiece");
         return Crafty(ids[i])     
+    },
+
+    destroy_all_animated_pieces: function() {
+        var ids = Crafty("AnimatedFormula");
+        for (var i = 0; i < ids.length; i++) {
+            Crafty(ids[i]).destroy();
+        }
     },
 
     mouseWheelDispatch: function(e) {
