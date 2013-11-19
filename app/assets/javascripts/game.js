@@ -1423,25 +1423,6 @@ Game = {
 
     setup_tutorial: function(){
 
-        //General callouts to correct bad behaviour
-
-        Game.callout_transitions.push({
-           condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
-           persist: true,
-           result: function(){
-             alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
-           }
-        });
-
-
-        Game.callout_transitions.push({
-           condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
-           persist: true,
-           result: function(){
-             alert("Those pieces do not fit together.")
-           }
-        });
-
 
         //Tutorial
 
@@ -1837,18 +1818,56 @@ Game = {
 
             Game.callout_transitions.push(after_connect);
 
+            Game.callout_transitions.push({
+               condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
+               persist: true,
+               result: function(){
+                 alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
+               }
+            });
+
+
+            Game.callout_transitions.push({
+               condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
+               persist: true,
+               result: function(){
+                 alert("Those pieces do not fit together.")
+               }
+            });
+
           }
         });
 
-        // Game.callout_transitions.push({
-        //   condition: Game.puzzle_change_condition(9),
-        //   result: function(){
-        //     Game.clear_callouts();
 
-        //     alert("Okay.  Stop your recording and upload it to Mechanical Turk")
-        //   }
-        // });
-          
+        Game.callout_transitions.push({
+          condition: {name: "PuzzleChangeCondition", 
+                      matches: function(other){
+
+                                 var ret = other.name == this.name && other.puzzle_id > 8
+                                 console.log(other.name)
+                                 return ret 
+                               }
+                     },
+          result: function(){
+            Game.callout_transitions.push({
+               condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
+               persist: true,
+               result: function(){
+                 alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
+               }
+            });
+
+
+            Game.callout_transitions.push({
+               condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
+               persist: true,
+               result: function(){
+                 alert("Those pieces do not fit together.")
+               }
+            });
+          }
+         });
+
 
 
     },
