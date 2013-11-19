@@ -403,7 +403,7 @@ Tree.prototype.draw = function(t, w, on_top) {
         var space1 = space_width;
         var space2 = w - token_width - space1;
         t.right(space1);
-        if (this.is_meta_var()) {
+        if (this.is_meta_var() && t.judgement) {
             t.judgement.add_meta_var_info(this, t.x, t.y, token_width, orig_x, orig_y, w);
             t.flatsqcap(token_width);
         } else {
