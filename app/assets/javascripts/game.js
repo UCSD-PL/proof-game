@@ -1372,10 +1372,9 @@ Game = {
         Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 7
         Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 8
         Game.add_puzzle("|- imp(a, imp(b,a))", []); // 9
-        //Game.add_puzzle("", []); // 10
-        
         Game.add_puzzle("and(a,b) |- and(b,a)", []); // 10
         Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 11
+        //Game.add_puzzle("", []); // 12
 
 
         var current_puzzle = qs("puzzle_id");
@@ -1841,14 +1840,14 @@ Game = {
           }
         });
 
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(9),
-          result: function(){
-            Game.clear_callouts();
+        // Game.callout_transitions.push({
+        //   condition: Game.puzzle_change_condition(9),
+        //   result: function(){
+        //     Game.clear_callouts();
 
-            alert("Okay.  Stop your recording and upload it to Mechanical Turk")
-          }
-        });
+        //     alert("Okay.  Stop your recording and upload it to Mechanical Turk")
+        //   }
+        // });
           
 
 
@@ -2147,7 +2146,6 @@ Game = {
     },
 
     puzzle_solved: function() {
-        return false;
         var solved = true;
         Game.foreach_piece(function (p) {
             if (p.on_top && p.connected == null)
