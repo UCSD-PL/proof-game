@@ -1,9 +1,15 @@
 class LogsController < ApplicationController
+    def index
+      @logs = Log.all
+      if(params[:filter])
+        @logs = @logs.find_all {|l| l.message.match params[:filter]}
+      end
+    end
 
     def create
 
       log = Log.new
-      log.message = params[:message]
+      log.message = params[:message].inspect
 
       if params[:group_name]
         group = Group.find_or_create_by_name(params[:group_name]) 

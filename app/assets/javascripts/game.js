@@ -1359,12 +1359,6 @@ MetaVarManager = {
     }
 }
 
-function qs(key) {
-    key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
-    var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
-    return match && decodeURIComponent(match[1].replace(/\+/g, " "));
-}
-
 
 Game = {
     // Initialize and start our game
@@ -1940,6 +1934,9 @@ Game = {
     callout_transitions: [],
 
     trigger_callout_transition: function(condition){
+      
+      log({name: condition.name})
+
       for(var i = 0; i < Game.callout_transitions.length; i++)
       {
         if(Game.callout_transitions[i].predecessors)

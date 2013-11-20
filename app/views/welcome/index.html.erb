@@ -3,27 +3,10 @@
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
 
-<!-- <button id="push_me">Push me</button> -->
-
-<!-- <a target="_blank" style="display:none" href="http://www.youtube.com/watch?v=4xrLGSSLeXY&feature=youtu.be" id="demo">Click here for a demo video</a> -->
-<a target="_blank" href="http://www.youtube.com/watch?v=4xrLGSSLeXY&feature=youtu.be" id="demo">Click here for a demo video</a>
 
 <script>
     $(document).ready(function(){
       var group_name = qs("group_name")
-
-      $("#push_me").click(function(){
-        $.ajax(
-           {   
-               url: "/logs", 
-               type: "POST",
-               data: {group_name: group_name, message: "Button was pushed"}, 
-               success:function(){
-                  console.log("Success");
-               }
-           }
-        );
-      });
 
       <!-- var puzzle_number = qs("puzzle_id") -->
       <!-- console.log(puzzle_number); -->
