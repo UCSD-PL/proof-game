@@ -7,6 +7,9 @@ class Log < ActiveRecord::Base
   end
 
   def color
+    if(test_number.nil?)
+      return "black"
+    end
     test_number_split = test_number.split "-"
     r = test_number_split[0].hash % 255
     g = test_number_split[1].hash % 255
