@@ -444,6 +444,13 @@ Tree.prototype.copy_from = function(other) {
     this.left = other.left;
 }
 
+function has_meta_var(t) {
+    if (t == null) return false;
+    if (t.is_meta_var()) return true;
+    if (has_meta_var(t.left)) return true;
+    return (has_meta_var(t.right));
+}
+
 function apply_to_tree(t, s) {
     if (t == null) 
         return null;
@@ -1059,9 +1066,16 @@ Crafty.c('JudgementPuzzlePiece', {
                 var meta_var_info = meta_var_infos[i];
                 var n = meta_var_info.t.n;
                 if (!(n in s)) continue;
+                if (has_meta_var(s[n])) { 
+                    // don't animate meta-vars that map to other meta-vars
+                    meta_var_info.t.copy_from(s[n]);
+                    continue;
+                }
                 if (!(n in mv_by_name)) { mv_by_name[n] = [] };
                 mv_by_name[n].push(meta_var_info);
             };
+            // redraw so that meta-var to meta-var mapping become visible right away
+            Game.redraw_all(); 
             for (n in mv_by_name) {
                 mv_by_name[n].sort(function(a,b) { return b.y - a.y });
             }
@@ -1356,7 +1370,6 @@ Game = {
     // Initialize and start our game
     start: function() {
                
-
         // Start crafty and set a background color so that we can see it's working
         ColorManager.init();
         MetaVarManager.init();
