@@ -1617,10 +1617,10 @@ Game = {
 
             //"Page 1"
             var first_double_click = {
-              condition: Game.double_click_shape_condition({puzzle_id: 5, piece: Game.piece(0), shape_id: 0}),
+              condition: {name: "DoubleClickShape", matches: function(other){this.shape_id = other.shape_id;  return other.name == this.name}},
               result: function(){
                 Game.clear_callouts()
-                Game.shape_sprite_callout(0,2, down_arrow);
+                Game.shape_sprite_callout(0,this.condition.shape_id == 2 ? 0 : 2, down_arrow);
                 Game.piece_text_callout(0, text_above_arrows)
               }
             }
@@ -1628,11 +1628,11 @@ Game = {
             Game.callout_transitions.push(first_double_click);
 
             var second_double_click = {
-              condition: Game.double_click_shape_condition({puzzle_id: 5, piece: Game.piece(0), shape_id: 2}),
+              condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}}, 
+              predecessors: [first_double_click],
               result: function(){
                 Game.clear_callouts()
-                Game.shape_sprite_callout(0,0, down_arrow);
-                Game.piece_text_callout(0, text_above_arrows)
+                Game.piece_text_callout(0, text_above_arrows2)
               }
             }
                
