@@ -287,6 +287,12 @@
       function nextTest()
       {
 	current_test++
+        if(current_test >= tests.length)
+        {
+          $("#main_content").html("Great!  Thanks for playing!  That's all for now!") 
+          return 
+        }
+
         showTest(current_test)
         $("#test_number").html(current_test + 1)
         $("#last_input").html("")
