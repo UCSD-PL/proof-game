@@ -1,0 +1,439 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="assets/jquery-ui-1.10.4.custom.css">
+
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="assets/jquery-ui-1.10.4.custom.js"></script>
+
+    <style>
+     #feedback{
+       font-size: 20pt;
+       font-family: Helvetica; 
+     }
+     #last_input{
+       font-size: 20pt;
+       font-family: Helvetica; 
+     }
+     .level{
+       font-size: 20pt;
+       font-family: Helvetica;
+     }
+     #title_graphic{
+       margin-bottom: 100px;
+     }
+     #main_content{
+       width: 900px;
+       margin-left: auto;
+       margin-right: auto;
+       text-align: center;
+       position: relative;
+     }
+     #box_description{
+       font-size: 20pt;
+       font-family: Helvetica;
+       width: 400px;
+       margin-left: 370px;
+       margin-top: 0px;
+       text-align: left;
+     }
+     #input_button{
+       position: absolute;
+       top: 200px;
+       left: 0px;
+       color: white;
+       font-size: 30pt;
+     }
+     #output_button{
+       position: absolute;
+       top: 350px;
+       left: 600px;
+       color: white;
+       font-size: 30pt;
+     }
+     #input_cart{
+       position: absolute;
+       width: 50px;
+       height: 50px;
+       top: 300px;
+       left: 0px;
+       color: black;
+       font-size: 30pt;
+       z-index: -1;
+       visibility: none;
+     }
+     #output_cart{
+       position: absolute;
+       width: 50px;
+       height: 50px;
+       color: black;
+       top: 400px;
+       left: 500px;
+       font-size: 30pt;
+       z-index: -1;
+       visibility: none;
+     }
+    </style>
+
+
+  </head>
+  <body>
+    <div id="main_content">
+      <img class="pulse" id="input_button" src="assets/InputArrow.png"></img>
+      <div id="input_cart"></div>
+      <img class="pulse" id="output_button" src="assets/OutputArrow.png"></img>
+      <div id="output_cart"></div>
+      <img id="title_graphic" src="assets/MagicBoxTitle.png"></img>
+      <div class="level">Level <span id="test_number">1</span></div>
+      <br/>
+      <div id="feedback">&nbsp;</div>
+      <img src="assets/BoxGraphic.png"></img>
+      <p id="last_input"></p>
+      <p id="box_description">This Magic Box... <span id="desc"></span>.</p> 
+    </div>
+
+    <div style="display:none; color:black;" id="input-dialog-modal" title="Enter a number">
+      <p>Please enter number that goes in the box:</p>
+      <input id="input_input" type="text"></input>
+      <button id="input_entered">Done</button>
+    </div>
+
+    <div style="display:none; color:black;" id="output-dialog-modal" title="Enter a number">
+      <p>Please enter a number that comes out of the box:</p>
+      <input id="output_input" type="text"></input>
+      <button id="output_entered">Done</button>
+    </div>
+
+    <div style="display:none; color:black;" id="new-rules-dialog-modal" title="Rules">
+      <p>Now, we want you to make a magic box level for someone else to play.  Read the description of what the magic box does.  Then give some inputs and an output for the magic box.  The next player will have to guess the output after being shown the input.</p>
+    </div>
+ 
+ 
+
+    <script>
+
+      function IO_pair(inputs, output)
+      {
+         this.inputs = inputs
+         this.output = output
+      }
+
+     function Test(description, pairs, type)
+     {
+         this.type = type
+         this.description = description
+         this.pairs = pairs 
+         this.current_pair = 0
+         this.done = false
+         this.both_entered = 0
+         this.nextPair = function(){
+           if(this.current_pair == this.pairs.length - 1)
+              this.done = true
+           this.current_pair = (this.current_pair + 1) % this.pairs.length
+           return this.pairs[this.current_pair] 
+         }
+         this.currentPair = function(){
+           return this.pairs[this.current_pair] 
+         }
+     }
+
+     var to_a2 = new Test("Takes a number and puts it into an array twice",
+                         [new IO_pair([1],[1,1]),
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var length_as_string = new Test("Takes an array and returns its length as a string",
+                         [new IO_pair([[1,2,3]],"3"),
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var add2 = new Test("Takes two numbers and adds them up",
+                         [new IO_pair([1,2],3),
+                          new IO_pair([10,25],35)
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var l1 = new Test("Takes a list of numbers and adds them up",
+                         [new IO_pair([[1,2]],3),
+			  new IO_pair([[4,5]],9),
+			  new IO_pair([[7,2]],9),
+			  new IO_pair([[21,55]],76),
+			  new IO_pair([[100,101]],201)
+                         ]
+                         ,"OUTPUT"
+                        )
+    
+
+     var greater_than = new Test("Takes three numbers and says whether the first two added together are more than the last one (1 if bigger 2 if smaller)",
+                         [new IO_pair([3,1,2],1),
+			  new IO_pair([4,5,2],1),
+			  new IO_pair([7,2,7],1),
+			  new IO_pair([21,0,21],2),
+			  new IO_pair([7,2,9],2),
+			  new IO_pair([7,3,9],1),
+			  new IO_pair([10,15,50],2)
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var zero = new Test("Returns 0 regardless of input",
+                         [new IO_pair([],0),
+			  new IO_pair([1],0),
+			  new IO_pair([1,2,3],0),
+			  new IO_pair([13,2],0)
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var gt_105 = new Test("Gives a 1 if a is bigger than 105, and 0 otherwise.",
+                         [new IO_pair([105],0),
+			  new IO_pair([45],0),
+			  new IO_pair([1001],1),
+			  new IO_pair([13,100],0),
+			  new IO_pair([400,13,100],1)
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var sub5 = new Test("Subtracts 5",
+                         [new IO_pair([5],0),
+                          new IO_pair([50],45),
+                          new IO_pair([6],1),
+                          new IO_pair([3],-2)
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var even = new Test("Says whether the number is even (0 if odd, 1 if not)",
+                         [new IO_pair([2],1),
+                          new IO_pair([5],0),
+                          new IO_pair([10010],1),
+                          new IO_pair([10012],1)
+                         ]
+                         ,"OUTPUT"
+                        )
+
+     var both = new Test("Takes three numbers and adds them",
+			 []
+                         ,"BOTH"
+                        )
+
+      var tests = [add2, zero, sub5, even, greater_than, both ] //l1, gt_105, length_as_string, to_a2]
+      var current_test = 0
+
+      var last_result = "RIGHT"
+
+      $(document).ready(function(){
+
+	output_button = $("#output_button").remove();
+        input_button = $("#input_button").remove();
+
+        $("#input_entered").click(doInput);
+
+        showTest(current_test) 
+
+        if(currentTest().type == "BOTH")
+          setMode("BOTH")
+        else
+          setMode("INPUT")
+
+
+	setInterval(pulse, 2000)
+
+        $("#output_entered").click(function(){
+           $("#last_input").html("");
+           doOutput()
+        });
+      })  
+
+      function setupButtons()
+      {
+        $("#input_button").click(beginTest);
+
+        $("#output_button").click(function(){
+	   $("#output-dialog-modal").dialog()
+        });
+
+      }
+    
+      function setMode(m)
+      {
+	$("#output_button").remove();
+        $("#input_button").remove();
+
+        if(m == "INPUT")
+          $("#main_content").append(input_button);
+        else if (m == "OUTPUT")
+          $("#main_content").append(output_button)  
+        else if (m == "BOTH")
+        {
+          $("#main_content").append(output_button)  
+          $("#main_content").append(input_button);
+          if(currentTest().both_entered == 0)
+            $("#new-rules-dialog-modal").dialog()
+        }
+
+        setupButtons()
+      }
+
+      function showTest(i)
+      {
+        var test = tests[i]
+        $("#desc").html(test.description)
+      }
+
+      function nextTest()
+      {
+	current_test++
+        if(current_test >= tests.length)
+        {
+          $("#main_content").html("Great!  Thanks for playing!  That's all for now!") 
+          return 
+        }
+
+        showTest(current_test)
+        $("#test_number").html(current_test + 1)
+        $("#last_input").html("")
+        if(currentTest().type == "BOTH")
+          setMode("BOTH")
+      }
+
+      function beginTest(){
+        $("#output_cart").css({top: "450px", left: "500px"});
+
+        var pair = undefined
+        if(last_result == "WRONG")
+          pair = currentTest().currentPair();
+        else
+        {
+          pair = currentTest().nextPair();
+        }
+       
+        if(currentTest().type == "OUTPUT")
+        {
+            showInputs(pair.inputs,0, function(){
+	       setMode("OUTPUT")
+	    });
+        } else {
+          $("#input-dialog-modal").dialog()
+        }
+      }
+
+      function currentTest(){
+        return tests[current_test]
+      }
+
+      function doInput(){
+        var input = $("#input_input").val() 
+        showInput(input)
+      }
+
+      function showInput(input){
+        $("#input_cart").html(input);
+        $("#input_cart").show(function(){
+           $("#input_cart").animate({left: "400px", top: "470px"}, 1000, function(){
+             $("#input_cart").css({left: "0px", top: "300px"})
+	     $("#input_cart").hide()
+           });
+        });
+        $("#input-dialog-modal").dialog("close")
+      }
+
+      function showInputs(inputs, i, callback)
+      {
+        if(i >= inputs.length)
+        {
+          callback();
+          return;
+        }
+
+        var input = JSON.stringify(inputs[i])
+        $("#input_cart").html(input);
+        $("#last_input").append("What went in... " + input + "<br/>");
+        $("#input_cart").show(function(){
+           $("#input_cart").animate({left: "400px", top: "470px"}, 1000, function(){
+	     $("#input_cart").hide()
+             $("#input_cart").css({left: "0px", top: "300px"})
+             showInputs(inputs, i+1, callback)
+           });
+        });
+      }
+
+      function doOutput(){
+        var output = $("#output_input").val() 
+        $("#output-dialog-modal").dialog("close")
+
+        if(currentTest().type != "BOTH")
+        {
+
+		if(JSON.stringify(JSON.parse(output)) == JSON.stringify(currentTest().currentPair().output))
+		{
+		  last_result = "RIGHT"
+		  $("#feedback").html("Right!")
+		  $("#feedback").css({opacity: 1});
+		  $("#feedback").animate({opacity: 0}, 1000);
+
+		  if(currentTest().done)
+		  {
+		    nextTest()
+		  }
+
+		}
+		else
+		{
+		  last_result = "WRONG"
+		  $("#feedback").html("Try again!")
+		  $("#feedback").css({opacity: 1});
+		  $("#feedback").animate({opacity: 0}, 1000);
+		  setMode("INPUT")
+		  return
+		}
+
+        } else {
+                currentTest().both_entered++
+                if(currentTest().both_entered >= 3)
+                {
+		  $("#feedback").html("All done!  Next level...")
+		  $("#feedback").css({opacity: 1});
+		  $("#feedback").animate({opacity: 0}, 1000);
+                  nextTest()
+                } else { 
+		  $("#feedback").html("Great!  Do another.")
+		  $("#feedback").css({opacity: 1});
+		  $("#feedback").animate({opacity: 0}, 1000);
+                }
+        }
+
+        showOutput(output, function(){
+          $("#output_cart").css({top: "450px", left: "500px"});
+          if(currentTest().type == "OUTPUT")
+            setMode("INPUT")
+          else
+          {
+            setMode("BOTH")
+          }
+        })
+      }
+
+      function showOutput(output, callback){
+        $("#output_cart").css({top: "450px", left: "500px"});
+        $("#output_cart").html(output);
+        $("#output_cart").show(function(){
+           $("#output_cart").animate({left: "800px"}, 1000, function(){
+             callback()
+           });
+        });
+        $("#output-dialog-modal").dialog("close")
+      }
+ 
+      function pulse(){
+	$(".pulse").fadeOut(1000, function(){
+	   $(".pulse").fadeIn(1000, function(){
+	   })
+	})
+      }
+    </script>
+  </body>
+</html>
