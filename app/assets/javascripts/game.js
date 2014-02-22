@@ -1375,16 +1375,18 @@ Game = {
         Game.add_puzzle("a,b,c |- b", []); // 4
         Game.add_puzzle("a,b,c |- c", []); // 5
         Game.add_puzzle("and(a,c), imp(a,b), c |- imp(a, b)", []); // 6
-        Game.add_puzzle("and(b,imp(a,c)), imp(a,a), and(c,a) |- and(b, imp(a,c))", []); // 6
-        Game.add_puzzle("imp(a,a) |- imp(a, a)", []); // 6
-        Game.add_puzzle("|- imp(a, a)", ["imp-intro"]); // 7
-        Game.add_puzzle("b |- imp(a, b)", ["imp-intro", "add-context"]); // 8
-        Game.add_puzzle("a,b |- and(a, b)", ["and-intro", "add-context"]); // 9
-        Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 10
-        Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 11
-        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 12
-        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 13
-        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 14
+        Game.add_puzzle("and(b,imp(a,c)), imp(a,a), and(c,a) |- and(b, imp(a,c))", []); // 7
+        Game.add_puzzle("imp(a,a) |- imp(a, a)", []); // 8
+        Game.add_puzzle("|- imp(a, a)", ["imp-intro"]); // 9
+        Game.add_puzzle("b |- imp(a, b)", ["imp-intro", "add-context"]); // 10
+        Game.add_puzzle("a,b |- and(a, b)", ["and-intro", "add-context"]); // 11
+        Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 12
+        Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 13
+        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 14
+        Game.add_puzzle("a |- and(a, a)", []); // 15
+        Game.add_puzzle("a |- and(and(a, a),a)", []); // 16
+        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 17
+        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 18
         //Game.add_puzzle("", []); // 12
         //Game.add_puzzle("a |- and(a, a)", ["and-intro", "add-context"]); // 7
         //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
@@ -1461,7 +1463,7 @@ Game = {
           result: function(){
 
             var text_above_arrows = {
-              message: "A Puzzle game.<br>Yellow Shape, Pink Shape.<br> Double click to match.",
+              message: "Solve the puzzle.<br>Match a Yellow Shape with a Pink one.<br> Double click to match.",
               y_offset: -310,
               x_offset: 50
             }
@@ -1540,7 +1542,7 @@ Game = {
           result: function(){
             Game.clear_callouts()
             var text_above_arrows = {
-              message: "Find me a yellow shape...",
+              message: "Find the matching yellow shape...",
               y_offset: -210,
               x_offset: 50
             }
@@ -1884,7 +1886,7 @@ Game = {
             Game.clear_callouts();
 
             var text_above_arrows = {
-              message: "Again, a special piece.",
+              message: "Again, need a special piece.",
               y_offset: -210,
               x_offset: 50
             }
@@ -2368,10 +2370,10 @@ Game = {
             setTimeout(function(){
                 var display_number = Game.current_puzzle + 1;
                 if (Game.current_puzzle < Game.puzzles.length-1) {
-                    alert("Puzzle " + display_number + " Solved!!!\n On to the next puzzle!");
+                    alert("Yay, you solved puzzle " + display_number + "!\nOn to the next one!");
                     Game.next_puzzle();
                 } else {
-                    alert("Puzzle " + display_number + " Solved!!!\n Congrats, you solved all the puzzles!");
+                    alert("Yay, you solved puzzle " + display_number + "!\nCongrats, you solved all the puzzles!");
                     Game.clear();
                 }
             }, 250);
