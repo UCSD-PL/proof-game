@@ -13,10 +13,12 @@ Globals = {
                    empty: "sqcap",
                    imp: "cup", 
                    and: "vee"},
-    LeftColor: "rgb(255,255,200)",
-    LeftColorSelected: "rgb(130,130,130)",
-    RightColor: "rgb(255,230,255)",
-    RightColorSelected: "rgb(130,130,130)",
+    LeftFillColor: "rgb(255,255,200)",
+    LeftFillColorSelected: "rgb(130,130,130)",
+    RightFillColor: "rgb(255,230,255)",
+    RightFillColorSelected: "rgb(130,130,130)",
+    FillColorGreyedOut: "rgb(255,255,255)",
+    StrokeColorGreyedOut: "rgb(200,200,200)",
     FormulaWidth: 200,
     JudgementHeight: 50,
     XSpaceBetweenJudgements: 20,
@@ -179,7 +181,7 @@ Judgement.prototype.get_right_width = function () {
     return Globals.FormulaWidth;
 }
 
-Judgement.prototype.draw_on_top = function(t, x, y, selected) {
+Judgement.prototype.draw_on_top = function(t, x, y, selected, greyed_out) {
     var c = t.c;
     var left = this.left;
     var right = this.right;
@@ -194,9 +196,12 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected) {
 
     c.lineWidth = 2;
     c.strokeStyle = "rgb(0,0,0)";
+    if (greyed_out) c.strokeStyle = Globals.StrokeColorGreyedOut;
 
     // left
-    c.fillStyle = selected ? Globals.LeftColorSelected : Globals.LeftColor;
+    c.fillStyle = Globals.LeftFillColor;
+    if (selected) c.fillStyle = Globals.LeftFillColorSelected;
+    if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
     c.beginPath();
     t.move_to(x, y);
     for (var i = 0; i < left.length; i++) {
@@ -213,7 +218,9 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected) {
     c.stroke();
 
     // right
-    c.fillStyle = selected ? Globals.RightColorSelected : Globals.RightColor;
+    c.fillStyle = Globals.RightFillColor;
+    if (selected) c.fillStyle = Globals.RightFillColorSelected;
+    if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
     c.beginPath();
     t.move_to(x + left_w, y);
     right.draw(t, right_w, true);
@@ -249,7 +256,7 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected) {
     }
 }
 
-Judgement.prototype.draw_on_bottom = function(t, x, y, selected) {
+Judgement.prototype.draw_on_bottom = function(t, x, y, selected, greyed_out) {
     var c = t.c;
     var left = this.left;
     var right = this.right;
@@ -264,9 +271,12 @@ Judgement.prototype.draw_on_bottom = function(t, x, y, selected) {
 
     c.lineWidth = 2;
     c.strokeStyle = "rgb(0,0,0)";
+    if (greyed_out) c.strokeStyle = Globals.StrokeColorGreyedOut;
 
     // left
-    c.fillStyle = selected ? Globals.LeftColorSelected : Globals.LeftColor;
+    c.fillStyle = Globals.LeftFillColor;
+    if (selected) c.fillStyle = Globals.LeftFillColorSelected;
+    if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
     c.beginPath();
     t.move_to(x, y);
     t.down(h);
@@ -283,7 +293,9 @@ Judgement.prototype.draw_on_bottom = function(t, x, y, selected) {
     c.stroke();
 
     // right
-    c.fillStyle = selected ? Globals.RightColorSelected : Globals.RightColor;
+    c.fillStyle = Globals.RightFillColor;
+    if (selected) c.fillStyle = Globals.RightFillColorSelected;
+    if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
     c.beginPath();
     t.move_to(x + left_w, y);
     t.down(h);
@@ -536,6 +548,7 @@ function add_live_vars(t, live_vars) {
 
 function Turtle(c) {
     this.c = c;
+   // c.setLineDash([1,3]);
     this.x = 0;
     this.y = 0;
 }
@@ -672,6 +685,7 @@ Crafty.c('JudgementPuzzlePiece', {
         this.inference_rule = null;
         this.connected = null;
         this.selected = false;
+        this.greyed_out = false;
         this.on_top = true;
 
         var self = this;
@@ -858,6 +872,7 @@ Crafty.c('JudgementPuzzlePiece', {
                             .attr({x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2), y: self.y-10, w: cube_w, h: cube_h})
                             .color("red");
                         Game.double_clicked_piece = {piece:self, i:i, marker: marker};
+                        Game.foreach_piece(function(p) { if (p != self) p.set_greyed_out(true) });
                         Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i})
                     } else {
                         if (Game.double_clicked_piece.piece == self) {
@@ -881,6 +896,7 @@ Crafty.c('JudgementPuzzlePiece', {
 
                             }
                         }
+                        Game.foreach_piece(function(p) { p.set_greyed_out(false) });
                         Game.double_clicked_piece.marker.destroy();
                         Game.double_clicked_piece = null;
                     }
@@ -905,9 +921,9 @@ Crafty.c('JudgementPuzzlePiece', {
         
         t = new Turtle(c);
         if (this.on_top) {
-            this.judgement.draw_on_top(t, x, y+Globals.YTopBufferSpace, this.selected);
+            this.judgement.draw_on_top(t, x, y+Globals.YTopBufferSpace, this.selected, this.greyed_out);
         } else {
-            this.judgement.draw_on_bottom(t, x, y, this.selected);
+            this.judgement.draw_on_bottom(t, x, y, this.selected, this.greyed_out);
         }
     },
 
@@ -944,6 +960,13 @@ Crafty.c('JudgementPuzzlePiece', {
     set_selected: function(s) {
         if (this.selected != s) {
             this.selected = s;
+            this.trigger("Change");
+        }
+    },
+
+    set_greyed_out: function(g) {
+        if (this.greyed_out != g) {
+            this.greyed_out = g;
             this.trigger("Change");
         }
     },
@@ -1269,8 +1292,9 @@ function build_judgement_piece(s) {
 }
 
 function build_inference_rule_piece(top, bottom, x, y) {
-    var r = new InferenceRule(top.map(function (s) { return build_judgement_piece(s) }), 
-                              build_judgement_piece(bottom));
+    var bottom_judgement = build_judgement_piece(bottom);
+    var top_judgements = top.map(function (s) { return build_judgement_piece(s) });
+    var r = new InferenceRule(top_judgements, bottom_judgement);
     r.make_fresh()
     r.place(x, y);
     return r;
