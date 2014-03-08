@@ -9,16 +9,17 @@ Globals = {
 
     VarToShape : { a: "wedge", 
                    b: "tee",
-                   c: "sqcap", 
-                   empty: "sqcap",
+                   c: "left_l", 
                    imp: "cup", 
                    and: "vee"},
+    VarToLogicRep : { imp: "\u2192", 
+                      and: "\u2227"},
     LeftFillColor: "rgb(255,255,200)",
     LeftFillColorSelected: "rgb(130,130,130)",
     RightFillColor: "rgb(255,230,255)",
     RightFillColorSelected: "rgb(130,130,130)",
     FillColorGreyedOut: "rgb(255,255,255)",
-    StrokeColorGreyedOut: "rgb(200,200,200)",
+    StrokeColorGreyedOut: "rgb(230,230,230)",
     FormulaWidth: 200,
     JudgementHeight: 50,
     XSpaceBetweenJudgements: 20,
@@ -181,18 +182,18 @@ Judgement.prototype.get_right_width = function () {
     return Globals.FormulaWidth;
 }
 
-Judgement.prototype.draw_on_top = function(t, x, y, selected, greyed_out) {
+Judgement.prototype.draw = function(t, x, y, on_top, selected, greyed_out) {
     var c = t.c;
     var left = this.left;
     var right = this.right;
     var left_w = this.get_left_width();
     var right_w = this.get_right_width();
     var h = Globals.JudgementHeight;
-    // var right_w = w / (left.length + 1);
-    // var left_w = w - right_w;
 
     t.judgement = this;
     this.clear_meta_var_infos();
+    this.clear_spinner_infos();
+    this.clear_logic_infos();
 
     c.lineWidth = 2;
     c.strokeStyle = "rgb(0,0,0)";
@@ -204,16 +205,22 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected, greyed_out) {
     if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
     c.beginPath();
     t.move_to(x, y);
+    if (!on_top)
+        t.down(h)
     for (var i = 0; i < left.length; i++) {
         var item_width = left_w / left.length;
         if (i == 0) {
             item_width = left_w - (item_width * (left.length-1));
         }
-        left[i].draw(t, item_width, true);
+        left[i].draw(t, item_width, on_top);
     }
-    t.down(h);
+    if (on_top)
+        t.down(h);
+    else
+        t.up(h);
     t.line_to_x(x);
-    t.up(h);
+    if (on_top)
+        t.up(h);
     c.fill()
     c.stroke();
 
@@ -223,10 +230,16 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected, greyed_out) {
     if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
     c.beginPath();
     t.move_to(x + left_w, y);
-    right.draw(t, right_w, true);
-    t.down(h);
+    if (!on_top)
+        t.down(h);
+    right.draw(t, right_w, on_top);
+    if (on_top)
+        t.down(h);
+    else
+        t.up(h);
     t.line_to_x(x + left_w);
-    t.up(h);
+    if (on_top)
+        t.up(h);
     c.fill()
     c.stroke();
 
@@ -235,6 +248,7 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected, greyed_out) {
         var c = t.c;
         c.lineWidth = 5;
         c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_info.t.n);
+        if (greyed_out) c.strokeStyle = Globals.StrokeColorGreyedOut;
         c.beginPath();
         t.move_to(meta_var_info.x, meta_var_info.y);
 
@@ -251,84 +265,54 @@ Judgement.prototype.draw_on_top = function(t, x, y, selected, greyed_out) {
 
         // c.fillStyle = grd;
         // c.fillRect(meta_var_info.x,meta_var_info.y,meta_var_info.w,-height);
-
-
     }
-}
 
-Judgement.prototype.draw_on_bottom = function(t, x, y, selected, greyed_out) {
-    var c = t.c;
-    var left = this.left;
-    var right = this.right;
-    var left_w = this.get_left_width();
-    var right_w = this.get_right_width();
-    var h = Globals.JudgementHeight;
-    // var right_w = w / (left.length + 1)
-    // var left_w = w - right_w;
-
-    t.judgement = this;
-    this.clear_meta_var_infos();
-
-    c.lineWidth = 2;
-    c.strokeStyle = "rgb(0,0,0)";
-    if (greyed_out) c.strokeStyle = Globals.StrokeColorGreyedOut;
-
-    // left
-    c.fillStyle = Globals.LeftFillColor;
-    if (selected) c.fillStyle = Globals.LeftFillColorSelected;
-    if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
-    c.beginPath();
-    t.move_to(x, y);
-    t.down(h);
-    for (var i = 0; i < left.length; i++) {
-        var item_width = left_w / left.length;
-        if (i == 0) {
-            item_width = left_w - (item_width * (left.length-1));
-        }
-        left[i].draw(t, item_width, false);
-    }
-    t.up(h);
-    t.line_to_x(x);
-    c.fill()
-    c.stroke();
-
-    // right
-    c.fillStyle = Globals.RightFillColor;
-    if (selected) c.fillStyle = Globals.RightFillColorSelected;
-    if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
-    c.beginPath();
-    t.move_to(x + left_w, y);
-    t.down(h);
-    right.draw(t, right_w, false);
-    t.up(h);
-    t.line_to_x(x + left_w);
-    c.fill()
-    c.stroke();
-
-    for (var i = 0; i < this.meta_var_infos.length; i++) {
-        var meta_var_info = this.meta_var_infos[i];
+    for (var i = 0; i < this.spinner_infos.length; i++) {
+        var spinner_info = this.spinner_infos[i];
         var c = t.c;
         c.lineWidth = 5;
-        c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_info.t.n);
+        c.strokeStyle = MetaVarManager.get_meta_var_color(spinner_info.n);
         c.beginPath();
-        t.move_to(meta_var_info.x, meta_var_info.y);
-
-        var height = 20;
-        t.up(height);
-        t.right(meta_var_info.w);
-        t.down(height);
-
-
+        t.move_to(spinner_info.x, spinner_info.y);
+        spinner_info.tree.draw(t, spinner_info.w, false);
         c.stroke();
-
-        // var grd=Game.effects_canvas.createLinearGradient(meta_var_info.x,meta_var_info.y,meta_var_info.x,meta_var_info.y-height);
-        // grd.addColorStop(0,make_transparent(MetaVarManager.get_meta_var_color(meta_var_info.t.n), .5))
-        // grd.addColorStop(1,MetaVarManager.get_meta_var_color(meta_var_info.t.n))
-
-        // Game.effects_canvas.fillStyle = grd;
-        // Game.effects_canvas.fillRect(meta_var_info.x,meta_var_info.y,meta_var_info.w,-height);
     }
-
+    if (Game.show_logic) {
+        var set_font_size_to_match_width = function (ctx, font, str, width) {
+            var size = 1;
+            while (true) {
+                if (size > 60)
+                    return 60
+                c.font = size + "px " + font;
+                if (c.measureText(str).width > width) {
+                    c.font = (size-1) + "px " + font;
+                    return (size - 1);
+                }
+                size = size + 1
+            }
+        }
+        for (var i = 0; i < this.logic_infos.length; i++) {
+            var logic_info = this.logic_infos[i];
+            var c = t.c;
+            c.fillStyle = "rgb(0, 0, 0)";
+            var str = logic_info.n;
+            if (str in Globals.VarToLogicRep)
+                str = Globals.VarToLogicRep[str];
+            var width = logic_info.w;
+            if (logic_info.n == "imp") 
+                width = 1.6 * width;
+            var font_size = set_font_size_to_match_width(c, "Arial", str, width)
+            var text_width = c.measureText(str).width;
+            var text_height = font_size / 2;
+            c.fillText(str, logic_info.x+(logic_info.w-text_width)/2, logic_info.y + (text_height/2)); 
+        } 
+        c.lineWidth = 3;
+        c.strokeStyle = "rgb(0,0,0)";
+        c.beginPath();
+        t.move_to(x,on_top ? y + h : y);
+        t.right(this.get_width());
+        c.stroke();
+    }
 }
 
 Judgement.prototype.clear_meta_var_infos = function () {
@@ -337,6 +321,22 @@ Judgement.prototype.clear_meta_var_infos = function () {
 
 Judgement.prototype.add_meta_var_info = function (t, x, y, w, orig_x, orig_y, full_w) {
     this.meta_var_infos.push({t: t, x: x, y: y, w: w, orig_x: orig_x, orig_y: orig_y, full_w: full_w });
+}
+
+Judgement.prototype.clear_spinner_infos = function () {
+    this.spinner_infos = [];
+}
+
+Judgement.prototype.add_spinner_info = function (n, tree, x, y, w) {
+    this.spinner_infos.push({n: n, tree: tree, x: x, y: y, w: w });
+}
+
+Judgement.prototype.clear_logic_infos = function () {
+    this.logic_infos = [];
+}
+
+Judgement.prototype.add_logic_info = function (n, x, y, w) {
+    this.logic_infos.push({n: n, x: x, y: y, w: w });
 }
 
 Judgement.prototype.make_fresh = function() {
@@ -405,6 +405,12 @@ Tree.prototype.toString = function() {
 
 Tree.prototype.draw = function(t, w, on_top) {
     if (this.left == null && this.right == null) {
+        if (this.is_meta_var() && this.n in Game.spinner.subst) {
+            var new_tree = Game.spinner.subst[this.n];
+            t.judgement.add_spinner_info(this.n, new_tree, t.x, t.y, w);
+            new_tree.draw(t, w, on_top);
+            return
+        }
         var orig_x = t.x;
         var orig_y = t.y;
         var token_width = this.is_meta_var() ? w * 0.80 : w * .60;
@@ -415,6 +421,14 @@ Tree.prototype.draw = function(t, w, on_top) {
         var space1 = space_width;
         var space2 = w - token_width - space1;
         t.right(space1);
+        if (t.judgement) {
+            if (this.is_meta_var()) {
+                var color = MetaVarManager.get_meta_var_color(this.n)
+                t.judgement.add_logic_info(ColorManager.get_logic_rep(color), t.x, t.y, token_width);
+            }
+            else
+                t.judgement.add_logic_info(this.n, t.x, t.y, token_width);
+        }
         if (this.is_meta_var() && t.judgement) {
             t.judgement.add_meta_var_info(this, t.x, t.y, token_width, orig_x, orig_y, w);
             t.flatsqcap(token_width);
@@ -432,6 +446,8 @@ Tree.prototype.draw = function(t, w, on_top) {
         t.right(space1);
         t.up(space_width/2);
         this.left.draw(t, sub_expr_space, on_top);
+        if (t.judgement)
+            t.judgement.add_logic_info(this.n, t.x, t.y, bin_op_width);
         t[Globals.VarToShape[this.n]](bin_op_width);
         this.right.draw(t, sub_expr_space, on_top);
         t.down(space_width/2);
@@ -508,6 +524,27 @@ function add_live_vars(t, live_vars) {
     add_live_vars(t.left, live_vars);
     add_live_vars(t.right, live_vars);
 }
+
+function add_closed_sub_exprs(t, closed_sub_exprs) {
+    if (t == null) return false;
+    if (t.is_meta_var()) return true;
+    var l = add_closed_sub_exprs(t.left, closed_sub_exprs);
+    var r = add_closed_sub_exprs(t.right, closed_sub_exprs);
+    if (l) return true;
+    if (r) return true;
+    closed_sub_exprs[t] = t
+    return false;
+}
+
+// function has_free_vars(t) {
+//     var vars = {}
+//     add_live_vars(t, vars);
+//     for (var p in vars) {
+//         return true
+//     }
+//     return false
+// }
+
 
 // sorin1 = BinExpr("imp", Var("A"), Var("B"));
 // sorin2 = {A: BinExpr("imp", Var("a"), Var("b")), B: Var("c")};
@@ -602,6 +639,16 @@ Turtle.prototype.wedge = function (w) {
     c.lineTo(endx, y);
     this.x = endx;
 }
+Turtle.prototype.hexagon = function (w) {
+    var c = this.c;
+    var x = this.x;
+    var y = this.y;
+    var endx = x + w;
+    c.lineTo(x+(w/4), y - (w*0.433));
+    c.lineTo(x+(3*w/4), y - (w*0.433));
+    c.lineTo(endx, y);
+    this.x = endx;
+}
 Turtle.prototype.vee = function (w) {
     var c = this.c;
     var x = this.x;
@@ -624,6 +671,8 @@ Turtle.prototype.tee = function (w) {
     var upper_r = x + (w/2) + (upper_w/2);
     var upper_h = w*0.75;
     var lower_h = w*0.40;
+    // c.font="30px Georgia";
+    // c.fillText("Hello World!&rarr;",x,y);
     c.lineTo(lower_l, y);
     c.lineTo(lower_l, y - lower_h);
     c.lineTo(upper_l, y - lower_h);
@@ -632,6 +681,24 @@ Turtle.prototype.tee = function (w) {
     c.lineTo(upper_r, y - lower_h);
     c.lineTo(lower_r, y - lower_h);
     c.lineTo(lower_r, y);
+    c.lineTo(endx, y);
+    this.x = endx;
+}
+Turtle.prototype.left_l = function (w) {
+    var c = this.c;
+    var x = this.x;
+    var y = this.y;
+    var endx = x + w;
+    var lower_w = w * 0.40;
+    var upper_w = w;
+    var upper_h = w*0.75;
+    var lower_h = w*0.40;
+
+    c.lineTo(x, y - upper_h);
+    c.lineTo(x + upper_w, y - upper_h);
+    c.lineTo(x + upper_w, y - lower_h);
+    c.lineTo(x + lower_w, y - lower_h);
+    c.lineTo(x + lower_w, y);
     c.lineTo(endx, y);
     this.x = endx;
 }
@@ -671,6 +738,71 @@ Turtle.prototype.move_to = function(x,y) {
 //     c.lineTo(x+w, y);
 // }
 
+Crafty.c('Spinner', {
+    init: function() {
+        this.requires("Keyboard");
+        this.curr_formula_idx = 0;
+        this.curr_meta_var_idx = 0;
+        this.subst = {};
+        this.focus = 0;
+        // this.bind("KeyDown", function(e) {
+        //     if (e.key == Crafty.keys.UP_ARROW) {
+        //         this.curr_formula_idx = this.curr_formula_idx+1;
+        //         this.subst[this.get_curr_meta_var()] = this.get_curr_formula();
+        //         Game.redraw_all();
+        //     }
+        //     else if (e.key == Crafty.keys.DOWN_ARROW) {
+        //         this.curr_formula_idx = this.curr_formula_idx-1;
+        //         this.subst[this.get_curr_meta_var()] = this.get_curr_formula();
+        //         Game.redraw_all();
+        //     }
+        //     else if (e.key == Crafty.keys.RIGHT_ARROW) {
+        //         this.curr_meta_var_idx = this.curr_meta_var_idx+1;
+        //     }
+        //     else if (e.key == Crafty.keys.LEFT_ARROW) {
+        //         this.curr_meta_var_idx = this.curr_meta_var_idx-1;
+        //     }
+
+        // })
+
+        // this.bind("EnterFrame", function() {
+        //     console.log("EnterFrame");
+        //     if (this.isDown("RIGHT_ARROW")) {
+        //          Crafty.e("2D, Canvas, Color")
+        //             .attr({x: this.x, y:100, w:1, h:10})
+        //             .color("red");
+        //         this.x = this.x+2;
+        //     }
+        // })
+    },
+
+    get_curr_meta_var: function() {
+        var all_vars = MetaVarManager.get_all_meta_vars();
+        while (this.curr_meta_var_idx < 0)
+            this.curr_meta_var_idx = this.curr_meta_var_idx + all_vars.length;
+        while (this.curr_meta_var_idx >= all_vars.length)
+            this.curr_meta_var_idx = this.curr_meta_var_idx - all_vars.length;
+        return all_vars[this.curr_meta_var_idx % all_vars.length]
+    },
+
+    get_curr_formula: function() {
+        var all_formulas_set = {}
+        Game.foreach_piece(function(p) {
+            var l = p.judgement.left.concat([p.judgement.right]);
+            for (var k = 0; k < l.length; k++) {
+                add_closed_sub_exprs(l[k], all_formulas_set)
+            }
+        })
+        var all_formulas = []
+        for (var f in all_formulas_set)
+            all_formulas.push(all_formulas_set[f])
+        while (this.curr_formula_idx < 0)
+            this.curr_formula_idx = this.curr_formula_idx + all_formulas.length;
+        while (this.curr_formula_idx >= all_formulas.length)
+            this.curr_formula_idx = this.curr_formula_idx - all_formulas.length;
+        return all_formulas[this.curr_formula_idx % all_formulas.length]
+    }
+})
 
 Crafty.c('JudgementPuzzlePiece', {
     ready: true,
@@ -687,6 +819,7 @@ Crafty.c('JudgementPuzzlePiece', {
         this.selected = false;
         this.greyed_out = false;
         this.on_top = true;
+        this.history = [];
 
         var self = this;
         this.bind("StartDrag", function(e) {
@@ -702,6 +835,7 @@ Crafty.c('JudgementPuzzlePiece', {
                 if (p.connected == null && p.on_top) 
                     self.open_on_top.push(p);
             });
+            Game.trigger_callout_transition({name: "StartDrag"});
         });
         this.bind("StopDrag", function(e) {
             var selected_bottom = null;
@@ -870,7 +1004,7 @@ Crafty.c('JudgementPuzzlePiece', {
                             Crafty.e("2D, Canvas, Color")
                             .attr({alpha: 0.2})
                             .attr({x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2), y: self.y-10, w: cube_w, h: cube_h})
-                            .color("red");
+                            .color("cyan");
                         Game.double_clicked_piece = {piece:self, i:i, marker: marker};
                         Game.foreach_piece(function(p) { if (p != self) p.set_greyed_out(true) });
                         Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i})
@@ -892,8 +1026,6 @@ Crafty.c('JudgementPuzzlePiece', {
                                     Game.remove_current_rule();
                                     Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"FailedMatch", piece: this, shape_id: i2})
                                 }
-
-
                             }
                         }
                         Game.foreach_piece(function(p) { p.set_greyed_out(false) });
@@ -904,7 +1036,7 @@ Crafty.c('JudgementPuzzlePiece', {
             };
         });
         this.bind("Draw", function(obj) {
-            Game.effects_canvas.clearRect(0,0,Crafty.viewport.width, Crafty.viewport.height);
+            //Game.effects_canvas.clearRect(0,0,Crafty.viewport.width, Crafty.viewport.height);
             this._draw(obj.ctx, obj.pos);
         });
 
@@ -921,9 +1053,11 @@ Crafty.c('JudgementPuzzlePiece', {
         
         t = new Turtle(c);
         if (this.on_top) {
-            this.judgement.draw_on_top(t, x, y+Globals.YTopBufferSpace, this.selected, this.greyed_out);
+            //this.judgement.draw_on_top(t, x, y+Globals.YTopBufferSpace, this.selected, this.greyed_out);
+            this.judgement.draw(t, x, y+Globals.YTopBufferSpace, this.on_top, this.selected, this.greyed_out);
         } else {
-            this.judgement.draw_on_bottom(t, x, y, this.selected, this.greyed_out);
+            //this.judgement.draw_on_bottom(t, x, y, this.selected, this.greyed_out);
+            this.judgement.draw(t, x, y, this.on_top, this.selected, this.greyed_out);
         }
     },
 
@@ -969,6 +1103,19 @@ Crafty.c('JudgementPuzzlePiece', {
             this.greyed_out = g;
             this.trigger("Change");
         }
+    },
+
+    push_state: function () {
+        var judgement = this.judgement;
+        var connected = this.connected;
+        this.history.push({j: judgement, c: connected})
+    },
+
+    pop_state: function () {
+        var state = this.history.pop();
+        this.judgement = state.j;
+        this.connected = state.c;
+        this.trigger("Change");
     },
 
     connected_move: function(dx, dy) {
@@ -1066,6 +1213,7 @@ Crafty.c('JudgementPuzzlePiece', {
         if (!this.superficial_match(other)) return false;
         s = this.judgement.unify(other.judgement);
         if (s === false) return false;
+        Game.push_history();
         this.connect_to(other);
 
         var self = this;
@@ -1144,6 +1292,7 @@ Crafty.c('JudgementPuzzlePiece', {
         if (!this.superficial_match(other)) return false;
         s = this.judgement.unify(other.judgement);
         if (s === false) return false;
+        Game.push_history();
         this.connect_to(other);
         if (this.inference_rule != null)
             this.inference_rule.apply(s)
@@ -1303,23 +1452,25 @@ function build_inference_rule_piece(top, bottom, x, y) {
 ColorManager = {
     init: function() {
         ColorManager.colors = {};
+        ColorManager.color_to_logic = {};
 
-        ColorManager.add_color("rgba(255,0,0,1)");
-        ColorManager.add_color("rgba(0,0,255,1)");
-        ColorManager.add_color("rgba(0,255,0,1)");
-        ColorManager.add_color("rgba(0,255,255,1)");
-        ColorManager.add_color("rgba(255,255,0,1)");
-        ColorManager.add_color("rgba(0,64,0,1)");
-        ColorManager.add_color("rgba(255,0,255,1)");
-        ColorManager.add_color("rgba(64,0,0,1)");
-        ColorManager.add_color("rgba(64,64,0,1)");
-        ColorManager.add_color("rgba(0,64,64,1)");
-        ColorManager.add_color("rgba(64,0,64,1)");
-        ColorManager.add_color("rgba(0,0,64,1)");
-        ColorManager.add_color("rgba(20,20,64,1)");
+        ColorManager.add_color("rgba(255,0,0,1)","A");
+        ColorManager.add_color("rgba(0,0,255,1)", "B");
+        ColorManager.add_color("rgba(0,255,0,1)", "C");
+        ColorManager.add_color("rgba(0,255,255,1)", "D");
+        ColorManager.add_color("rgba(255,255,0,1)", "E");
+        ColorManager.add_color("rgba(0,64,0,1)", "F");
+        ColorManager.add_color("rgba(255,0,255,1)", "G");
+        ColorManager.add_color("rgba(64,0,0,1)", "H");
+        ColorManager.add_color("rgba(64,64,0,1)", "I");
+        ColorManager.add_color("rgba(0,64,64,1)", "J");
+        ColorManager.add_color("rgba(64,0,64,1)", "K");
+        ColorManager.add_color("rgba(0,0,64,1)", "L");
+        ColorManager.add_color("rgba(20,20,64,1)", "M");
     },
-    add_color: function(color) {
+    add_color: function(color, logic) {
         ColorManager.colors[color] = false;
+        ColorManager.color_to_logic[color] = logic
     },
     release_color: function(color) {
         ColorManager.colors[color] = false;
@@ -1332,6 +1483,9 @@ ColorManager = {
             }
         }
         throw "Could not find color"
+    },
+    get_logic_rep: function(color) {
+        return ColorManager.color_to_logic[color];
     }
 }
 
@@ -1380,6 +1534,13 @@ MetaVarManager = {
                 delete MetaVarManager.vars[v];
             }
         }
+    },
+    get_all_meta_vars: function() {
+        var all_vars = [];
+        for (var v in MetaVarManager.vars) {
+            all_vars.push(v)
+        }
+        return all_vars;
     }
 }
 
@@ -1387,82 +1548,11 @@ MetaVarManager = {
 Game = {
     // Initialize and start our game
     start: function() {
-               
-        // Start crafty and set a background color so that we can see it's working
+             
         ColorManager.init();
         MetaVarManager.init();
         Game.current_rule = null;
-        Game.puzzles = [];
-        Game.add_puzzle("a,b |- a", []); // 1
-        Game.add_puzzle("a,b |- b", []); // 2
-        Game.add_puzzle("a,b,c |- a", []); // 3
-        Game.add_puzzle("a,b,c |- b", []); // 4
-        Game.add_puzzle("a,b,c |- c", []); // 5
-        Game.add_puzzle("and(a,c), imp(a,b), c |- imp(a, b)", []); // 6
-        Game.add_puzzle("and(b,imp(a,c)), imp(a,a), and(c,a) |- and(b, imp(a,c))", []); // 7
-        Game.add_puzzle("imp(a,a) |- imp(a, a)", []); // 8
-        Game.add_puzzle("|- imp(a, a)", ["imp-intro"]); // 9
-        Game.add_puzzle("b |- imp(a, b)", ["imp-intro", "add-context"]); // 10
-        Game.add_puzzle("a,b |- and(a, b)", ["and-intro", "add-context"]); // 11
-        Game.add_puzzle("and(a,b) |- a", ["and-elim-1", "add-context"]); // 12
-        Game.add_puzzle("and(a,b) |- b", ["and-elim-2", "add-context"]); // 13
-        Game.add_puzzle("|- imp(a, imp(b,a))", []); // 14
-        Game.add_puzzle("a |- and(a, a)", []); // 15
-        Game.add_puzzle("a |- and(and(a, a),a)", []); // 16
-        Game.add_puzzle("and(a,b) |- and(b,a)", []); // 17
-        Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", []); // 18
-        //Game.add_puzzle("", []); // 12
-        //Game.add_puzzle("a |- and(a, a)", ["and-intro", "add-context"]); // 7
-        //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
-
-
-        var current_puzzle = qs("puzzle_id");
-        if (current_puzzle == null)
-            current_puzzle = 0;
-        else {
-            current_puzzle = parseInt(current_puzzle) - 1;
-            if (current_puzzle < 0)
-                current_puzzle = 0;
-            if (current_puzzle > Game.puzzles.length-1)
-                current_puzzle = Game.puzzles.length-1;
-        }
-        Game.current_puzzle = current_puzzle;
-
-
-        Crafty.init(1300, 600);
-        Crafty.background('rgb(240,240,240)');
-        Game.show_current_puzzle();
-
-        Game.setup_tutorial();
-        Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
-
-        //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
-        //Game.mouseWheelDispatch({wheelDelta:-120});
-        //Game.mouseWheelDispatch({wheelDelta:-120});
-        
-
-        //Create a canvas for special effects.
-        var c = document.createElement("canvas");
-        c.width = Crafty.viewport.width;
-        c.height = Crafty.viewport.height;
-        c.style.position = 'absolute';
-
-        Crafty.stage.elem.appendChild(c);
-
-        ctx = c.getContext('2d');
-
-        Game.effects_canvas = ctx
-        Game.effects_image_data = Game.effects_canvas.getImageData(0,0,Crafty.viewport.width,Crafty.viewport.height);
-
-        //Crafty.e("AnimatedFormula").attr({x: 200, y: 200, w:200, h:100}).set_formula("and(a, b)").animate_to(300, 400, 100, 100);
-
-    },
-
-    callouts: [],
-
-    setup_tutorial: function(){
-
-        //Tutorial
+        Game.show_logic = false;
 
         Crafty.sprite("/assets/DownArrow.gif", {down_arrow:[0,0,128,128]});
         Crafty.sprite("/assets/UpArrow.gif", {up_arrow:[0,0,128,128]});
@@ -1481,606 +1571,687 @@ Game = {
           height: 128
         }
 
-        var i = 0;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
+        var text = function(s,x,y) {
+            return { message: s, x_offset: x, y_offset: y }
+        }
 
-            var text_above_arrows = {
-              message: "Solve the puzzle.<br>Match a Yellow Shape with a Pink one.<br> Double click to match.",
-              y_offset: -310,
-              x_offset: 50
-            }
+        Game.puzzles = [];
 
-            Game.shape_sprite_callout(0,0, down_arrow);
+        // Puzzle 1
+        Game.add_puzzle_with_tutorial("a,b |- a", [], function() {
             Game.shape_sprite_callout(0,2, down_arrow);
-            Game.piece_text_callout(0, text_above_arrows)
+            Game.piece_text_callout(0, text("For each pink shape,<br>find a matching yellow one.<br> Double click the pink shape.", 50, -310))
 
             var first_double_click = {
-              condition: Game.double_click_shape_condition({puzzle_id: 0, piece: Game.piece(0), shape_id: 0}),
-              result: function(){
-                Game.clear_callouts()
-                Game.shape_sprite_callout(0,2, down_arrow);
-                Game.shape_sprite_callout(0,0, down_arrow);
-                Game.piece_text_callout(0, text_above_arrows)
-              }
+                condition: Game.double_click_shape_condition({puzzle_id: 0, piece: Game.piece(0), shape_id: 2}),
+                result: function(){
+                    Game.clear_callouts();
+                    Game.shape_sprite_callout(0,0, down_arrow);
+                    Game.piece_text_callout(0, text("Double click the matching yellow shape.", 50, -310))
+                }
             }
             Game.callout_transitions.push(first_double_click);
-
-            var second_double_click = {
-              condition: Game.double_click_shape_condition({puzzle_id: 0, piece: Game.piece(0), shape_id: 2}),
-              result: function(){
-                Game.clear_callouts()
-                Game.shape_sprite_callout(0,2, down_arrow);
-                Game.shape_sprite_callout(0,0, down_arrow);
-                Game.piece_text_callout(0, text_above_arrows)
-              }
-            }
-            Game.callout_transitions.push(second_double_click);
-
-
-          }
         });
 
-        //Puzzle 2's tutorial
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "Repetition leads to perfection...",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.shape_sprite_callout(0,1, down_arrow);
-            Game.shape_sprite_callout(0,2, down_arrow);
-            Game.piece_text_callout(0, text_above_arrows)
+        // Puzzle 2
+        Game.add_puzzle_with_tutorial("a,b |- b", [], function() {
+            Game.clear_callouts();
+            Game.shape_sprite_callout(0, 2, down_arrow);
+            Game.piece_text_callout(0, text("Double click the pink shape.", 50, -210));
 
             Game.callout_transitions.push({
-              condition: Game.double_click_shape_condition({puzzle_id: 1, piece: Game.piece(0), shape_id: 1}),
-              result: function(){
-                Game.clear_callouts()
-                Game.shape_sprite_callout(0,2, down_arrow);
-                Game.shape_sprite_callout(0, 1, down_arrow);
-                Game.piece_text_callout(0, text_above_arrows)
-              }
+                condition: Game.double_click_shape_condition({puzzle_id: 1, piece: Game.piece(0), shape_id: 2}),
+                result: function(){
+                    Game.clear_callouts();
+                    Game.shape_sprite_callout(0, 1, down_arrow);
+                    Game.piece_text_callout(0, text("Double click the matching yellow shape.", 50, -210))
+                }
             });
-
-            Game.callout_transitions.push({
-              condition: Game.double_click_shape_condition({puzzle_id: 1, piece: Game.piece(0), shape_id: 2}),
-              result: function(){
-                Game.clear_callouts()
-                Game.shape_sprite_callout(0,2, down_arrow);
-                Game.shape_sprite_callout(0, 1, down_arrow);
-                Game.piece_text_callout(0, text_above_arrows)
-              }
-            });
-          }
         });
 
-        //Puzzle 3's tutorial
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "Find the matching yellow shape...",
-              y_offset: -210,
-              x_offset: 50
-            }
+        // Puzzle 3
+        Game.add_puzzle_with_tutorial("a,b,c |- a", [], function() {
+            Game.clear_callouts();
             Game.shape_sprite_callout(0,3, down_arrow);
-            Game.piece_text_callout_static(0, text_above_arrows)
-          }
+            Game.piece_text_callout_static(0, text("Find the matching yellow shape...", 50, -210))
         });
 
-        //Puzzle 4's tutorial
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "On your own now!",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout_static(0, text_above_arrows)
-          }
+        // Puzzle 4
+        Game.add_puzzle_with_tutorial("a,b,c |- b", [], function() {
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("On your own now!", 50, -210));
         });
 
-        //Puzzle 5's tutorial
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "Again, on your own!",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout_static(0, text_above_arrows)
-          }
+        // Puzzle 5
+        Game.add_puzzle_with_tutorial("a,b,c |- c", [], function() {
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("On your own now!", 50, -210));
         });
 
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "More complex shapes.<br>Same idea...",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout_static(0, text_above_arrows)
-          }
+        // Puzzle 6
+        Game.add_puzzle_with_tutorial("and(a,c), imp(a,b), c |- imp(a, b)", [], function(){
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("More complex shapes.<br>Same idea...", 50, -210))
         });
 
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "More complex shapes.<br>Same idea...",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout_static(0, text_above_arrows)
-          }
+        // Puzzle 7
+        Game.add_puzzle_with_tutorial("and(b,imp(a,c)), imp(a,a), and(c,a) |- and(b, imp(a,c))", [], function(){
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("More complex shapes.<br>Same idea...", 50, -210))
         });
 
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "More complex shapes.<br>Same idea...",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout_static(0, text_above_arrows)
-          }
+        // Puzzle 8
+        Game.add_puzzle_with_tutorial("imp(a,a) |- imp(a, a)", [], function() {
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("More complex shapes.<br>Same idea...", 50, -210))
         });
 
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-              Game.clear_callouts();
-              document.getElementById("imp-intro").style.visibility="hidden";
+        // Puzzle 9
+        Game.add_puzzle_with_tutorial("|- a", [], function() {
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("Wait, no yellow shapes? <br> What to do!!!", 0, -210))
+            setTimeout(function() {
+                Game.clear_callouts()
+                Game.replace_current_rule(["a |- A"], "|- A");
+                Game.piece_text_callout_static(2, text("Here's a special piece.<br>" +
+                                                       "Notice the red ports.<br>" +
+                                                       //"They take the shape they are connected to.<br>" +
+                                                       "Connect the two pieces<br> and watch the animation", 550 , 50));
+                Game.shape_sprite_callout(2,1, down_arrow);
+                Game.shape_sprite_callout(1,0, up_arrow);
+                Game.callout_transitions.push({
+                    condition: {name: "StartDrag", matches: function(other) {return other.name == this.name} },
+                    result: function () {
+                        Game.clear_callouts()
+                        Game.callout_transitions.push({
+                            condition: Game.piece_connected_condition(),
+                            result: function() {
+                                setTimeout(function() {
+                                    Game.clear_callouts()
+                                    Game.piece_text_callout(2, text("Now match yellow & pink!", 50, -210))
+                                    Game.shape_sprite_callout(2,0, down_arrow);
+                                    Game.shape_sprite_callout(2,1, down_arrow);
+                                }, 5000)
+                            }
+                        });
+                    }
+                })
+            },5000)
+        })
 
-              var text_no_yellow = {
-                  message: "Wait, no yellow shapes? <br> Sadness...<br>What to do!!!",
-                  y_offset: -210,
-                  x_offset: 0
-              };
+        // Puzzle 10
+        Game.add_puzzle_with_tutorial("|- imp(a,b)", [], function() {
+            Game.clear_callouts();
+            Game.replace_current_rule(["imp(a,b) |- A"], "|- A");
+            Game.piece_text_callout_static(2, text("Let's try another one.<br>" +
+                                                   "Note how colored ports take on<br>" +
+                                                   "the shape they are connected to.<br>", 550 , 50));
 
-              var text_click_block = {
-                  message: "Need a special piece.<br>Click the piece.",
-                  y_offset: -210,
-                  x_offset: 0
-              };
+        })
 
-             
-              var text_now_connect = {
-                  message: "Now connect the two pieces!<br>Ooohhh, an animation... <br>Pay attention and learn!",
-                  y_offset: -110,
-                  x_offset: 50
-              }
+        // Puzzle 11
+        Game.add_puzzle_with_tutorial("|- imp(a,b)", [], function() {
+            Game.clear_callouts();
+            Game.replace_current_rule(["imp(a,b) |- imp(A,B)"], "|- imp(A,B)");
+            Game.piece_text_callout_static(2, text("When a red port is connected to a shape,<br>" +
+                                                   "all red ports transform to that shape.<br>" +
+                                                   "Same for blue.<br> Same for all colored ports.", 550 , 50));
 
-              Game.piece_text_callout_static(0, text_no_yellow)
+        })
 
-              setTimeout(function() {
-                  Game.clear_callouts()
-                  Game.piece_text_callout_static(0, text_click_block)
-                  Game.dom_sprite_callout("imp-intro", up_arrow);
-                  document.getElementById("imp-intro").style.visibility="visible";
-              }, 3000);
+        // Puzzle 12
+        Game.add_puzzle_with_tutorial("|- and(a,b)", [], function() {
+            Game.clear_callouts();
+            Game.replace_current_rule(["and(A,b) |- and(a,B)"], "|- and(A,B)");
+            Game.piece_text_callout_static(2, text("Let's try another one!<br>Watch the animation again", 550 , 50));
+        })
 
-              var create_piece = {
-                  condition: Game.piece_created_condition(["A |- B"], "|- imp(A,B)"),
-                  result: function(){
-                      Game.clear_callouts()
-                      Game.piece_text_callout_static(1, text_now_connect)
-                  }
-              }
-              Game.callout_transitions.push(create_piece);
-
-              var text_above_arrows6 = {
-                  message: "Now match yellow & pink!",
-                  y_offset: -210,
-                  x_offset: 50
-              }
-
-              var after_connect = {
-                  condition: Game.piece_connected_condition(),
-                  result: function(){
-                      setTimeout(function() {
-                          Game.clear_callouts()
-                          Game.piece_text_callout(1, text_above_arrows6)
-                          Game.shape_sprite_callout(1,0, down_arrow);
-                          Game.shape_sprite_callout(1,1, down_arrow);
-                      }, 5000)
-                  }
-              }
-
-              Game.callout_transitions.push(after_connect);
-
-          }
-        });
-
-        i = i+1;
-
-        Game.callout_transitions.push({
-            condition: Game.puzzle_change_condition(i),
-            result: function() {
-
-                Game.clear_callouts();
-
-                var text_click_block = {
-                    message: "Again, we need a special piece<br>Click the piece",
-                    y_offset: -210,
-                    x_offset: 50
-                }
-
-                var text_make_it_bigger = {
-                    message: "But it won't fit yet.<br> You have to make it bigger.",
-                    y_offset: -210,
-                    x_offset: 50
-                }
-
-                var text_connect_and_finish = {
-                    message: "Now connect and solve the puzzle!",
-                    y_offset: -210,
-                    x_offset: 50
-                }
-
-                Game.piece_text_callout(0, text_click_block)
+        // Puzzle 13
+        Game.add_puzzle_with_tutorial("|- imp(a, a)", [], function() {
+            Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("We need a special piece again!<br>But where do we get it from?", 0, -210))
+            setTimeout(function() {
+                Game.clear_callouts()
+                Game.piece_text_callout_static(0, text("Buttons create special pieces.<br>Click the button.",0 , -210));
+                Game.make_piece_visible("imp-intro");
                 Game.dom_sprite_callout("imp-intro", up_arrow);
-
-                var create_piece = {
-                    condition: Game.piece_created_condition(["A |- B"], "|- imp(A,B)"),
-                    result: function(){
-                        Game.clear_callouts()
-                        Game.piece_text_callout_static(1, text_make_it_bigger)
-                        Game.dom_sprite_callout("add-context", up_arrow);
-                    }
+            }, 3000);
+            Game.callout_transitions.push({
+                condition: Game.piece_created_condition(["A |- B"], "|- imp(A,B)"),
+                result: function(){
+                    Game.clear_callouts()
+                    Game.piece_text_callout_static(2, text("Now finish the puzzle!", 100, -110))
                 }
-                Game.callout_transitions.push(create_piece);
-                
-                var context_add = {
-                    condition: Game.context_added_condition(),
-                    predecessors: [create_piece],
-                    result: function(){
-                        Game.clear_callouts()
-                        Game.piece_text_callout_static(1, text_connect_and_finish)
-                    }
-                }
-                Game.callout_transitions.push(context_add);
-            }
+            })
+            // Game.callout_transitions.push({
+            //       condition: Game.piece_connected_condition(),
+            //       result: function() {
+            //           setTimeout(function() {
+            //               Game.clear_callouts()
+            //               Game.piece_text_callout(2, text("Now match yellow & pink!", 50, -210))
+            //               Game.shape_sprite_callout(2,0, down_arrow);
+            //               Game.shape_sprite_callout(2,1, down_arrow);
+            //           }, 5000)
+            //       }
+            // });
         });
 
-        //Puzzle 7's tutorial
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts()
-            var text_above_arrows = {
-              message: "No matching shapes.<br>Try double clicking anyway.",
-              y_offset: -210,
-              x_offset: 50
-            }
+        // Puzzle 14
+        Game.add_puzzle_with_tutorial("b |- imp(a, b)", ["imp-intro"], function() {
 
-            var text_above_arrows2 = {
-              message: "It didn't work!  You need to use a special piece.  Click the piece",
-              y_offset: -210,
-              x_offset: 50
-            }
+            Game.clear_callouts();
 
-            var text_above_arrows3 = {
-              message: "Make it bigger.",
-              y_offset: -210,
-              x_offset: 50
-            }
-
-            var text_above_arrows4 = {
-              message: "One more time...",
-              y_offset: -210,
-              x_offset: 50
-            }
-
-            var text_above_arrows5 = {
-              message: "Now connect the two pieces.<br>Watch the animation again!",
-              y_offset: -210,
-              x_offset: 50
-            }
-
-            var text_above_arrows6 = {
-              message: "Double click matching shapes",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout(0, text_above_arrows)
+            Game.piece_text_callout(0, text("No matching shapes.<br>Try double clicking anyway.", 0, -210))
             Game.shape_sprite_callout(0,0, down_arrow);
-            Game.shape_sprite_callout(0,2, down_arrow);
+            Game.shape_sprite_callout(0,1, down_arrow);
 
 
             //"Page 1"
             var first_double_click = {
-              condition: {name: "DoubleClickShape", matches: function(other){this.shape_id = other.shape_id;  return other.name == this.name}},
-              result: function(){
-                Game.clear_callouts()
-                Game.shape_sprite_callout(0,this.condition.shape_id == 2 ? 0 : 2, down_arrow);
-                Game.piece_text_callout_static(0, text_above_arrows)
-              }
+                condition: {name: "DoubleClickShape", matches: function(other){this.shape_id = other.shape_id;  return other.name == this.name}},
+                result: function(){
+                    Game.clear_callouts();
+                    Game.shape_sprite_callout(0,this.condition.shape_id == 1 ? 0 : 1, down_arrow);
+                    Game.piece_text_callout_static(0, text("No matching shapes.<br>Try double clicking anyway.", 0, -210));
+                }
             }
-                
             Game.callout_transitions.push(first_double_click);
 
             var second_double_click = {
-              condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}}, 
-              predecessors: [first_double_click],
-              result: function(){
-                Game.clear_callouts()
-                Game.piece_text_callout_static(0, text_above_arrows2)
-              }
+                condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}}, 
+                predecessors: [first_double_click],
+                result: function(){
+                    Game.clear_callouts()
+                    Game.piece_text_callout_static(0, text("It didn't work!<br>Here again, you need use a special piece.", 0, -210))
+                    Game.dom_sprite_callout("imp-intro", up_arrow);
+                }
             }
-               
             Game.callout_transitions.push(second_double_click);
 
             
-            //"Page 2"
-            Game.callout_transitions.push({
-              condition: Game.condition_satisfied(),
-              predecessors: [first_double_click, second_double_click],
-              result: function(){
-                Game.clear_callouts()
-                Game.piece_text_callout_static(0, text_above_arrows2)
-                Game.dom_sprite_callout("and-intro", up_arrow);
-              }
-            });
+            // //"Page 2"
+            // Game.callout_transitions.push({
+            //     condition: Game.condition_satisfied(),
+            //     predecessors: [first_double_click, second_double_click],
+            //     result: function(){
+            //         Game.clear_callouts()
+            //         Game.piece_text_callout_static(0, text("It didn't work!  You need to use a special piece.  Click the piece", 50, -210))
+            //         Game.dom_sprite_callout("and-intro", up_arrow);
+            //     }
+            // });
 
-            //"Page 3"
+            // Game.piece_text_callout(0, text("Again, we need a special piece<br>Click the piece", 50, -210));
+            // Game.dom_sprite_callout("imp-intro", up_arrow);
+
             var create_piece = {
-              condition: Game.piece_created_condition(["|- A", "|- B"], "|- and(A,B)"),
-              result: function(){
-                Game.clear_callouts()
-                Game.piece_text_callout(1, text_above_arrows3)
-                Game.dom_sprite_callout("add-context", up_arrow);
-              }
-            }
+                condition: Game.piece_created_condition(["A |- B"], "|- imp(A,B)"),
+                result: function() {
+                    Game.clear_callouts()
+                    Game.piece_text_callout_static(0, text("Try to connect the two pieces.", 50, -210))
+                    setTimeout(function() {
+                        Game.clear_callouts()
+                        Game.piece_text_callout_static(0, text("That didn't work!<br> The piece is not wide enough<br>You have to extend the piece.", 50, -310));
+                        Game.make_piece_visible("add-context");
+                        Game.dom_sprite_callout("add-context", up_arrow);
+                    }, 6000)
+                }
+            };
             Game.callout_transitions.push(create_piece);
 
-            //"Page 4"
-                
-            var first_context_add = {
-              condition: Game.context_added_condition(),
-              predecessors: [create_piece],
-              result: function(){
-                Game.clear_callouts()
-                Game.piece_text_callout(1, text_above_arrows4)
-                Game.dom_sprite_callout("add-context", up_arrow);
-              }
-            }
-                
-            Game.callout_transitions.push(first_context_add);
-
-            var second_context_add = {
-              condition: Game.context_added_condition(),
-              predecessors: [first_context_add],
-              result: function(){
-                Game.clear_callouts()
-                Game.piece_text_callout(1, text_above_arrows5)
-              }
-            }
-
-            Game.callout_transitions.push(second_context_add);
-
-
-            //"Page 5"
-            var after_connect = {
-              condition: Game.piece_connected_condition(),
-              result: function(){
-                  setTimeout(function() {
-                      Game.clear_callouts()
-                      Game.piece_text_callout(1, text_above_arrows6)
-                      Game.shape_sprite_callout(1,0, down_arrow);
-                      Game.shape_sprite_callout(1,2, down_arrow);
-                      Game.shape_sprite_callout(2,1, down_arrow);
-                      Game.shape_sprite_callout(2,2, down_arrow);
-                  }, 5000)
-              }
-            }
-
-            Game.callout_transitions.push(after_connect);
-
-          }
+            Game.callout_transitions.push({
+                condition: Game.context_added_condition(),
+                predecessors: [create_piece],
+                result: function(){
+                    Game.clear_callouts()
+                    Game.piece_text_callout_static(0, text("Now connect and solve the puzzle!<br>Keep watching the animations", 0, -310))
+                }
+            });
         });
 
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
+        // Puzzle 15
+        Game.add_puzzle_with_tutorial("|- imp(a, imp(b,a))", ["imp-intro", "add-context"], function() {
             Game.clear_callouts();
+            Game.piece_text_callout_static(0, text("You try it", 50, -310));
 
-            var text_above_arrows = {
-              message: "Again, need a special piece.",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout(0, text_above_arrows)
-            Game.dom_sprite_callout("and-elim-1", up_arrow);
+            Game.callout_transitions.push({
+                condition: Game.piece_created_condition(),
+                result: function() {
+                    Game.clear_callouts()
+                }
+            })
+        })
 
+        // Puzzle 16
+        Game.add_puzzle_with_tutorial("a,b |- imp(a, b)", ["imp-intro", "add-context"], function() {
+        })
+
+
+        // Puzzle 17
+        Game.add_puzzle_with_tutorial("b |- and(b, b)", ["imp-intro", "add-context"], function() {
+            Game.clear_callouts();
+            Game.piece_text_callout(0, text("Try to create & connect a piece of the right size", -100, -410));
+
+            Game.callout_transitions.push({
+                condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
+                result: function() {
+                    setTimeout(function() {
+                        Game.clear_callouts()
+                        Game.piece_text_callout_static(0, text("That didn't work!<br> The semi-circle doesn't fit into the triangle....<br>What to do...", 0, -310));
+                        setTimeout(function() {
+                            Game.clear_callouts();
+                            Game.piece_text_callout_static(1, text("Let's try this other piece with a triangle facing down", 0, -310));
+                            Game.make_piece_visible("and-intro");
+                            Game.dom_sprite_callout("and-intro", up_arrow);
+                        }, 4000)
+                    }, 2000)
+                }
+            });
+
+            Game.callout_transitions.push({
+                condition: Game.piece_created_condition(["|- A", "|- B"], "|- and(A,B)"),
+                result: function() {
+                    Game.clear_callouts();
+                    Game.piece_text_callout_static(0, text("Try to finish the puzzle<br>Again look at the animations", 0, -410));
+                }
+            });
+        })
+
+        // Puzzle 18
+        Game.add_puzzle_with_tutorial("a,b |- and(a, b)", ["and-intro", "imp-intro", "add-context"], function() {
+
+            Game.clear_callouts()
+            Game.piece_text_callout_static(0, text("On your own!", 50, -310));
+
+            Game.callout_transitions.push({
+                condition: Game.piece_created_condition(),
+                result: function() {
+                    Game.clear_callouts()
+                }
+            })
+
+            // Game.piece_text_callout(0, text("No matching shapes.<br>Try double clicking anyway.", 50, -210))
+            // Game.shape_sprite_callout(0,0, down_arrow);
+            // Game.shape_sprite_callout(0,2, down_arrow);
+
+
+            // //"Page 1"
+            // var first_double_click = {
+            //     condition: {name: "DoubleClickShape", matches: function(other){this.shape_id = other.shape_id;  return other.name == this.name}},
+            //     result: function(){
+            //         Game.clear_callouts();
+            //         Game.shape_sprite_callout(0,this.condition.shape_id == 2 ? 0 : 2, down_arrow);
+            //         Game.piece_text_callout_static(0, text("No matching shapes.<br>Try double clicking anyway.", 50, -210));
+            //     }
+            // }
+            // Game.callout_transitions.push(first_double_click);
+
+            // var second_double_click = {
+            //     condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}}, 
+            //     predecessors: [first_double_click],
+            //     result: function(){
+            //         Game.clear_callouts()
+            //         Game.piece_text_callout_static(0, text("It didn't work!  You need to use a special piece.  Click the piece", 50, -210))
+            //     }
+            // }
+            // Game.callout_transitions.push(second_double_click);
+
+            
+            // //"Page 2"
+            // Game.callout_transitions.push({
+            //     condition: Game.condition_satisfied(),
+            //     predecessors: [first_double_click, second_double_click],
+            //     result: function(){
+            //         Game.clear_callouts()
+            //         Game.piece_text_callout_static(0, text("It didn't work!  You need to use a special piece.  Click the piece", 50, -210))
+            //         Game.dom_sprite_callout("and-intro", up_arrow);
+            //     }
+            // });
+
+            // //"Page 3"
+            // var create_piece = {
+            //     condition: Game.piece_created_condition(["|- A", "|- B"], "|- and(A,B)"),
+            //     result: function(){
+            //         Game.clear_callouts()
+            //         Game.piece_text_callout(1, text("Make it bigger.", 50, -210))
+            //         Game.dom_sprite_callout("add-context", up_arrow);
+            //     }
+            // };
+            // Game.callout_transitions.push(create_piece);
+
+            // //"Page 4"
+            // var first_context_add = {
+            //     condition: Game.context_added_condition(),
+            //     predecessors: [create_piece],
+            //     result: function() {
+            //         Game.clear_callouts()
+            //         Game.piece_text_callout(1, text("One more time...", 50, -210))
+            //         Game.dom_sprite_callout("add-context", up_arrow);
+            //     }
+            // };
+            // Game.callout_transitions.push(first_context_add)
+
+            // Game.callout_transitions.push({
+            //     condition: Game.context_added_condition(),
+            //     predecessors: [first_context_add],
+            //     result: function() {
+            //         Game.clear_callouts()
+            //         Game.piece_text_callout(1, text("Now connect the two pieces.<br>Watch the animation again!", 50, -210))
+            //     }
+            // });
+
+            // //"Page 5"
+            // Game.callout_transitions.push({
+            //     condition: Game.piece_connected_condition(),
+            //     result: function() {
+            //         setTimeout(function() {
+            //             Game.clear_callouts()
+            //             Game.piece_text_callout(2, text("Double click matching shapes",  50, -210))
+            //             Game.shape_sprite_callout(2,0, down_arrow);
+            //             Game.shape_sprite_callout(2,2, down_arrow);
+            //             Game.shape_sprite_callout(3,1, down_arrow);
+            //             Game.shape_sprite_callout(3,2, down_arrow);
+            //         }, 5000)
+            //     }
+            // });
+        });
+
+        // Puzzle 19
+        Game.add_puzzle_with_tutorial("c,a |- imp(b, c)", ["and-intro", "imp-intro", "add-context"], function() {
+        })
+
+        // Puzzle 20
+        Game.add_puzzle_with_tutorial("c |- imp(b, and(b,c))", ["and-intro", "imp-intro", "add-context"], function() {
+        })
+
+        // Puzzle 21
+        Game.add_puzzle_with_tutorial("c |- and(imp(a,a), c)", ["and-intro", "imp-intro", "add-context"], function() {
+        })
+
+        // Puzzle 22
+        Game.add_puzzle_with_tutorial("|- imp(c, and(c, imp(a,a)))", ["and-intro", "imp-intro", "add-context"], function() {
+        })
+
+        // Puzzle 23
+        Game.add_puzzle_with_tutorial("and(b,a) |- b", ["and-intro", "imp-intro", "add-context"], function() {
+            Game.piece_text_callout(0, text("Try each piece above.", 50, -400))
+
+            var piece_connection_failed_1 = {
+                condition: {name: "PieceConnectionFailed", matches: function(other) { return other.name == this.name && 
+                                                                                      other.current.bottom.judgement.right.n == "imp" } },
+                result: function() {
+                    Game.clear_callouts();
+                    Game.piece_text_callout(0, text("Semi-circle doesn't fit.<br>Try the other piece.", 50, -400))
+                }
+            };
+            Game.callout_transitions.push(piece_connection_failed_1)
+
+            var piece_connection_failed_2 = {
+                condition: {name: "PieceConnectionFailed", matches: function(other) { return other.name == this.name && 
+                                                                                      other.current.bottom.judgement.right.n == "and" } },
+                result: function() {
+                    Game.clear_callouts();
+                    Game.piece_text_callout(0, text("Downward triangle doesn't fit.<br>Try the other piece.", 0, -400))
+                }
+            };
+            Game.callout_transitions.push(piece_connection_failed_2)
+
+            Game.callout_transitions.push({
+                condition: Game.condition_satisfied(),
+                predecessors: [piece_connection_failed_1, piece_connection_failed_2],
+                result: function() {
+                    Game.clear_callouts();
+                    Game.piece_text_callout(0, text("That doesn't fit either.<br>We need a new kind of piece.", 50, -400))
+                    setTimeout(function() {
+                        Game.make_piece_visible("and-elim-1");
+                        Game.dom_sprite_callout("and-elim-1", up_arrow);
+
+                        var create_piece = {
+                            condition: Game.piece_created_condition(["|- and(A,B)"], "|- A"),
+                            result: function() {
+                                Game.clear_callouts()
+                                Game.piece_text_callout(0, text("Extend, connect, and watch the animation", 0, -400))
+                            }
+                        };
+                        Game.callout_transitions.push(create_piece);
+
+                        Game.callout_transitions.push({
+                            condition: Game.piece_connected_condition(),
+                            result: function() {
+                                setTimeout(function() {
+                                    Game.clear_callouts()
+                                    Game.piece_text_callout(0, text("The blue port will take on any shape it is connected to.<br>"+
+                                                                    "Double click the yellow and with pink shapes.", -50, -400));
+                                    Game.shape_sprite_callout(2,0, down_arrow);
+                                    Game.shape_sprite_callout(2,1, down_arrow);
+                                }, 5000)
+                            }
+                        })
+                    }, 2000);
+                }
+            })
+        })
+
+        // Puzzle 24
+        Game.add_puzzle_with_tutorial("|- imp(and(c,b), c)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
+        })
+
+        // Puzzle 25
+        Game.add_puzzle_with_tutorial("and(c,b), a |- and(a,c)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
+        })
+
+        // Puzzle 26
+        Game.add_puzzle_with_tutorial("and(a,c) |- c", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
+            Game.piece_text_callout(0, text("For this puzzle, you will need a new kind of piece.", 50, -400))
+            Game.make_piece_visible("and-elim-2");
+            Game.dom_sprite_callout("and-elim-2", up_arrow);
             var create_piece = {
-              condition: Game.piece_created_condition(["|- and(A,B)"], "|- A"),
-              result: function(){
-                Game.clear_callouts()
-                Game.dom_sprite_callout("add-context", up_arrow);
-                text_above_arrows.message = "Now make it bigger, so it fits"
-                Game.piece_text_callout(1, text_above_arrows)
-              }
-            }
+                condition: Game.piece_created_condition(["|- and(A,B)"], "|- B"),
+                result: function() {
+                    Game.clear_callouts()
+                }
+            };
             Game.callout_transitions.push(create_piece);
+        })
 
-            var context_add = {
-              condition: Game.context_added_condition(),
-              predecessors: [create_piece],
-              result: function(){
-                Game.clear_callouts()
-                text_above_arrows.message = "Connect, and watch the animation."
-                Game.piece_text_callout(1, text_above_arrows)
-              }
-            }
-                
-            Game.callout_transitions.push(context_add);
-
-            var after_connect = {
-              condition: Game.piece_connected_condition(),
-              predecessors: [context_add],
-              result: function(){
-                  setTimeout(function() {
-                      Game.clear_callouts()
-                      text_above_arrows.message = "The blue portion acts like a wild card.<br>  Match yellow shape with pink one.";
-                      text_above_arrows.x_offset = 0;
-                      Game.piece_text_callout(1, text_above_arrows);
-                      Game.shape_sprite_callout(1,0, down_arrow);
-                      Game.shape_sprite_callout(1,1, down_arrow);
-                  }, 5000)
-              }
-            }
-
-            Game.callout_transitions.push(after_connect);
-
-          }
-        });
-
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts();
-
-            var text_above_arrows = {
-              message: "Your turn.  Introduce a new piece, and make it bigger until it fits.",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout(0, text_above_arrows)
-            Game.dom_sprite_callout("and-elim-2", up_arrow);
-
-            var after_connect = {
-              condition: Game.piece_connected_condition(),
-              result: function(){
-                Game.clear_callouts()
-                text_above_arrows.message = "Can you solve the puzzle?"
-                Game.piece_text_callout(1, text_above_arrows)
-              }
-            }
-
-            Game.callout_transitions.push(after_connect);
-
-          }
-        });
-
-        i = i+1;
-        Game.callout_transitions.push({
-          condition: Game.puzzle_change_condition(i),
-          result: function(){
-            Game.clear_callouts();
-
-            var text_above_arrows = {
-              message: "Now YOU have to decide which piece to use.",
-              y_offset: -210,
-              x_offset: 50
-            }
-            Game.piece_text_callout(0, text_above_arrows)
-            Game.dom_sprite_callout("and-intro", up_arrow);
-            Game.dom_sprite_callout("and-elim-1", up_arrow);
-            Game.dom_sprite_callout("and-elim-2", up_arrow);
-            Game.dom_sprite_callout("imp-intro", up_arrow);
-            Game.dom_sprite_callout("imp-elim", up_arrow);
-
-            var create_piece = {
-              condition: Game.piece_created_condition(),
-              result: function(){
-                Game.clear_callouts()
-
-                text_above_arrows.message = "One last tip!<br> If you ever feel you've gone down the wrong path, use the restart button.  Each of these puzzles should take no more than 5 moves."
-                Game.piece_text_callout(1, text_above_arrows)
-                Game.dom_sprite_callout("restart", up_arrow);
-              }
-            }
-
-            if(!Game.restarted)
-                Game.callout_transitions.push(create_piece);
-
-            var after_connect = {
-              condition: Game.piece_connected_condition(),
-              result: function(){
-                Game.clear_callouts()
-              }
-            }
-
-            Game.callout_transitions.push(after_connect);
-
+        // Puzzle 27
+        Game.add_puzzle_with_tutorial("and(c,b) |- c", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"], function() {
+            Game.piece_text_callout_static(0, text("Note the restart and undo buttons,<br>which may come in handy.", 50, -300))
+            Game.dom_sprite_callout("restart", up_arrow);
+            Game.dom_sprite_callout("undo", up_arrow);
             Game.callout_transitions.push({
-               condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
-               persist: true,
-               result: function(){
-                 alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
-               }
-            });
+                condition: Game.piece_created_condition(),
+                result: function() {
+                    Game.clear_callouts()
+                }
+            })
+        })
+
+        // Puzzle 28
+        Game.add_puzzle("and(b,a) |- a", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"])
+
+        // Puzzle 29
+        Game.add_puzzle("and(a,b) |- and(b,a)", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"])
 
 
-            Game.callout_transitions.push({
-               condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
-               persist: true,
-               result: function(){
-                 alert("Those pieces do not fit together.")
-               }
-            });
+        // // Puzzle 19
+        // Game.add_puzzle_with_tutorial("and(a,b) |- a", ["and-intro","and-elim-1", "imp-intro", "add-context"], function() {
+        //     Game.clear_callouts();
+        //     Game.piece_text_callout(0, text("Again, need a special piece.", 50, -210))
+        //     Game.dom_sprite_callout("and-elim-1", up_arrow);
+            
+        //     var create_piece = {
+        //         condition: Game.piece_created_condition(["|- and(A,B)"], "|- A"),
+        //         result: function() {
+        //             Game.clear_callouts()
+        //             Game.dom_sprite_callout("add-context", up_arrow);
+        //             Game.piece_text_callout(1, text("Now make it bigger, so it fits", 50, -210))
+        //         }
+        //     };
+        //     Game.callout_transitions.push(create_piece);
 
-          }
-        });
+        //     var context_add = {
+        //         condition: Game.context_added_condition(),
+        //         predecessors: [create_piece],
+        //         result: function(){
+        //             Game.clear_callouts()
+        //             Game.piece_text_callout(1, text("Connect, and watch the animation.", 50, -210))
+        //         }
+        //     };
+        //     Game.callout_transitions.push(context_add);
+
+        //     Game.callout_transitions.push({
+        //         condition: Game.piece_connected_condition(),
+        //         predecessors: [context_add],
+        //         result: function() {
+        //             setTimeout(function() {
+        //                 Game.clear_callouts()
+        //                 Game.piece_text_callout(1, text("The blue portion acts like a wild card.<br>  Match yellow shape with pink one.", 0, -210));
+        //                 Game.shape_sprite_callout(1,0, down_arrow);
+        //                 Game.shape_sprite_callout(1,1, down_arrow);
+        //             }, 5000)
+        //         }
+        //     })
+        // });
+
+        // // Puzzle 13
+        // Game.add_puzzle_with_tutorial("and(a,b) |- b", ["and-elim-2", "add-context"], function() {
+        //     Game.clear_callouts();
+        //     Game.piece_text_callout(0, text("Your turn. Introduce a new piece, and make it bigger until it fits.", 50, -210))
+        //     Game.dom_sprite_callout("and-elim-2", up_arrow);
+
+        //     Game.callout_transitions.push({
+        //         condition: Game.piece_connected_condition(),
+        //         result: function() {
+        //             Game.clear_callouts()
+        //             Game.piece_text_callout(1, text("Can you solve the puzzle?", 50, -210))
+        //         }
+        //     })
+        // });
+
+        // // Puzzle 14
+        // Game.add_puzzle_with_tutorial("|- imp(a, imp(b,a))", "all", function(){
+        //     Game.clear_callouts();
+        //     Game.piece_text_callout(0, text("Now YOU have to decide which piece to use.", 50, -210))
+        //     Game.dom_sprite_callout("and-intro", up_arrow);
+        //     Game.dom_sprite_callout("and-elim-1", up_arrow);
+        //     Game.dom_sprite_callout("and-elim-2", up_arrow);
+        //     Game.dom_sprite_callout("imp-intro", up_arrow);
+        //     Game.dom_sprite_callout("imp-elim", up_arrow);
+
+        //     var create_piece = {
+        //         condition: Game.piece_created_condition(),
+        //         result: function() {
+        //             Game.clear_callouts()
+        //             Game.piece_text_callout(1, text("One last tip!<br>"+
+        //                                             "If you ever feel you've gone down the wrong path, use the restart button. " + 
+        //                                             "Each of these puzzles should take no more than 5 moves.", 50, -210))
+        //             Game.dom_sprite_callout("restart", up_arrow);
+        //         }
+        //     }
+
+        //     if(!Game.restarted)
+        //         Game.callout_transitions.push(create_piece);
+
+        //     Game.callout_transitions.push({
+        //         condition: Game.piece_connected_condition(),
+        //         result: function() {
+        //             Game.clear_callouts()
+        //         }
+        //     })
+            
+        //     Game.callout_transitions.push({
+        //         condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
+        //         persist: true,
+        //         result: function(){
+        //             alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
+        //         }
+        //     });
+
+        //     Game.callout_transitions.push({
+        //         condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
+        //         persist: true,
+        //         result: function(){
+        //             alert("Those pieces do not fit together.")
+        //         }
+        //     });
+        // });
+
+        // var end_of_tutorial = Game.puzzles.length;
+        // Game.callout_transitions.push({
+        //     condition: {
+        //         name: "PuzzleChangeCondition", 
+        //         matches: function(other) {
+        //             var ret = other.name == this.name && other.puzzle_id >= end_of_tutorial;
+        //             return ret 
+        //         }
+        //     },
+        //     result: function() {
+        //         Game.callout_transitions.push({
+        //             condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
+        //             persist: true,
+        //             result: function(){
+        //                 alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
+        //             }
+        //         });
+
+        //         Game.callout_transitions.push({
+        //             condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
+        //             persist: true,
+        //             result: function(){
+        //                 alert("Those pieces do not fit together.")
+        //             }
+        //         });
+        //     }
+        // });
+
+        // Game.add_puzzle("a |- and(a, a)", "all"); // 15
+        // Game.add_puzzle("a |- and(and(a, a),a)", "all"); // 16
+        // Game.add_puzzle("and(a,b) |- and(b,a)", "all"); // 17
+        // Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", "all"); // 18
+
+        //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
 
 
-        Game.callout_transitions.push({
-          condition: {name: "PuzzleChangeCondition", 
-                      matches: function(other){
-                                 var ret = other.name == this.name && other.puzzle_id > 9
-                                 console.log(other.name)
-                                 return ret 
-                               }
-                     },
-          result: function(){
-            Game.callout_transitions.push({
-               condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
-               persist: true,
-               result: function(){
-                 alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
-               }
-            });
+        var current_puzzle = qs("puzzle_id");
+        if (current_puzzle == null)
+            current_puzzle = 0;
+        else {
+            current_puzzle = parseInt(current_puzzle) - 1;
+            if (current_puzzle < 0)
+                current_puzzle = 0;
+            if (current_puzzle > Game.puzzles.length-1)
+                current_puzzle = Game.puzzles.length-1;
+        }
+        Game.current_puzzle = current_puzzle;
 
 
-            Game.callout_transitions.push({
-               condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
-               persist: true,
-               result: function(){
-                 alert("Those pieces do not fit together.")
-               }
-            });
-          }
-         });
+        Crafty.init(1300, 600);
+        Crafty.background('rgb(240,240,240)');
+        Game.start_current_puzzle();
 
+        //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
+        //Game.mouseWheelDispatch({wheelDelta:-120});
+        //Game.mouseWheelDispatch({wheelDelta:-120});
+        
 
+        //Create a canvas for special effects.
+        var c = document.createElement("canvas");
+        c.width = Crafty.viewport.width;
+        c.height = Crafty.viewport.height;
+        c.style.position = 'absolute';
 
+        Crafty.stage.elem.appendChild(c);
+
+        var ctx = c.getContext('2d');
+
+        Game.effects_canvas = ctx
+        Game.effects_image_data = Game.effects_canvas.getImageData(0,0,Crafty.viewport.width,Crafty.viewport.height);
+
+        //Crafty.e("AnimatedFormula").attr({x: 200, y: 200, w:200, h:100}).set_formula("and(a, b)").animate_to(300, 400, 100, 100);
+        Game.spinner = Crafty.e("Spinner");
     },
+
+    callouts: [],
 
     context_added_condition: function(){
        return {name: "ContextAdded",
@@ -2111,10 +2282,9 @@ Game = {
     },
 
     puzzle_change_condition: function(puzzle_id){
-       return {name: "PuzzleChangeCondition", puzzle_id: puzzle_id,
-                 matches: function(other){
-                             return other.name == this.name && other.puzzle_id == this.puzzle_id 
-                           }
+       return {name: "PuzzleChangeCondition", 
+               puzzle_id: puzzle_id,
+               matches: function(other) { return other.name == this.name && other.puzzle_id == this.puzzle_id }
               }
     },
 
@@ -2128,6 +2298,14 @@ Game = {
 
     piece_connected_condition: function(){
        return {name: "PieceConnected", 
+                 matches: function(other){
+                             return other.name == this.name 
+                           }
+              }
+    },
+
+    connection_failed_condition: function(){
+       return {name: "PieceConnectionFailed", 
                  matches: function(other){
                              return other.name == this.name 
                            }
@@ -2167,7 +2345,7 @@ Game = {
 
        var callout = 
            Crafty.e("2D, DOM, Text")
-           .attr({ x: p.x + callout_data.x_offset, y: p.y + callout_data.y_offset, w: 700 })
+           .attr({ x: p.x + callout_data.x_offset, y: p.y + callout_data.y_offset, w: 800 })
            .text(callout_data.message)
            .textFont({ size: '30px', weight: 'bold' })
 
@@ -2183,16 +2361,17 @@ Game = {
     },
 
     shape_sprite_callout: function(piece_id, shape_id, callout_data){
-       var p = Game.piece(piece_id)
+        var p = Game.piece(piece_id)
 
-       var callout = Crafty.e("2D, DOM, " + callout_data.sprite)
-                      .attr({x: p.x + (shape_id+0.5) * Globals.FormulaWidth-(callout_data.width/2), y: p.y-callout_data.height, w: callout_data.width, h: callout_data.height})
+        var callout = Crafty.e("2D, DOM, " + callout_data.sprite)
+            .attr({x: p.x + (shape_id+0.5) * Globals.FormulaWidth-(callout_data.width/2), 
+                   y: callout_data.sprite == "down_arrow" ? (p.y-callout_data.height) : (p.y+Globals.JudgementHeight), 
+                   w: callout_data.width, 
+                   h: callout_data.height})
 
+        p.attach(callout)
 
-       p.attach(callout)
-
-       Game.callouts.push(callout)
-
+        Game.callouts.push(callout)
     },
 
     dom_sprite_callout: function(dom_id, callout_data){
@@ -2207,8 +2386,7 @@ Game = {
     },
 
     clear_callouts: function(){
-       for(var i = 0; i < Game.callouts.length; i++)
-       {
+       for(var i = 0; i < Game.callouts.length; i++) {
           Game.callouts[i].destroy()
        }
        Game.callouts = []
@@ -2221,6 +2399,7 @@ Game = {
     clear: function() {
         Game.current_rule = null;
         Game.foreach_piece(function (p) { p.destroy() });
+        Game.clear_callouts();
         MetaVarManager.garbage_collect();
     },
 
@@ -2228,96 +2407,78 @@ Game = {
         Game.puzzles.push({goal: goal, pieces:pieces});
     },
 
+    add_puzzle_with_tutorial: function(goal, pieces, tutorial) {
+        var i = Game.puzzles.length;
+        Game.puzzles.push({goal: goal, pieces:pieces});
+        Game.callout_transitions.push({
+            condition: Game.puzzle_change_condition(i),
+            persist: true,
+            result: tutorial
+        });
+    },
+
     next_puzzle: function() {
         if (Game.current_puzzle < Game.puzzles.length-1)
             Game.current_puzzle++;
-        Game.show_current_puzzle();
-        var transitions_to_keep = []
-        for(var i = 0; i < Game.callout_transitions.length; i++)
-        {
-          var current = Game.callout_transitions[i]
-          if(current.condition.name == "PuzzleChangeCondition" || current.persist == true)
-              transitions_to_keep.push(current)
-        }
-        Game.callout_transitions = transitions_to_keep
-        Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
+        Game.start_current_puzzle();
     },
 
     restart: function(){
-        Game.restarted = true
-        Game.show_current_puzzle();
-        var transitions_to_keep = []
-        Game.callout_transitions = []
-        Game.setup_tutorial();
-        Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
+        //Game.restarted = true
+        Game.start_current_puzzle();
     },
 
     prev_puzzle: function() {
         if (Game.current_puzzle > 0)
             Game.current_puzzle--;
-        Game.show_current_puzzle();
+        Game.start_current_puzzle();
     },
 
-    show_current_puzzle: function() {
+    start_current_puzzle: function() {
         Game.clear();
         var current_puzzle = Game.current_puzzle;
-        build_judgement_piece(Game.puzzles[current_puzzle].goal, 400,450);
+        var goal = build_judgement_piece(Game.puzzles[current_puzzle].goal, 400, 450);
         var pieces = Game.puzzles[current_puzzle].pieces;
         var all_pieces = ["and-intro",
                           "and-elim-1",
                           "and-elim-2",
                           "imp-intro",
                           "imp-elim", 
-                          "add-context"];
-        if (pieces.length == 0)
-            pieces = all_pieces;
-        for (var i = 0; i < all_pieces.length; i++) {
-            document.getElementById(all_pieces[i]).style.visibility="hidden";
+                          "add-context",
+                          "undo",
+                         ];
+
+        Game.history_count = 0;
+        goal.push_state();
+        if (pieces == "all")
+            pieces = all_pieces
+        else {
+            for (var i = 0; i < all_pieces.length; i++) {
+                Game.make_piece_hidden(all_pieces[i]);
+            }
         }
         for (var i = 0; i < pieces.length; i++) {
-            document.getElementById(pieces[i]).style.visibility="visible";
+            Game.make_piece_visible(pieces[i]);
         }
 
-
-        if(Game.puzzles[current_puzzle].tutorial != undefined)
-        {
-          Game.puzzles[current_puzzle].tutorial.display(); 
+        var transitions_to_keep = []
+        for(var i = 0; i < Game.callout_transitions.length; i++)  {
+          var current = Game.callout_transitions[i]
+          if (current.persist)
+              transitions_to_keep.push(current)
         }
+        Game.callout_transitions = transitions_to_keep
+        Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
+
     },
 
-    puzzle1: function() {
-        Game.clear();
-        build_judgement_piece("|- imp(a, imp(b,a))", 400, 450);
-        // build_inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 400);
-        // build_inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 200);
-        // build_inference_rule_piece([], "A, B |- A", 450, 20);
+    make_piece_visible: function(piece_name) {
+        document.getElementById(piece_name).style.visibility="visible";
     },
 
-    puzzle2: function() {
-        Game.clear();
-        build_judgement_piece("|- imp(a, imp(imp(a,b), b))", 400, 450);
-        // build_inference_rule_piece(["A |- B"], "|- imp(A,B)", 50, 450);
-        // build_inference_rule_piece(["G, A |- B"], "G |- imp(A,B)", 50, 250);
-        // build_inference_rule_piece(["G1, G2 |- A", "G1, G2 |- imp(A,B)"], "G1, G2 |- B", 50, 50);
-        // build_inference_rule_piece([], "A, B |- A", 900, 500);
-        // build_inference_rule_piece([], "A, B |- B", 900, 400);
+    make_piece_hidden: function(piece_name) {
+        document.getElementById(piece_name).style.visibility="hidden";
     },
-
-    puzzle3: function() {
-        Game.clear();
-        build_judgement_piece("and(a,b) |- and(b,a)", 400, 450);
-        // build_inference_rule_piece(["G |- A", "G |- B"], "G |- and(A,B)", 50, 450);
-        // build_inference_rule_piece(["G |- and(A,B)"], "G |- A", 50, 250);
-        // build_inference_rule_piece(["G |- and(A,B)"], "G |- B", 600, 250);
-        // build_inference_rule_piece([], "A |- A", 300, 50);
-        // build_inference_rule_piece([], "A |- A", 900, 50);
-    },
-    // puzzle3: function() {
-    //     build_judgement_piece("|- imp(a, imp(b,a))", 50, 600);
-    //     Crafty.e("2D, Canvas, Color, Draggable")
-    //         .attr({x: 100, y: 100, w: 150, h: 200})
-    //         .color("red");
-    // },
 
     remove_current_rule: function(p) {
         if (Game.current_rule != null) {
@@ -2329,7 +2490,7 @@ Game = {
 
     replace_current_rule: function(top, bottom) {
         Game.remove_current_rule();
-        Game.current_rule = build_inference_rule_piece(top, bottom, 150, 300);
+        Game.current_rule = build_inference_rule_piece(top, bottom, 150, 150);
         Game.trigger_callout_transition({name: "PieceCreated", top:top, bottom:bottom})
     },
 
@@ -2358,7 +2519,8 @@ Game = {
     },
 
     add_context_left: function() {
-        Game.add_context(true)
+        Game.add_context(true);
+        Game.trigger_callout_transition({name: 'ContextAdded'})
     },
 
     add_context_right: function() {
@@ -2391,7 +2553,7 @@ Game = {
 
     check_if_solved: function() {
         if (Game.puzzle_solved()) {
-            setTimeout(function(){
+            setTimeout(function() {
                 var display_number = Game.current_puzzle + 1;
                 if (Game.current_puzzle < Game.puzzles.length-1) {
                     alert("Yay, you solved puzzle " + display_number + "!\nOn to the next one!");
@@ -2422,6 +2584,33 @@ Game = {
         for (var i = 0; i < ids.length; i++) {
             Crafty(ids[i]).destroy();
         }
+    },
+
+    push_history: function() {
+        Game.history_count = Game.history_count + 1;
+        Game.foreach_piece(function(p) {
+            p.push_state()
+        })
+    },
+
+    pop_history: function() {
+        if (Game.history_count > 0) {
+            Game.history_count = Game.history_count - 1;
+            Game.foreach_piece(function(p) {
+                if (p.history.length == 1)
+                    p.destroy()
+                else {
+                    p.pop_state()
+                }
+            })
+        }
+    },
+
+    toggle_logic: function() {
+        Game.show_logic = !Game.show_logic;
+        Game.foreach_piece(function(p) {
+            p.set_greyed_out(Game.show_logic)
+        })
     },
 
     mouseWheelDispatch: function(e) {
