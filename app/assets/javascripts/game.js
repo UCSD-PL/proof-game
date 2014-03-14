@@ -13,7 +13,8 @@ Globals = {
                    imp: "cup", 
                    and: "vee"},
     VarToLogicRep : { imp: "\u2192", 
-                      and: "\u2227"},
+                      and: "\u2227",
+                      turnstile: "\u22A2"},
     LeftFillColor: "rgb(255,255,200)",
     LeftFillColorSelected: "rgb(130,130,130)",
     RightFillColor: "rgb(255,230,255)",
@@ -291,9 +292,9 @@ Judgement.prototype.draw = function(t, x, y, on_top, selected, greyed_out) {
                 size = size + 1
             }
         }
+        var c = t.c;
         for (var i = 0; i < this.logic_infos.length; i++) {
             var logic_info = this.logic_infos[i];
-            var c = t.c;
             c.fillStyle = "rgb(0, 0, 0)";
             var str = logic_info.n;
             if (str in Globals.VarToLogicRep)
@@ -306,6 +307,12 @@ Judgement.prototype.draw = function(t, x, y, on_top, selected, greyed_out) {
             var text_height = font_size / 2;
             c.fillText(str, logic_info.x+(logic_info.w-text_width)/2, logic_info.y + (text_height/2)); 
         } 
+
+        var font_size = 50;
+        c.font = font_size + "px Arial";
+        var text_width = c.measureText(Globals.VarToLogicRep.turnstile).width;
+        var text_height = font_size / 2;
+        c.fillText(Globals.VarToLogicRep.turnstile, x + this.get_left_width() - (text_width/2), on_top ? y + (text_height/2) : y + h)
         c.lineWidth = 3;
         c.strokeStyle = "rgb(0,0,0)";
         c.beginPath();
@@ -536,16 +543,6 @@ function add_closed_sub_exprs(t, closed_sub_exprs) {
     return false;
 }
 
-// function has_free_vars(t) {
-//     var vars = {}
-//     add_live_vars(t, vars);
-//     for (var p in vars) {
-//         return true
-//     }
-//     return false
-// }
-
-
 // sorin1 = BinExpr("imp", Var("A"), Var("B"));
 // sorin2 = {A: BinExpr("imp", Var("a"), Var("b")), B: Var("c")};
 // sorin3 = apply_subst(sorin1, sorin2);
@@ -553,29 +550,6 @@ function add_closed_sub_exprs(t, closed_sub_exprs) {
 // sorin5 = BinExpr("imp", Var("A"), BinExpr("imp", Var("a"), Var("b")));
 // sorin6 = BinExpr("imp", BinExpr("and", Var("x"), Var("y")), Var("C"));
 // sorin7 = unify_trees(sorin5, sorin6, {});
-
-// Tree.prototype.draw = function(t, w) {
-//     if (this.left == null && this.right == null) {
-//         t[VarToShape[this.n]](w);
-//     } else if (this.left == null) {
-//     } else {
-//         var token_width = w * 0.20;
-//         var space_width = (w - (token_width*3))/4;
-//         var space1 = space_width;
-//         var space2 = space_width;
-//         var space3 = space_width;
-//         var space4 = w - (token_width*3) - space1 - space2 - space3;
-//         t.up(10);
-//         t.right(space1);
-//         this.left.draw(t, token_width);
-//         t.right(space2);
-//         t[VarToShape[this.n]](token_width);
-//         t.right(space3);
-//         this.right.draw(t, token_width);
-//         t.right(space4);
-//         t.down(10);
-//     }
-// }
 
 /**************************************************/
 //
@@ -585,7 +559,6 @@ function add_closed_sub_exprs(t, closed_sub_exprs) {
 
 function Turtle(c) {
     this.c = c;
-   // c.setLineDash([1,3]);
     this.x = 0;
     this.y = 0;
 }
@@ -725,18 +698,6 @@ Turtle.prototype.move_to = function(x,y) {
     this.x = x;
     this.y = y;
 }
-
-
-// function draw_upper_triangle(c, x, y, w) {
-//     c.lineTo(x+(w/2), y+w);
-//     c.lineTo(x+w, y);
-// }
-
-// function draw_lower_circle(c, x, y, w) {
-//     var r = w/2;
-//     c.arcTo(x+(w/2), y + (20*r), x+w, y, r);
-//     c.lineTo(x+w, y);
-// }
 
 Crafty.c('Spinner', {
     init: function() {
