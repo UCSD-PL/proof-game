@@ -1,13 +1,13 @@
 
 
 $(document).ready(function(){
-  var user_id = qs("test_number")  
-  if(user_id == undefined)
-  {
-    window.location = window.location.toString() + "&test_number="+guid()
-  }
+  // var user_id = qs("test_number")  
+  // if(user_id == undefined)
+  // {
+  //   window.location = window.location.toString() + "&test_number="+guid()
+  // }
 
-  log({name: "Page Load"})
+  // log({name: "Page Load"})
 });
 
 function S4() {
