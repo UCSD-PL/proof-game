@@ -823,22 +823,11 @@ Crafty.c('JudgementPuzzlePiece', {
                     Game.trigger_callout_transition({name: "PieceConnectionFailed", current: Game.current_rule});
 
             };
-            // if (!self.selected) 
-            //     Game.foreach_piece(function(p) { p.set_selected(false) });
-            // var other = null;
-            // Game.foreach_piece(function(p) { 
-            //     if (p != self && p.selected)
-            //         other = other == null ? p : "more than one"
-            //     p.set_selected(false)
-            // });
-            // if (other != null && other != "more than one") {
-            //     self.connect_if_match(other)
+            // if(Game.current_rule)
+            // {
+            //     Game.current_rule.x = this.x
+            //     Game.current_rule.y = this.y
             // }
-            if(Game.current_rule)
-            {
-                Game.current_rule.x = this.x
-                Game.current_rule.y = this.y
-            }
         });
         this.bind("Dragging", function(e) {
             var dx = (e.clientX - self.drag_x) / Crafty.viewport._zoom;
@@ -960,7 +949,8 @@ Crafty.c('JudgementPuzzlePiece', {
                     var x = pos.x - self.x;
                     var i = Math.floor(x/Globals.FormulaWidth);
                     var local_x = x%Globals.FormulaWidth;
-                    if (Game.double_clicked_piece == undefined || Game.double_clicked_piece == null) {
+                    //if (Game.double_clicked_piece == undefined || Game.double_clicked_piece == null) {
+                    if (!Game.double_clicked_piece) {
                         var cube_w = Globals.FormulaWidth *0.9;
                         var cube_h = Globals.JudgementHeight*1.5;
                         var marker = 
@@ -991,9 +981,7 @@ Crafty.c('JudgementPuzzlePiece', {
                                 }
                             }
                         }
-                        Game.foreach_piece(function(p) { p.set_greyed_out(false) });
-                        Game.double_clicked_piece.marker.destroy();
-                        Game.double_clicked_piece = null;
+                        Game.clear_double_clicking();
                     }
                 }
             };
@@ -2339,6 +2327,7 @@ Game = {
         Game.foreach_piece(function (p) { p.destroy() });
         Game.clear_callouts();
         MetaVarManager.garbage_collect();
+        Game.clear_double_clicking();
     },
 
     add_puzzle: function(goal, pieces) {
@@ -2427,9 +2416,10 @@ Game = {
     },
 
     replace_current_rule: function(top, bottom) {
+        Game.clear_double_clicking();
         Game.remove_current_rule();
         Game.current_rule = build_inference_rule_piece(top, bottom, 150, 150);
-        Game.trigger_callout_transition({name: "PieceCreated", top:top, bottom:bottom})
+        Game.trigger_callout_transition({name: "PieceCreated", top:top, bottom:bottom});
     },
 
     create_assumption_piece: function() {
@@ -2466,16 +2456,9 @@ Game = {
     },
 
     add_context: function(left) {
+        Game.clear_double_clicking();
         if (Game.current_rule != null) {
             Game.current_rule.add_context(left);
-            // var new_context_var = MetaVarManager.next_var("G");
-            // Game.current_rule.foreach_piece(function (p) {
-            //     if (left) 
-            //         p.judgement.left.unshift(Var(new_context_var));
-            //     else
-            //         p.judgement.left.push(Var(new_context_var));
-            //     p.trigger("Change");
-            // });
             Game.current_rule.place(Game.current_rule.x, Game.current_rule.y);
         }
     },
@@ -2532,6 +2515,7 @@ Game = {
     },
 
     pop_history: function() {
+        Game.clear_double_clicking();
         if (Game.history_count > 0) {
             Game.history_count = Game.history_count - 1;
             Game.foreach_piece(function(p) {
@@ -2545,6 +2529,7 @@ Game = {
     },
 
     toggle_logic: function() {
+        Game.clear_double_clicking();
         Game.show_logic = !Game.show_logic;
         Game.foreach_piece(function(p) {
             p.set_greyed_out(Game.show_logic)
@@ -2561,8 +2546,16 @@ Game = {
         // , Crafty.viewport.width/2
         // , Crafty.viewport.height/2
         // , 10);
+    },
+
+    clear_double_clicking: function() {
+        if (Game.double_clicked_piece) {
+            Game.foreach_piece(function(p) { p.set_greyed_out(false) });
+            Game.double_clicked_piece.marker.destroy();
+            Game.double_clicked_piece = null;
+        }
     }
-   
+
 }
 
 window.addEventListener('load', Game.start);
