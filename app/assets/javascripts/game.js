@@ -1507,6 +1507,7 @@ Game = {
 
         Crafty.sprite("/assets/DownArrow.gif", {down_arrow:[0,0,128,128]});
         Crafty.sprite("/assets/UpArrow.gif", {up_arrow:[0,0,128,128]});
+        Crafty.sprite("/assets/DownBlackArrow.gif", {down_black_arrow:[0,0,64,229]});
         
         var down_arrow = {
           sprite: "down_arrow",
@@ -1522,8 +1523,19 @@ Game = {
           height: 128
         }
 
+        var down_black_arrow = {
+          sprite: "down_black_arrow",
+          img_src: "/assets/DownBlackArrow.gif",
+          width: 64,
+          height: 229
+        }
+
         var text = function(s,x,y) {
             return { message: s, x_offset: x, y_offset: y }
+        }
+
+        var sprite = function(name, x, y, w, h) {
+            return { sprite: name, x_offset: x, y_offset: y, width: w, height: h }
         }
 
         Game.puzzles = [];
@@ -1603,31 +1615,36 @@ Game = {
             Game.piece_text_callout_static(0, text("Wait, no yellow shapes? <br> What to do!!!", 0, -210))
             setTimeout(function() {
                 Game.clear_callouts()
-                Game.replace_current_rule(["a |- A"], "|- A");
+                Game.replace_current_rule(["a |- A"], "|- A", 300, 150);
                 Game.piece_text_callout_static(2, text("Here's a special piece.<br>" +
-                                                       "Notice the red ports.<br>" +
-                                                       //"They take the shape they are connected to.<br>" +
-                                                       "Connect the two pieces<br> and watch the animation", 550 , 50));
+                                                       "Notice the red ports.<br>", 500 , 50));
                 Game.shape_sprite_callout(2,1, down_arrow);
                 Game.shape_sprite_callout(1,0, up_arrow);
-                Game.callout_transitions.push({
-                    condition: {name: "StartDrag", matches: function(other) {return other.name == this.name} },
-                    result: function () {
-                        Game.clear_callouts()
-                        Game.callout_transitions.push({
-                            condition: Game.piece_connected_condition(),
-                            result: function() {
-                                setTimeout(function() {
-                                    Game.clear_callouts()
-                                    Game.piece_text_callout(2, text("Now match yellow & pink!", 50, -210))
-                                    Game.shape_sprite_callout(2,0, down_arrow);
-                                    Game.shape_sprite_callout(2,1, down_arrow);
-                                }, 5000)
-                            }
-                        });
-                    }
-                })
-            },5000)
+                setTimeout(function() {
+                    Game.clear_callouts();
+                    Game.piece_text_callout_static(2, text("Drag the piece along arrow<br>" + 
+                                                           "and release.<br>" +
+                                                           "Then watch the animation!<br>", 500 , 50));
+                    var arrow_piece = Game.piece_sprite_callout_static(2, sprite("down_black_arrow", 325, 125, 64, 229));
+                    Game.callout_transitions.push({
+                        condition: {name: "StartDrag", matches: function(other) {return other.name == this.name} },
+                        result: function() {
+                            arrow_piece.destroy();
+                            Game.callout_transitions.push({
+                                condition: Game.piece_connected_condition(),
+                                result: function() {
+                                    setTimeout(function() {
+                                        Game.clear_callouts()
+                                        Game.piece_text_callout(2, text("Now match yellow & pink!", 50, -210))
+                                        Game.shape_sprite_callout(2,0, down_arrow);
+                                        Game.shape_sprite_callout(2,1, down_arrow);
+                                    }, 5000);
+                                }
+                            });
+                        }
+                    });
+                },5000);
+            },5000);
         })
 
         // Puzzle 10
@@ -2267,37 +2284,52 @@ Game = {
     },
 
     piece_text_callout_static: function(piece_id, callout_data){
-       var p = Game.piece(piece_id)
+        var p = Game.piece(piece_id)
 
-       var callout = 
-           Crafty.e("2D, DOM, Text")
-           .attr({ x: p.x + callout_data.x_offset, y: p.y + callout_data.y_offset, w: 800 })
-           .text(callout_data.message)
-           .textFont({ size: '30px', weight: 'bold' })
+        var callout = 
+            Crafty.e("2D, DOM, Text")
+            .attr({ x: p.x + callout_data.x_offset, y: p.y + callout_data.y_offset, w: 800 })
+            .text(callout_data.message)
+            .textFont({ size: '30px', weight: 'bold' });
 
-       Game.callouts.push(callout)
+        Game.callouts.push(callout);
 
-       return callout
+        return callout
     },
 
-    piece_text_callout: function(piece_id, callout_data){
+    piece_sprite_callout_static: function(piece_id, callout_data) {
+        var p = Game.piece(piece_id);
+
+        var callout = 
+            Crafty.e("2D, DOM, " + callout_data.sprite)
+            .attr({ x: p.x + callout_data.x_offset, 
+                    y: p.y + callout_data.y_offset, 
+                    w: callout_data.width, 
+                    h: callout_data.height });
+
+        Game.callouts.push(callout);
+
+        return callout;
+    },
+
+    piece_text_callout: function(piece_id, callout_data) {
         var p = Game.piece(piece_id)
         var callout = Game.piece_text_callout_static(piece_id, callout_data)
         //p.attach(callout);
     },
 
-    shape_sprite_callout: function(piece_id, shape_id, callout_data){
-        var p = Game.piece(piece_id)
+    shape_sprite_callout: function(piece_id, shape_id, callout_data) {
+        var p = Game.piece(piece_id);
 
         var callout = Crafty.e("2D, DOM, " + callout_data.sprite)
             .attr({x: p.x + (shape_id+0.5) * Globals.FormulaWidth-(callout_data.width/2), 
                    y: callout_data.sprite == "down_arrow" ? (p.y-callout_data.height) : (p.y+Globals.JudgementHeight), 
                    w: callout_data.width, 
-                   h: callout_data.height})
+                   h: callout_data.height});
 
-        p.attach(callout)
+        p.attach(callout);
 
-        Game.callouts.push(callout)
+        Game.callouts.push(callout);
     },
 
     dom_sprite_callout: function(dom_id, callout_data){
@@ -2415,10 +2447,18 @@ Game = {
         }
     },
 
-    replace_current_rule: function(top, bottom) {
+    replace_current_rule: function(top, bottom, x_optional, y_optional) {
+        var x,y;
+        if (arguments.length == 2) {
+            x = 150;
+            y = 150;
+        } else {
+            x = x_optional;
+            y = y_optional;
+        }
         Game.clear_double_clicking();
         Game.remove_current_rule();
-        Game.current_rule = build_inference_rule_piece(top, bottom, 150, 150);
+        Game.current_rule = build_inference_rule_piece(top, bottom, x, y);
         Game.trigger_callout_transition({name: "PieceCreated", top:top, bottom:bottom});
     },
 
