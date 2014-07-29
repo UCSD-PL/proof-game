@@ -44,3 +44,6 @@ gem 'execjs'
 
 gem 'therubyracer'
 
+gem 'omniauth-oauth2'
+gem 'figaro'
+
