@@ -1,4 +1,3 @@
-var blah
 /**************************************************/
 //
 // Globals
@@ -400,17 +399,32 @@ Tree.prototype.is_meta_var = function() {
     return c.toUpperCase() == c;
 }
 
-Tree.prototype.toString = function() {
+Tree.prototype.to_string_full_paren = function() {
+    var n = this.n;
+    if (n in Globals.VarToLogicRep) {
+        n = Globals.VarToLogicRep[n]
+    }
     if (this.left == null && this.right == null) {
-        return this.n
+        return n;
     }
     if (this.left != null && this.right == null) {
-        return this.n + "(" + this.left.toString() + ")"
+        return "(" + n + this.left.to_string_full_paren() + ")"
     }
     if (this.left == null && this.right != null) {
-        return this.n + "(" + this.right.toString() + ")"
+        return "(" + n + this.right.to_string_full_paren() + ")"
     }
-    return this.n + "(" + this.left.toString() + ", " + this.right.toString() + ")"
+    return "(" + this.left.to_string_full_paren() + 
+           " " + n + " " + 
+           this.right.to_string_full_paren() + ")";
+}
+
+Tree.prototype.to_string = function() {
+    var s = this.to_string_full_paren();
+    if (s[0] == "(" && s[s.length-1] == ")") {
+        return s.slice(1, s.length-1);
+    } else {
+        return s;
+    }
 }
 
 Tree.prototype.draw = function(t, w, on_top) {
@@ -1386,7 +1400,6 @@ function build_judgement(s) {
     with (JudgementConstruction) {
         return new Judgement(eval("[" + left + "]"), eval(right));
     }
-    
 }
 
 function build_judgement_piece(s) {
@@ -2635,9 +2648,6 @@ Game = {
     }
 
 }
-
-window.addEventListener('load', Game.start);
-
 
 function make_transparent(str, alpha)
 {

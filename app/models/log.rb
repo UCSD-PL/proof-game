@@ -7,14 +7,15 @@ class Log < ActiveRecord::Base
   end
 
   def color
-    if(test_number.nil?)
-      return "black"
-    end
-    test_number_split = test_number.split "-"
-    r = test_number_split[0].hash % 255
-    g = test_number_split[1].hash % 255
-    b = test_number_split[2].hash % 255
+    return "black"
+    # if(test_number.nil?)
+    #   return "black"
+    # end
+    # test_number_split = test_number.split "-"
+    # r = test_number_split[0].hash % 255
+    # g = test_number_split[1].hash % 255
+    # b = test_number_split[2].hash % 255
 
-    return "rgb("+r.to_s+","+g.to_s+","+b.to_s+")"
+    # return "rgb("+r.to_s+","+g.to_s+","+b.to_s+")"
   end
 end

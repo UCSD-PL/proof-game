@@ -11,6 +11,8 @@ You are: <%= current_user.username %>
 
 
 <script>
+    window.addEventListener('load', Game.start);
+
     $(document).ready(function(){
       var group_name = qs("group_name")
 
@@ -81,6 +83,3 @@ You are: <%= current_user.username %>
             
 
 </p>
-
-
-
