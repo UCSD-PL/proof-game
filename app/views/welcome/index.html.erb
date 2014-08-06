@@ -2,6 +2,11 @@ You are: <%= current_user.username %>
 
 <div style=" width: 100%;"><%= link_to "log out", "/session?delete=true", {method: :delete} %></div>
 
+  <script>
+    window.puzzle_number = "<%= @info.current_puzzle.to_i %>"
+    window.info_id = "<%= @info.id %>"
+  </script>
+
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "jquery" %>
   <%= javascript_include_tag "welcome.js" %>
@@ -11,6 +16,8 @@ You are: <%= current_user.username %>
 
 
 <script>
+
+
     $(document).ready(function(){
       var group_name = qs("group_name")
 

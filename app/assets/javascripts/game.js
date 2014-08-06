@@ -2155,9 +2155,10 @@ Game = {
         //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
 
 
+        
         var current_puzzle = qs("puzzle_id");
         if (current_puzzle == null)
-            current_puzzle = 0;
+            current_puzzle = window.puzzle_number;
         else {
             current_puzzle = parseInt(current_puzzle) - 1;
             if (current_puzzle < 0)
@@ -2428,6 +2429,12 @@ Game = {
         }
         Game.callout_transitions = transitions_to_keep
         Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
+
+        $.ajax({
+          type: "PUT",
+          url: "/user_infos/"+info_id+".json",
+          data: {user_info: {current_puzzle: current_puzzle}}
+        })
 
     },
 

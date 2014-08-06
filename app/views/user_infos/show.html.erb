@@ -1,0 +1,20 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Username:</b>
+  <%= @user_info.username %>
+</p>
+
+<p>
+  <b>Current puzzle:</b>
+  <%= @user_info.current_puzzle %>
+</p>
+
+<p>
+  <b>Max puzzle:</b>
+  <%= @user_info.max_puzzle %>
+</p>
+
+
+<%= link_to 'Edit', edit_user_info_path(@user_info) %> |
+<%= link_to 'Back', user_infos_path %>

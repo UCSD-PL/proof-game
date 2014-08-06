@@ -16,10 +16,8 @@ class LogsController < ApplicationController
       log = Log.new
       log.message = params[:message].inspect
 
-      if params[:group_name]
-        group = Group.find_or_create_by_name(params[:group_name]) 
-        log.group = group
-      end
+      group = Group.find_or_create_by_name(current_user.username) 
+      log.group = group
 
       log.save!
 

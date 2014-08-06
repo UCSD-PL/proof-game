@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  username: MyString
+  current_puzzle: 1
+  max_puzzle: 1
+
+two:
+  username: MyString
+  current_puzzle: 1
+  max_puzzle: 1

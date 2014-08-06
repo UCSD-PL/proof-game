@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131022192135) do
+ActiveRecord::Schema.define(:version => 20140801165301) do
 
   create_table "groups", :force => true do |t|
     t.string   "name"
@@ -24,6 +24,14 @@ ActiveRecord::Schema.define(:version => 20131022192135) do
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
     t.integer  "group_id"
+  end
+
+  create_table "user_infos", :force => true do |t|
+    t.string   "username"
+    t.integer  "current_puzzle"
+    t.integer  "max_puzzle"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
   end
 
 end
