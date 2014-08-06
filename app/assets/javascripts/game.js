@@ -1,4 +1,3 @@
-var blah
 /**************************************************/
 //
 // Globals
@@ -10,6 +9,9 @@ Globals = {
     VarToShape : { a: "wedge", 
                    b: "tee",
                    c: "left_l", 
+                   x: "wedge", 
+                   y: "tee",
+                   z: "left_l", 
                    imp: "cup", 
                    and: "vee"},
     VarToLogicRep : { imp: "\u2192", 
@@ -90,7 +92,7 @@ InferenceRule.prototype.add_context = function(left) {
             p.judgement.left.unshift(Var(new_context_var));
         else
             p.judgement.left.push(Var(new_context_var));
-        p.trigger("Change");
+        p.trigger("Invalidate");
     });
 }
 // InferenceRule.prototype.get_top_width = function() {
@@ -397,17 +399,32 @@ Tree.prototype.is_meta_var = function() {
     return c.toUpperCase() == c;
 }
 
-Tree.prototype.toString = function() {
+Tree.prototype.to_string_full_paren = function() {
+    var n = this.n;
+    if (n in Globals.VarToLogicRep) {
+        n = Globals.VarToLogicRep[n]
+    }
     if (this.left == null && this.right == null) {
-        return this.n
+        return n;
     }
     if (this.left != null && this.right == null) {
-        return this.n + "(" + this.left.toString() + ")"
+        return "(" + n + this.left.to_string_full_paren() + ")"
     }
     if (this.left == null && this.right != null) {
-        return this.n + "(" + this.right.toString() + ")"
+        return "(" + n + this.right.to_string_full_paren() + ")"
     }
-    return this.n + "(" + this.left.toString() + ", " + this.right.toString() + ")"
+    return "(" + this.left.to_string_full_paren() + 
+           " " + n + " " + 
+           this.right.to_string_full_paren() + ")";
+}
+
+Tree.prototype.to_string = function() {
+    var s = this.to_string_full_paren();
+    if (s[0] == "(" && s[s.length-1] == ")") {
+        return s.slice(1, s.length-1);
+    } else {
+        return s;
+    }
 }
 
 Tree.prototype.draw = function(t, w, on_top) {
@@ -432,12 +449,12 @@ Tree.prototype.draw = function(t, w, on_top) {
             if (this.is_meta_var()) {
                 var color = MetaVarManager.get_meta_var_color(this.n)
                 t.judgement.add_logic_info(ColorManager.get_logic_rep(color), t.x, t.y, token_width);
-            }
-            else
+                t.judgement.add_meta_var_info(this, t.x, t.y, token_width, orig_x, orig_y, w);
+            } else {
                 t.judgement.add_logic_info(this.n, t.x, t.y, token_width);
+            }
         }
-        if (this.is_meta_var() && t.judgement) {
-            t.judgement.add_meta_var_info(this, t.x, t.y, token_width, orig_x, orig_y, w);
+        if (this.is_meta_var()) {
             t.flatsqcap(token_width);
         } else {
             t[Globals.VarToShape[this.n]](token_width);
@@ -817,21 +834,17 @@ Crafty.c('JudgementPuzzlePiece', {
             }
             if (selected_bottom != null && selected_bottom != "more than one" &&
                 selected_top != null && selected_top != "more than one") {
-                var success = selected_bottom.connect_if_match_with_animation(selected_top)
+                var success = selected_bottom.connect_if_match_with_animation(selected_top);
 
                 if(!success)
                     Game.trigger_callout_transition({name: "PieceConnectionFailed", current: Game.current_rule});
 
             };
-            // if(Game.current_rule)
-            // {
-            //     Game.current_rule.x = this.x
-            //     Game.current_rule.y = this.y
-            // }
         });
         this.bind("Dragging", function(e) {
-            var dx = (e.clientX - self.drag_x) / Crafty.viewport._zoom;
-            var dy = (e.clientY - self.drag_y) / Crafty.viewport._zoom;
+            var dx = (e.clientX - self.drag_x) / Crafty.viewport._scale;
+            var dy = (e.clientY - self.drag_y) / Crafty.viewport._scale;
+            console.log(Crafty.viewport._scale);
 
             if (self.on_top) {
                 if (self.connected != null) {
@@ -1004,10 +1017,8 @@ Crafty.c('JudgementPuzzlePiece', {
         
         t = new Turtle(c);
         if (this.on_top) {
-            //this.judgement.draw_on_top(t, x, y+Globals.YTopBufferSpace, this.selected, this.greyed_out);
             this.judgement.draw(t, x, y+Globals.YTopBufferSpace, this.on_top, this.selected, this.greyed_out);
         } else {
-            //this.judgement.draw_on_bottom(t, x, y, this.selected, this.greyed_out);
             this.judgement.draw(t, x, y, this.on_top, this.selected, this.greyed_out);
         }
     },
@@ -1045,14 +1056,14 @@ Crafty.c('JudgementPuzzlePiece', {
     set_selected: function(s) {
         if (this.selected != s) {
             this.selected = s;
-            this.trigger("Change");
+            this.trigger("Invalidate");
         }
     },
 
     set_greyed_out: function(g) {
         if (this.greyed_out != g) {
             this.greyed_out = g;
-            this.trigger("Change");
+            this.trigger("Invalidate");
         }
     },
 
@@ -1066,7 +1077,7 @@ Crafty.c('JudgementPuzzlePiece', {
         var state = this.history.pop();
         this.judgement = state.j;
         this.connected = state.c;
-        this.trigger("Change");
+        this.trigger("Invalidate");
     },
 
     connected_move: function(dx, dy) {
@@ -1092,7 +1103,7 @@ Crafty.c('JudgementPuzzlePiece', {
     },
 
     move_from_top: function(dx, dy) {
-        this.trigger("Change");
+        this.trigger("Invalidate");
         this.x = this.x + dx;
         this.y = this.y + dy;
         if (this.on_top) {
@@ -1113,7 +1124,7 @@ Crafty.c('JudgementPuzzlePiece', {
     },
 
     move_from_top_adjusted: function(dx, dy) {
-        this.trigger("Change");
+        this.trigger("Invalidate");
         this.x = this.x + dx;
         this.y = this.y + dy;
         if (!this.on_top) { throw "Must be a top piece for this"; }
@@ -1130,7 +1141,7 @@ Crafty.c('JudgementPuzzlePiece', {
     },
 
     move_from_bottom: function(dx, dy) {
-        this.trigger("Change");
+        this.trigger("Invalidate");
         this.x = this.x + dx;
         this.y = this.y + dy;
         if (this.on_top) {
@@ -1188,16 +1199,16 @@ Crafty.c('JudgementPuzzlePiece', {
                 var meta_var_info = meta_var_infos[i];
                 var n = meta_var_info.t.n;
                 if (!(n in s)) continue;
-                if (has_meta_var(s[n])) { 
-                    // don't animate meta-vars that map to other meta-vars
-                    meta_var_info.t.copy_from(s[n]);
-                    continue;
-                }
+                // if (has_meta_var(s[n])) { 
+                //     // don't animate meta-vars that map to other meta-vars
+                //     meta_var_info.t.copy_from(s[n]);
+                //     continue;
+                // }
                 if (!(n in mv_by_name)) { mv_by_name[n] = [] };
                 mv_by_name[n].push(meta_var_info);
             };
             // redraw so that meta-var to meta-var mapping become visible right away
-            Game.redraw_all(); 
+            //Game.redraw_all(); 
             for (n in mv_by_name) {
                 mv_by_name[n].sort(function(a,b) { return b.y - a.y });
             }
@@ -1245,14 +1256,7 @@ Crafty.c('JudgementPuzzlePiece', {
         if (s === false) return false;
         Game.push_history();
         this.connect_to(other);
-        if (this.inference_rule != null)
-            this.inference_rule.apply(s)
-        else
-            this.apply(s);
-        if (other.inference_rule != null)
-            other.inference_rule.apply(s)
-        else
-            other.apply(s);
+        Game.foreach_piece(function(p) { p.apply(s) });
         Game.trigger_callout_transition({name: "PieceConnected", current: Game.current_rule, other: other});
         MetaVarManager.garbage_collect();
         Game.current_rule = null;
@@ -1262,12 +1266,12 @@ Crafty.c('JudgementPuzzlePiece', {
 
     make_fresh: function() {
         this.judgement.make_fresh();
-        this.trigger("Change");
+        this.trigger("Invalidate");
     },
 
     apply: function(s) {
         this.judgement.apply(s);
-        this.trigger("Change");
+        this.trigger("Invalidate");
     },
 
     distance_from_other: function(other) {
@@ -1305,25 +1309,42 @@ Crafty.c('AnimatedFormula', {
         var h = pos._h - 2;
         
         t = new Turtle(c);
+        // hack: dummy judgement so that we can collect meta var infos
+        t.judgement = new Judgement();
+        t.judgement.clear_meta_var_infos();
+        t.judgement.clear_logic_infos();
         c.lineWidth = 5;
         c.strokeStyle = this.color;
         c.beginPath();
         t.move_to(x, y+Globals.YTopBufferSpace+10);
         this.formula.draw(t, w, false);
         c.stroke();
+
+        for (var i = 0; i < t.judgement.meta_var_infos.length; i++) {
+            var meta_var_info = t.judgement.meta_var_infos[i];
+            var c = t.c;
+            c.lineWidth = 5;
+            c.strokeStyle = MetaVarManager.get_meta_var_color(meta_var_info.t.n);
+            c.beginPath();
+            t.move_to(meta_var_info.x, meta_var_info.y);
+
+            var height = 20;
+            t.up(height);
+            t.right(meta_var_info.w);
+            t.down(height);
+
+            c.stroke();
+
+        }
+
     },
+
     set_formula: function(f) {
         this.formula = f;
-        // with (JudgementConstruction) {
-        //     this.formula = eval(s)
-        // }
         return this
     },
     set_color: function(c) {
         this.color = c;
-        // with (JudgementConstruction) {
-        //     this.formula = eval(s)
-        // }
         return this
     },
     animate_to: function(x, y, w, steps, cont) { 
@@ -1331,11 +1352,7 @@ Crafty.c('AnimatedFormula', {
         this.x = this.x + (x - this.x)/steps;
         this.y = this.y + (y - this.y)/steps;
         this.w = this.w + (w - this.w)/steps;
-        // if (x > this.x) this.x = this.x+1;
-        // if (x < this.x) this.x = this.x-1;
-        // if (y > this.y) this.y = this.y+1;
-        // if (y < this.y) this.y = this.y-1;
-        this.trigger("Change");
+        this.trigger("Invalidate");
         var self = this;
         setTimeout(function() { self.animate_to(x, y, w, steps-1, cont) }, 10);
     }
@@ -1355,6 +1372,9 @@ JudgementConstruction = {
     b: Var("b"),
     c: Var("c"),
     d: Var("d"),
+    x: Var("x"),
+    y: Var("y"),
+    z: Var("z"),
     imp: function(e1,e2) {
         return BinExpr("imp", e1, e2);
     },
@@ -1380,7 +1400,6 @@ function build_judgement(s) {
     with (JudgementConstruction) {
         return new Judgement(eval("[" + left + "]"), eval(right));
     }
-    
 }
 
 function build_judgement_piece(s) {
@@ -1497,13 +1516,8 @@ MetaVarManager = {
 
 
 Game = {
-    // Initialize and start our game
-    start: function() {
-             
-        ColorManager.init();
-        MetaVarManager.init();
-        Game.current_rule = null;
-        Game.show_logic = false;
+
+    init_puzzle_db: function() {
 
         Crafty.sprite("/assets/DownArrow.gif", {down_arrow:[0,0,128,128]});
         Crafty.sprite("/assets/UpArrow.gif", {up_arrow:[0,0,128,128]});
@@ -1541,6 +1555,7 @@ Game = {
         Game.puzzles = [];
 
         // Puzzle 1
+        Game.puzzle_range_start("game_in_class");
         Game.add_puzzle_with_tutorial("a,b |- a", [], function() {
             Game.shape_sprite_callout(0,2, down_arrow);
             Game.piece_text_callout(0, text("For each pink shape,<br>find a matching yellow one.<br> Double click the pink shape.", 50, -310))
@@ -1694,7 +1709,8 @@ Game = {
         });
 
         // Puzzle 14
-        Game.add_puzzle_with_tutorial("|- imp(b,b)", ["imp-intro"], function() {})
+        Game.puzzle_range_start("exercises_in_class_1");
+        Game.add_puzzle_with_tutorial("|- imp(b,b)", ["imp-intro"], function() {});
 
         // Puzzle 15
         Game.add_puzzle_with_tutorial("b |- imp(a, b)", ["imp-intro"], function() {
@@ -1768,8 +1784,9 @@ Game = {
         Game.add_puzzle_with_tutorial("a,b |- imp(a, b)", ["imp-intro", "add-context"], function() {
         })
 
+        Game.puzzle_range_end("exercises_in_class_1");
 
-        // Puzzle 18
+        // Puzzle 18, don't include in paper exercises
         Game.add_puzzle_with_tutorial("b |- and(b, b)", ["imp-intro", "add-context"], function() {
             Game.clear_callouts();
             Game.piece_text_callout(0, text("Try to create & connect a piece of the right size", -100, -410));
@@ -1797,9 +1814,10 @@ Game = {
                     Game.piece_text_callout_static(0, text("Try to finish the puzzle<br>Again look at the animations", 0, -410));
                 }
             });
-        })
+        });
 
         // Puzzle 19
+        Game.puzzle_range_start("exercises_in_class_2");
         Game.add_puzzle_with_tutorial("a,b |- and(a, b)", ["and-intro", "imp-intro", "add-context"], function() {
 
             Game.clear_callouts()
@@ -1812,107 +1830,25 @@ Game = {
                 }
             })
 
-            // Game.piece_text_callout(0, text("No matching shapes.<br>Try double clicking anyway.", 50, -210))
-            // Game.shape_sprite_callout(0,0, down_arrow);
-            // Game.shape_sprite_callout(0,2, down_arrow);
-
-
-            // //"Page 1"
-            // var first_double_click = {
-            //     condition: {name: "DoubleClickShape", matches: function(other){this.shape_id = other.shape_id;  return other.name == this.name}},
-            //     result: function(){
-            //         Game.clear_callouts();
-            //         Game.shape_sprite_callout(0,this.condition.shape_id == 2 ? 0 : 2, down_arrow);
-            //         Game.piece_text_callout_static(0, text("No matching shapes.<br>Try double clicking anyway.", 50, -210));
-            //     }
-            // }
-            // Game.callout_transitions.push(first_double_click);
-
-            // var second_double_click = {
-            //     condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}}, 
-            //     predecessors: [first_double_click],
-            //     result: function(){
-            //         Game.clear_callouts()
-            //         Game.piece_text_callout_static(0, text("It didn't work!  You need to use a special piece.  Click the piece", 50, -210))
-            //     }
-            // }
-            // Game.callout_transitions.push(second_double_click);
-
-            
-            // //"Page 2"
-            // Game.callout_transitions.push({
-            //     condition: Game.condition_satisfied(),
-            //     predecessors: [first_double_click, second_double_click],
-            //     result: function(){
-            //         Game.clear_callouts()
-            //         Game.piece_text_callout_static(0, text("It didn't work!  You need to use a special piece.  Click the piece", 50, -210))
-            //         Game.dom_sprite_callout("and-intro", up_arrow);
-            //     }
-            // });
-
-            // //"Page 3"
-            // var create_piece = {
-            //     condition: Game.piece_created_condition(["|- A", "|- B"], "|- and(A,B)"),
-            //     result: function(){
-            //         Game.clear_callouts()
-            //         Game.piece_text_callout(1, text("Make it bigger.", 50, -210))
-            //         Game.dom_sprite_callout("add-context", up_arrow);
-            //     }
-            // };
-            // Game.callout_transitions.push(create_piece);
-
-            // //"Page 4"
-            // var first_context_add = {
-            //     condition: Game.context_added_condition(),
-            //     predecessors: [create_piece],
-            //     result: function() {
-            //         Game.clear_callouts()
-            //         Game.piece_text_callout(1, text("One more time...", 50, -210))
-            //         Game.dom_sprite_callout("add-context", up_arrow);
-            //     }
-            // };
-            // Game.callout_transitions.push(first_context_add)
-
-            // Game.callout_transitions.push({
-            //     condition: Game.context_added_condition(),
-            //     predecessors: [first_context_add],
-            //     result: function() {
-            //         Game.clear_callouts()
-            //         Game.piece_text_callout(1, text("Now connect the two pieces.<br>Watch the animation again!", 50, -210))
-            //     }
-            // });
-
-            // //"Page 5"
-            // Game.callout_transitions.push({
-            //     condition: Game.piece_connected_condition(),
-            //     result: function() {
-            //         setTimeout(function() {
-            //             Game.clear_callouts()
-            //             Game.piece_text_callout(2, text("Double click matching shapes",  50, -210))
-            //             Game.shape_sprite_callout(2,0, down_arrow);
-            //             Game.shape_sprite_callout(2,2, down_arrow);
-            //             Game.shape_sprite_callout(3,1, down_arrow);
-            //             Game.shape_sprite_callout(3,2, down_arrow);
-            //         }, 5000)
-            //     }
-            // });
         });
 
         // Puzzle 20
         Game.add_puzzle_with_tutorial("c,a |- imp(b, c)", ["and-intro", "imp-intro", "add-context"], function() {
-        })
+        });
 
         // Puzzle 21
         Game.add_puzzle_with_tutorial("c |- imp(b, and(b,c))", ["and-intro", "imp-intro", "add-context"], function() {
-        })
+        });
 
         // Puzzle 22
         Game.add_puzzle_with_tutorial("c |- and(imp(a,a), c)", ["and-intro", "imp-intro", "add-context"], function() {
-        })
+        });
 
         // Puzzle 23
         Game.add_puzzle_with_tutorial("|- imp(c, and(c, imp(a,a)))", ["and-intro", "imp-intro", "add-context"], function() {
-        })
+        });
+
+        Game.puzzle_range_end("exercises_in_class_2");
 
         // Puzzle 24
         Game.add_puzzle_with_tutorial("and(b,a) |- b", ["and-intro", "imp-intro", "add-context"], function() {
@@ -1972,15 +1908,18 @@ Game = {
                     }, 2000);
                 }
             })
-        })
+        });
 
         // Puzzle 25
+        Game.puzzle_range_start("exercises_in_class_3");
         Game.add_puzzle_with_tutorial("|- imp(and(c,b), c)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
         })
 
         // Puzzle 26
         Game.add_puzzle_with_tutorial("and(c,b), a |- and(a,c)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
         })
+
+        Game.puzzle_range_end("exercises_in_class_3");
 
         // Puzzle 27
         Game.add_puzzle_with_tutorial("and(a,c) |- c", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
@@ -1994,9 +1933,10 @@ Game = {
                 }
             };
             Game.callout_transitions.push(create_piece);
-        })
+        });
 
         // Puzzle 28
+        Game.puzzle_range_start("exercises_in_class_4");
         Game.add_puzzle_with_tutorial("and(c,b) |- c", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"], function() {
             Game.piece_text_callout_static(0, text("Note the restart and undo buttons,<br>which may come in handy.", 50, -300))
             Game.dom_sprite_callout("restart", up_arrow);
@@ -2010,150 +1950,46 @@ Game = {
         })
 
         // Puzzle 29
-        Game.add_puzzle("and(b,a) |- a", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"])
+        Game.add_puzzle("and(b,a) |- a", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"]);
 
         // Puzzle 30
-        Game.add_puzzle("and(a,b) |- and(b,a)", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"])
+        Game.add_puzzle("and(a,b) |- and(b,a)", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"]);
 
+        // Session for home
+        Game.puzzle_range_switch("exercises_in_class_4", "exercises_at_home");
+        Game.puzzle_range_switch("game_in_class", "game_at_home");
+        var pieces_for_2nd_session = ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"];
+        Game.add_puzzle("|- imp(b,b)", pieces_for_2nd_session);
+        Game.add_puzzle("a |- imp(c,a)", pieces_for_2nd_session);
+        Game.add_puzzle("|- imp(c,imp(b,c))", pieces_for_2nd_session);
+        Game.add_puzzle("c |- and(c,c)", pieces_for_2nd_session);
+        Game.add_puzzle("b,a |- and(a,b)", pieces_for_2nd_session);
+        Game.add_puzzle("b,a,c |- and(c,a)", pieces_for_2nd_session);
+        Game.add_puzzle("b,imp(a,a),c |- and(b,b)", pieces_for_2nd_session);
+        Game.add_puzzle("|- imp(c,and(c,c))", pieces_for_2nd_session);
+        Game.add_puzzle("a,b |- imp(a,b)", pieces_for_2nd_session);
+        Game.add_puzzle("and(b,a) |- b", pieces_for_2nd_session);
+        Game.add_puzzle("and(b,c) |- c", pieces_for_2nd_session);
+        Game.add_puzzle("and(a,b) |- imp(a,b)", pieces_for_2nd_session);
+        Game.add_puzzle("and(and(a,b),c) |- a", pieces_for_2nd_session);
+        Game.add_puzzle("and(and(a,b),c) |- b", pieces_for_2nd_session);
+        Game.add_puzzle("and(and(a,b),c) |- c", pieces_for_2nd_session);
+        Game.add_puzzle("and(and(a,b),c) |- and(b,c)", pieces_for_2nd_session);
+        Game.add_puzzle("and(and(a,b),c) |- and(a,c)", pieces_for_2nd_session);
 
-        // // Puzzle 19
-        // Game.add_puzzle_with_tutorial("and(a,b) |- a", ["and-intro","and-elim-1", "imp-intro", "add-context"], function() {
-        //     Game.clear_callouts();
-        //     Game.piece_text_callout(0, text("Again, need a special piece.", 50, -210))
-        //     Game.dom_sprite_callout("and-elim-1", up_arrow);
-            
-        //     var create_piece = {
-        //         condition: Game.piece_created_condition(["|- and(A,B)"], "|- A"),
-        //         result: function() {
-        //             Game.clear_callouts()
-        //             Game.dom_sprite_callout("add-context", up_arrow);
-        //             Game.piece_text_callout(1, text("Now make it bigger, so it fits", 50, -210))
-        //         }
-        //     };
-        //     Game.callout_transitions.push(create_piece);
+        Game.puzzle_range_end("exercises_at_home");
+        Game.puzzle_range_end("game_at_home");
 
-        //     var context_add = {
-        //         condition: Game.context_added_condition(),
-        //         predecessors: [create_piece],
-        //         result: function(){
-        //             Game.clear_callouts()
-        //             Game.piece_text_callout(1, text("Connect, and watch the animation.", 50, -210))
-        //         }
-        //     };
-        //     Game.callout_transitions.push(context_add);
+    },
 
-        //     Game.callout_transitions.push({
-        //         condition: Game.piece_connected_condition(),
-        //         predecessors: [context_add],
-        //         result: function() {
-        //             setTimeout(function() {
-        //                 Game.clear_callouts()
-        //                 Game.piece_text_callout(1, text("The blue portion acts like a wild card.<br>  Match yellow shape with pink one.", 0, -210));
-        //                 Game.shape_sprite_callout(1,0, down_arrow);
-        //                 Game.shape_sprite_callout(1,1, down_arrow);
-        //             }, 5000)
-        //         }
-        //     })
-        // });
+    // Initialize and start our game
+    start: function() {
 
-        // // Puzzle 13
-        // Game.add_puzzle_with_tutorial("and(a,b) |- b", ["and-elim-2", "add-context"], function() {
-        //     Game.clear_callouts();
-        //     Game.piece_text_callout(0, text("Your turn. Introduce a new piece, and make it bigger until it fits.", 50, -210))
-        //     Game.dom_sprite_callout("and-elim-2", up_arrow);
-
-        //     Game.callout_transitions.push({
-        //         condition: Game.piece_connected_condition(),
-        //         result: function() {
-        //             Game.clear_callouts()
-        //             Game.piece_text_callout(1, text("Can you solve the puzzle?", 50, -210))
-        //         }
-        //     })
-        // });
-
-        // // Puzzle 14
-        // Game.add_puzzle_with_tutorial("|- imp(a, imp(b,a))", "all", function(){
-        //     Game.clear_callouts();
-        //     Game.piece_text_callout(0, text("Now YOU have to decide which piece to use.", 50, -210))
-        //     Game.dom_sprite_callout("and-intro", up_arrow);
-        //     Game.dom_sprite_callout("and-elim-1", up_arrow);
-        //     Game.dom_sprite_callout("and-elim-2", up_arrow);
-        //     Game.dom_sprite_callout("imp-intro", up_arrow);
-        //     Game.dom_sprite_callout("imp-elim", up_arrow);
-
-        //     var create_piece = {
-        //         condition: Game.piece_created_condition(),
-        //         result: function() {
-        //             Game.clear_callouts()
-        //             Game.piece_text_callout(1, text("One last tip!<br>"+
-        //                                             "If you ever feel you've gone down the wrong path, use the restart button. " + 
-        //                                             "Each of these puzzles should take no more than 5 moves.", 50, -210))
-        //             Game.dom_sprite_callout("restart", up_arrow);
-        //         }
-        //     }
-
-        //     if(!Game.restarted)
-        //         Game.callout_transitions.push(create_piece);
-
-        //     Game.callout_transitions.push({
-        //         condition: Game.piece_connected_condition(),
-        //         result: function() {
-        //             Game.clear_callouts()
-        //         }
-        //     })
-            
-        //     Game.callout_transitions.push({
-        //         condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
-        //         persist: true,
-        //         result: function(){
-        //             alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
-        //         }
-        //     });
-
-        //     Game.callout_transitions.push({
-        //         condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
-        //         persist: true,
-        //         result: function(){
-        //             alert("Those pieces do not fit together.")
-        //         }
-        //     });
-        // });
-
-        // var end_of_tutorial = Game.puzzles.length;
-        // Game.callout_transitions.push({
-        //     condition: {
-        //         name: "PuzzleChangeCondition", 
-        //         matches: function(other) {
-        //             var ret = other.name == this.name && other.puzzle_id >= end_of_tutorial;
-        //             return ret 
-        //         }
-        //     },
-        //     result: function() {
-        //         Game.callout_transitions.push({
-        //             condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}},
-        //             persist: true,
-        //             result: function(){
-        //                 alert("The goal of the game is to find a yellow shape that matches a pink shape.  The shapes must be in the same block.")
-        //             }
-        //         });
-
-        //         Game.callout_transitions.push({
-        //             condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
-        //             persist: true,
-        //             result: function(){
-        //                 alert("Those pieces do not fit together.")
-        //             }
-        //         });
-        //     }
-        // });
-
-        // Game.add_puzzle("a |- and(a, a)", "all"); // 15
-        // Game.add_puzzle("a |- and(and(a, a),a)", "all"); // 16
-        // Game.add_puzzle("and(a,b) |- and(b,a)", "all"); // 17
-        // Game.add_puzzle("|- imp(a, imp(imp(a,b), b))", "all"); // 18
-
-        //Game.add_puzzle("and(a,b) |- and(a,B)", ["assumption", "and-elim-2", "add-context-left", "add-context-right"]);
-
+        Game.init_puzzle_db();
+        ColorManager.init();
+        MetaVarManager.init();
+        Game.current_rule = null;
+        Game.show_logic = false;
 
         
         var current_puzzle = qs("puzzle_id");
@@ -2176,7 +2012,8 @@ Game = {
         //Crafty.addEvent(this, "mousewheel", Game.mouseWheelDispatch);
         //Game.mouseWheelDispatch({wheelDelta:-120});
         //Game.mouseWheelDispatch({wheelDelta:-120});
-        
+        //Game.mouseWheelDispatch({wheelDelta:-120});
+        //Game.mouseWheelDispatch({wheelDelta:-120});
 
         //Create a canvas for special effects.
         var c = document.createElement("canvas");
@@ -2352,7 +2189,7 @@ Game = {
     },
 
     redraw_all: function() {
-        Game.foreach_piece(function(p) { p.trigger("Change") });
+        Game.foreach_piece(function(p) { p.trigger("Invalidate") });
     },
 
     clear: function() {
@@ -2364,7 +2201,7 @@ Game = {
     },
 
     add_puzzle: function(goal, pieces) {
-        Game.puzzles.push({goal: goal, pieces:pieces});
+        Game.puzzles.push({goal: goal, pieces: pieces});
     },
 
     add_puzzle_with_tutorial: function(goal, pieces, tutorial) {
@@ -2375,6 +2212,23 @@ Game = {
             persist: true,
             result: tutorial
         });
+    },
+
+    puzzle_range_start: function(s) {
+        if (!Game.puzzle_ranges) {
+            Game.puzzle_ranges = {};
+        }
+        Game.puzzle_ranges[s] = {};
+        Game.puzzle_ranges[s].start = Game.puzzles.length;
+    },
+
+    puzzle_range_end: function(s) {
+        Game.puzzle_ranges[s].end = Game.puzzles.length;
+    },
+
+    puzzle_range_switch: function(end, start) {
+        Game.puzzle_range_end(end);
+        Game.puzzle_range_start(start);
     },
 
     next_puzzle: function() {
@@ -2583,10 +2437,20 @@ Game = {
         })
     },
 
+    zoom_in: function() {
+        Crafty.viewport.scale(Crafty.viewport._scale / 0.9);
+    },
+
+    zoom_out: function() {
+        Crafty.viewport.scale(Crafty.viewport._scale * 0.9);
+    },
+
     mouseWheelDispatch: function(e) {
+        console.log(e);
         var delta = (e.wheelDelta? e.wheelDelta/120 : evt.detail)/2;
-        Crafty.viewport.scale(delta < 0 ? 0.9 : 1/0.9);
-        //Crafty.trigger("Change");
+        console.log(delta);
+        Crafty.viewport.zoom(delta < 0 ? 0.9 : 1/0.9, 1300/2, 600/2, 100);
+        //Crafty.trigger("Invalidate");
         Crafty.DrawManager.drawAll();
         // Crafty.viewport.zoom(
         // (delta>0)? (delta+1) : 1/(-delta+1)
@@ -2604,9 +2468,6 @@ Game = {
     }
 
 }
-
-window.addEventListener('load', Game.start);
-
 
 function make_transparent(str, alpha)
 {

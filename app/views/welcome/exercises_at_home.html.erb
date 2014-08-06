@@ -1,0 +1,42 @@
+
+<%= stylesheet_link_tag    "application", :media => "all" %>
+<%= javascript_include_tag "jquery" %>
+<%= javascript_include_tag "welcome.js" %>
+<%= javascript_include_tag "crafty.js" %>
+<%= javascript_include_tag "game.js" %>
+<%= javascript_include_tag "exercises.js" %>
+<%= csrf_meta_tags %>
+
+
+<script>
+    window.addEventListener('load', function() { 
+       Exercises.start("exercises_at_home");
+    })
+</script>
+
+<style>
+  .sidebar{
+    width: 200px;
+    text-align: center;
+    float:left;
+    border: 1px solid black;
+    background: rgb(240,240,240);
+    padding: 10px;
+  }
+
+  #cr-stage{
+    float: left;
+    margin-left: 10px;
+    border: 1px solid black;
+  }
+</style>
+
+<p>
+
+  <button id="solved-puzzle" onclick="Exercises.solved_puzzle(true)">I solved it!</button>
+  <button id="skip-puzzle" onclick="Exercises.skip_puzzle()">Skip it!</button>
+  <span style="float:right;">
+  You are: <%= current_user.username %> (<%= link_to "log out", "/session?delete=true", {method: :delete} %>) 
+  </span>
+
+</p>
