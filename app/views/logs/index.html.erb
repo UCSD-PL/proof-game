@@ -1,3 +1,51 @@
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<%= javascript_include_tag "process_logs.js" %>
+
 <% @logs.each do |l| %>
-    <div style="color:<%= l.color %>"><%= "#{l.group.name}:" if l.group %><%= l.message %></div>
+    <div class="log_entry" style="color:<%= l.color %>">
+   {
+     "user":"<%= "#{l.group.name}" if l.group %>",
+     "time":"<%= l.created_at %>",
+     "message": <%= l.message %> 
+   }
+   </div>
+   
 <% end %>
+
+<style>
+
+/*body {
+  font: 10px sans-serif;
+}
+*/
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.horizontal-bar {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+}
+
+</style>
+
+
+<script>
+    LogProcessor.process();
+</script>

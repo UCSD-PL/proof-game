@@ -103,6 +103,7 @@ Exercises.start_current_puzzle = function() {
     if (Exercises.current_puzzle >= Exercises.puzzle_range.start &&
         Exercises.current_puzzle < Exercises.puzzle_range.end) {
         console.log("Starting puzzle " + Exercises.current_puzzle);
+        log({name: "Start"});
         var j = build_judgement(Game.puzzles[Exercises.current_puzzle].goal);
         display_str = Exercises.judgement_to_str(j);
     }

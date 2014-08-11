@@ -816,6 +816,7 @@ Crafty.c('JudgementPuzzlePiece', {
                     self.open_on_top.push(p);
             });
             Game.trigger_callout_transition({name: "StartDrag"});
+            Logging.log({name: "StartDrag"});
         });
         this.bind("StopDrag", function(e) {
             var selected_bottom = null;
@@ -836,8 +837,13 @@ Crafty.c('JudgementPuzzlePiece', {
                 selected_top != null && selected_top != "more than one") {
                 var success = selected_bottom.connect_if_match_with_animation(selected_top);
 
-                if(!success)
-                    Game.trigger_callout_transition({name: "PieceConnectionFailed", current: Game.current_rule});
+                if(!success) {
+                    Game.trigger_callout_transition({
+                        name: "PieceConnectionFailed",
+                        current: Game.current_rule
+                    });
+                    Logging.log({ name: "PieceConnectionFailed" })
+                }
 
             };
         });
@@ -962,21 +968,36 @@ Crafty.c('JudgementPuzzlePiece', {
                     var x = pos.x - self.x;
                     var i = Math.floor(x/Globals.FormulaWidth);
                     var local_x = x%Globals.FormulaWidth;
-                    //if (Game.double_clicked_piece == undefined || Game.double_clicked_piece == null) {
                     if (!Game.double_clicked_piece) {
                         var cube_w = Globals.FormulaWidth *0.9;
                         var cube_h = Globals.JudgementHeight*1.5;
                         var marker = 
                             Crafty.e("2D, Canvas, Color")
                             .attr({alpha: 0.2})
-                            .attr({x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2), y: self.y-10, w: cube_w, h: cube_h})
+                            .attr({
+                                x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2),
+                                y: self.y-10,
+                                w: cube_w,
+                                h: cube_h })
                             .color("cyan");
                         Game.double_clicked_piece = {piece:self, i:i, marker: marker};
                         Game.foreach_piece(function(p) { if (p != self) p.set_greyed_out(true) });
-                        Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i})
+                        Game.trigger_callout_transition({
+                            name:"DoubleClickShape",
+                            puzzle_id: Game.current_puzzle,
+                            piece: this,
+                            shape_id: i
+                        });
+                        Logging.log({ name:"DoubleClickShape" });
                     } else {
                         if (Game.double_clicked_piece.piece == self) {
-                            Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"DoubleClickShape", piece: this, shape_id: i2})
+                            Game.trigger_callout_transition({
+                                name:"DoubleClickShape",
+                                puzzle_id: Game.current_puzzle,
+                                piece: this,
+                                shape_id: i2
+                            });
+                            Logging.log({ name:"DoubleClickShape" });
                             var i1 = Game.double_clicked_piece.i;
                             var i2 = i;
                             var last_pos = self.judgement.left.length;
@@ -990,7 +1011,13 @@ Crafty.c('JudgementPuzzlePiece', {
                                 var success = Game.current_rule.bottom.connect_if_match(self);
                                 if (!success) {
                                     Game.remove_current_rule();
-                                    Game.trigger_callout_transition({puzzle_id: Game.current_puzzle, name:"FailedMatch", piece: this, shape_id: i2})
+                                    Game.trigger_callout_transition({
+                                        name:"FailedDoubleClickMatch",
+                                        puzzle_id: Game.current_puzzle,
+                                        piece: this,
+                                        shape_id: i2
+                                    });
+                                    Logging.log({ name: "FailedDoubleClickMatch"});
                                 }
                             }
                         }
@@ -1244,7 +1271,12 @@ Crafty.c('JudgementPuzzlePiece', {
             }
             MetaVarManager.garbage_collect();
         }, 50);
-        Game.trigger_callout_transition({name: "PieceConnected", current: Game.current_rule, other: other});
+        Game.trigger_callout_transition({
+            name: "PieceConnected",
+            current: Game.current_rule,
+            other: other
+        });
+        Logging.log({ name: "PieceConnected" });
         MetaVarManager.garbage_collect();
         Game.current_rule = null;
         Game.check_if_solved();
@@ -1257,7 +1289,12 @@ Crafty.c('JudgementPuzzlePiece', {
         Game.push_history();
         this.connect_to(other);
         Game.foreach_piece(function(p) { p.apply(s) });
-        Game.trigger_callout_transition({name: "PieceConnected", current: Game.current_rule, other: other});
+        Game.trigger_callout_transition({
+            name: "PieceConnected",
+            current: Game.current_rule,
+            other: other
+        });
+        Logging.log({name: "PieceConnected" });
         MetaVarManager.garbage_collect();
         Game.current_rule = null;
         Game.check_if_solved();
@@ -1732,7 +1769,7 @@ Game = {
             Game.callout_transitions.push(first_double_click);
 
             var second_double_click = {
-                condition: {name: "FailedMatch", matches: function(other){return other.name == this.name}}, 
+                condition: {name: "FailedDoubleClickMatch", matches: function(other){return other.name == this.name}}, 
                 predecessors: [first_double_click],
                 result: function(){
                     Game.clear_callouts()
@@ -2063,7 +2100,7 @@ Game = {
     },
 
     puzzle_change_condition: function(puzzle_id){
-       return {name: "PuzzleChangeCondition", 
+       return {name: "PuzzleStart", 
                puzzle_id: puzzle_id,
                matches: function(other) { return other.name == this.name && other.puzzle_id == this.puzzle_id }
               }
@@ -2095,33 +2132,28 @@ Game = {
 
     callout_transitions: [],
 
-    trigger_callout_transition: function(condition){
+    trigger_callout_transition: function(condition) {
       
-      log({name: condition.name})
+        for(var i = 0; i < Game.callout_transitions.length; i++) {
+            if(Game.callout_transitions[i].predecessors) {
+                var satisfactions = Game.callout_transitions[i].predecessors.map(function(p){return p.satisfied})
+                if(satisfactions.indexOf(false) >= 0 || satisfactions.indexOf(undefined) >= 0)
+                    continue;
+            }
 
-      for(var i = 0; i < Game.callout_transitions.length; i++)
-      {
-        if(Game.callout_transitions[i].predecessors)
-        {
-          var satisfactions = Game.callout_transitions[i].predecessors.map(function(p){return p.satisfied})
-          if(satisfactions.indexOf(false) >= 0 || satisfactions.indexOf(undefined) >= 0)
-              continue;
+            if(Game.callout_transitions[i].condition.matches(condition)) {
+                var current = Game.callout_transitions[i]
+                if(!current.persist)
+                  Game.callout_transitions.splice(i,1)
+                current.result()
+                current.satisfied = true
+                Game.trigger_callout_transition({name: "ConditionSatisfied", condition: current})
+                break;
+            }
         }
-
-        if(Game.callout_transitions[i].condition.matches(condition))
-        {
-          var current = Game.callout_transitions[i]
-          if(!current.persist)
-              Game.callout_transitions.splice(i,1)
-          current.result()
-          current.satisfied = true
-          Game.trigger_callout_transition({name: "ConditionSatisfied", condition: current})
-          break;
-        }
-      }
     },
 
-    piece_text_callout_static: function(piece_id, callout_data){
+    piece_text_callout_static: function(piece_id, callout_data) {
         var p = Game.piece(piece_id)
 
         var callout = 
@@ -2281,14 +2313,18 @@ Game = {
           if (current.persist)
               transitions_to_keep.push(current)
         }
-        Game.callout_transitions = transitions_to_keep
-        Game.trigger_callout_transition({name: "PuzzleChangeCondition", puzzle_id: Game.current_puzzle})
+        Game.callout_transitions = transitions_to_keep;
+        Game.trigger_callout_transition({
+            name: "PuzzleStart",
+            puzzle_id: Game.current_puzzle
+        });
+        Logging.log({ name: "PuzzleStart", puzzle_id: Game.current_puzzle });
 
         $.ajax({
           type: "PUT",
           url: "/user_infos/"+info_id+".json",
           data: {user_info: {current_puzzle: current_puzzle}}
-        })
+        });
 
     },
 
@@ -2321,6 +2357,7 @@ Game = {
         Game.remove_current_rule();
         Game.current_rule = build_inference_rule_piece(top, bottom, x, y);
         Game.trigger_callout_transition({name: "PieceCreated", top:top, bottom:bottom});
+        Logging.log({ name: "PieceCreated", top:top, bottom:bottom});
     },
 
     create_assumption_piece: function() {
@@ -2350,6 +2387,7 @@ Game = {
     add_context_left: function() {
         Game.add_context(true);
         Game.trigger_callout_transition({name: 'ContextAdded'})
+        Logging.log({name: 'ContextAdded'})
     },
 
     add_context_right: function() {
@@ -2364,7 +2402,7 @@ Game = {
         }
     },
 
-    puzzle_solved: function() {
+    is_puzzle_solved: function() {
         var solved = true;
         Game.foreach_piece(function (p) {
             if (p.on_top && p.connected == null)
@@ -2374,7 +2412,8 @@ Game = {
     },
 
     check_if_solved: function() {
-        if (Game.puzzle_solved()) {
+        if (Game.is_puzzle_solved()) {
+            Logging.log({ name: "PuzzleSolved", puzzle_id: Game.current_puzzle })
             setTimeout(function() {
                 var display_number = Game.current_puzzle + 1;
                 if (Game.current_puzzle < Game.puzzles.length-1) {
@@ -2387,7 +2426,6 @@ Game = {
             }, 250);
         }
     },
-
 
     foreach_piece: function(f) {
         var ids = Crafty("JudgementPuzzlePiece");
@@ -2469,10 +2507,28 @@ Game = {
 
 }
 
-function make_transparent(str, alpha)
-{
-  var split = str.split(",")
-  split[3] = alpha + ")"
-  return split.join(",")
-}
+// function make_transparent(str, alpha)
+// {
+//   var split = str.split(",")
+//   split[3] = alpha + ")"
+//   return split.join(",")
+// }
 
+Logging = {}
+
+Logging.log = function(message) {
+
+    message.page = window.location.toString();
+
+    $.ajax(
+       {   
+           url: "/logs", 
+           type: "POST",
+           data: {message: message}, 
+           success:function() {
+              console.log("Success");
+           }
+       }
+    );
+
+}

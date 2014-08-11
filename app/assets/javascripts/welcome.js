@@ -17,22 +17,6 @@ function guid() {
        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
 }
 
-
-function log(message){
-    message.page = window.location.toString()
-
-    $.ajax(
-       {   
-           url: "/logs", 
-           type: "POST",
-           data: {message: message}, 
-           success:function(){
-              console.log("Success");
-           }
-       }
-    );
-}
-
 function qs(key) {
     key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
     var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
