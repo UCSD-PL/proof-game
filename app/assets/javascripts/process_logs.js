@@ -62,6 +62,13 @@ LogProcessor.parse = function() {
   // }
 }
 
+LogProcessor.show_all_entries = function() {
+  entries = document.getElementsByClassName("log_entry");
+  for (var i = 0; i < entries.length; i++)  {
+    entries[i].style.display = "";
+  }
+}  
+
 // LogProcessor.compute_time_averages_by_group = function(group_a, group_b) {
 //   LogProcessor.group_a_data = [];
 //   LogProcessor.group_b_data = [];
@@ -86,7 +93,10 @@ LogProcessor.parse = function() {
 // }
 
 LogProcessor.add_plots = function() {
-  d3.select("body").append("div").selectAll("input")
+
+  var div = d3.select("body").append("div");
+
+  div.selectAll("input")
     .data(LogProcessor.user_names)
     .enter()
     .append('label')
@@ -95,13 +105,18 @@ LogProcessor.add_plots = function() {
     .append("input")
       .attr("type", "checkbox")
       .attr("id", function(d) { return d; })
-      .attr("onClick", "LogProcessor.check_box_changed()");
+      .attr("onClick", "LogProcessor.plot_selected()");
 
   document.getElementById(LogProcessor.user_names[0]).checked = true;
-  LogProcessor.check_box_changed();
+
+  div.append("button")
+    .text("Show All Entires")
+    .attr("onClick", "LogProcessor.show_all_entries()");
+
+  LogProcessor.plot_selected();
 }
 
-LogProcessor.check_box_changed = function() {
+LogProcessor.plot_selected = function() {
   var all_data;
   LogProcessor.user_names.forEach(function (user) {
     if (document.getElementById(user).checked) {
