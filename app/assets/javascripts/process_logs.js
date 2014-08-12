@@ -3,35 +3,9 @@ LogProcessor = {};
 
 LogProcessor.process = function() {
   LogProcessor.parse();
-  LogProcessor.plot_all_time_entries();
+  // LogProcessor.plot_all_time_entries();
   // LogProcessor.compute_time_averages_by_group(["lerner"], ["lerner2"]);
-
-  var data1 = LogProcessor.compute_time_averages_for_group(["lerner"], "lerner");
-  LogProcessor.plot(data1, "puzzle_id", "Time (s)");
-
-  var data2 = LogProcessor.compute_time_averages_for_group(["lerner2"], "lerner2");
-  LogProcessor.plot(data2, "puzzle_id", "Time (s)");
-
-  var merged = LogProcessor.merge(data1, data2);
-  LogProcessor.plot(merged, "puzzle_id", "Time (s)");
-
-  // var data = [];
-  // for (var i = 0; i <50; i++) {
-  //   data.push({
-  //       Puzzle: i,
-  //       Game: 10+i
-  //     });
-  // }
-  // LogProcessor.plot(data, "Puzzle", "Time (s)");
-  // var data = [];
-  // for (var i = 0; i <50; i++) {
-  //   data.push({
-  //       Puzzle: i,
-  //       Game: 10+i,
-  //       Paper: 20+i
-  //     });
-  // }
-  // LogProcessor.plot(data, "Puzzle", "Time (s)");
+  LogProcessor.add_plots();
 }
 
 LogProcessor.parse = function() {
@@ -42,6 +16,7 @@ LogProcessor.parse = function() {
   var all_time_entries = LogProcessor.all_time_entries;
   entries = document.getElementsByClassName("log_entry");
   for (var i = 0; i < entries.length; i++)  {
+    entries[i].style.display = "none";
     var entry = entries[i].innerHTML;
     entry = entry.replace(/=&gt;/g, ":");
     entry = JSON.parse(entry);
@@ -53,11 +28,11 @@ LogProcessor.parse = function() {
       if (user in start_times) {
         console.log("NOTE: user " + user + " did not solve " + start_times[user].puzzle_id);
       }
-      start_times[user] = { puzzle_id: msg.puzzle_id, start: time }
+      start_times[user] = { puzzle_id: parseInt(msg.puzzle_id), start: time }
     }
     if (msg_name === "PuzzleSolved") {
       if (user in start_times) {
-        var puzzle_id = msg.puzzle_id;
+        var puzzle_id = parseInt(msg.puzzle_id);
         if (start_times[user].puzzle_id == puzzle_id) {
           var start = start_times[user].start;
           var end = time;
@@ -79,11 +54,12 @@ LogProcessor.parse = function() {
       }
     }
   }
-  for (user in time_entries_by_user) {
-    time_entries_by_user[user].forEach(function (x) {
-      console.log(x);
-    });
-  }
+  LogProcessor.user_names = Object.keys(LogProcessor.time_entries_by_user);
+  // for (user in time_entries_by_user) {
+  //   time_entries_by_user[user].forEach(function (x) {
+  //     console.log(x);
+  //   });
+  // }
 }
 
 // LogProcessor.compute_time_averages_by_group = function(group_a, group_b) {
@@ -108,6 +84,38 @@ LogProcessor.parse = function() {
 //   console.log(group_a_data);
 //   console.log(group_b_data);
 // }
+
+LogProcessor.add_plots = function() {
+  d3.select("body").append("div").selectAll("input")
+    .data(LogProcessor.user_names)
+    .enter()
+    .append('label')
+      .attr('for',function(d) { d; })
+      .text(function(d) { return d; })
+    .append("input")
+      .attr("type", "checkbox")
+      .attr("id", function(d) { return d; })
+      .attr("onClick", "LogProcessor.check_box_changed()");
+
+  document.getElementById(LogProcessor.user_names[0]).checked = true;
+  LogProcessor.check_box_changed();
+}
+
+LogProcessor.check_box_changed = function() {
+  var all_data;
+  LogProcessor.user_names.forEach(function (user) {
+    if (document.getElementById(user).checked) {
+      var data = LogProcessor.compute_time_averages_for_group([user], user);
+      if (all_data === undefined) {
+        all_data = data;
+      } else {
+        all_data = LogProcessor.merge(all_data, data);
+      }
+    }
+  });
+  LogProcessor.plot(all_data, "puzzle_id", "Time (s)");
+}
+
 
 LogProcessor.compute_time_averages_for_group = function(group, name) {
   var data  = [];
@@ -138,7 +146,6 @@ LogProcessor.compute_time_averages_for_group = function(group, name) {
       x[name] = avg;
     }
   }
-  console.log(data);
   return data;
 }
 
@@ -154,6 +161,9 @@ LogProcessor.merge = function(data1, data2) {
     for (n in d2) {
       if (n in d && d[n] !== d2[n]) {
         console.log("WARNING: common field in merge doesn't have same value")
+        console.log(n);
+        console.log(d[n]);
+        console.log(d2[n]);
       }
       d[n] = d2[n];
     }
@@ -217,21 +227,26 @@ LogProcessor.plot = function(data, x_key, y_axis_label) {
       .orient("left")
       .tickFormat(d3.format(".2s"));
 
-  var svg = d3.select("body").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  if (LogProcessor.chart_svg) {
+    LogProcessor.chart_svg.remove();
+  }
+  
+  LogProcessor.chart_svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  
+  var svg = LogProcessor.chart_svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var ageNames = d3.keys(data[0]).filter(function(key) { return key !== x_key; });
+  var y_keys = d3.keys(data[0]).filter(function(key) { return key !== x_key; });
 
   data.forEach(function(d) {
-    d.ages = ageNames.map(function(name) { return {name: name, value: +d[name]}; });
+    d.y_values = y_keys.map(function(name) { return {name: name, value: +d[name]}; });
   });
 
   x0.domain(data.map(function(d) { return d[x_key]; }));
-  x1.domain(ageNames).rangeRoundBands([0, x0.rangeBand()]);
-  y.domain([0, d3.max(data, function(d) { return d3.max(d.ages, function(d) { return d.value; }); })]);
+  x1.domain(y_keys).rangeRoundBands([0, x0.rangeBand()]);
+  y.domain([0, d3.max(data, function(d) { return d3.max(d.y_values, function(d) { return d.value; }); })]);
 
   svg.append("g")
       .attr("class", "x axis")
@@ -255,7 +270,7 @@ LogProcessor.plot = function(data, x_key, y_axis_label) {
       .attr("transform", function(d) { return "translate(" + x0(d[x_key]) + ",0)"; });
 
   plot.selectAll("rect")
-      .data(function(d) { return d.ages; })
+      .data(function(d) { return d.y_values; })
     .enter().append("rect")
       .attr("width", x1.rangeBand())
       .attr("x", function(d) { return x1(d.name); })
@@ -264,7 +279,7 @@ LogProcessor.plot = function(data, x_key, y_axis_label) {
       .style("fill", function(d) { return color(d.name); });
 
   var legend = svg.selectAll(".legend")
-      .data(ageNames.slice().reverse())
+      .data(y_keys.slice().reverse())
     .enter().append("g")
       .attr("class", "legend")
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
@@ -283,7 +298,8 @@ LogProcessor.plot = function(data, x_key, y_axis_label) {
       .text(function(d) { return d; });
 
   data.forEach(function(d) {
-    delete d.ages;
+    delete d.y_values;
   });
 
 }
+
