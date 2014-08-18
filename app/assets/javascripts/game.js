@@ -2001,18 +2001,18 @@ Game = {
         Game.add_puzzle("|- imp(z,imp(y,z))", pieces_for_2nd_session);
         Game.add_puzzle("z |- and(z,z)", pieces_for_2nd_session);
         Game.add_puzzle("y,x |- and(x,y)", pieces_for_2nd_session);
-        Game.add_puzzle("y,x,z |- and(z,x)", pieces_for_2nd_session);
-        Game.add_puzzle("y,imp(x,x),z |- and(y,y)", pieces_for_2nd_session);
+        Game.add_puzzle("x |- imp(z,and(z,x))", pieces_for_2nd_session);
         Game.add_puzzle("|- imp(z,and(z,z))", pieces_for_2nd_session);
+        Game.add_puzzle("|- imp(x, imp(y, and(x,y)))", pieces_for_2nd_session);
         Game.add_puzzle("x,y |- imp(x,y)", pieces_for_2nd_session);
         Game.add_puzzle("and(y,x) |- y", pieces_for_2nd_session);
         Game.add_puzzle("and(y,z) |- z", pieces_for_2nd_session);
         Game.add_puzzle("and(x,y) |- imp(x,y)", pieces_for_2nd_session);
         Game.add_puzzle("and(and(x,y),z) |- x", pieces_for_2nd_session);
-        Game.add_puzzle("and(and(x,y),z) |- y", pieces_for_2nd_session);
-        Game.add_puzzle("and(and(x,y),z) |- z", pieces_for_2nd_session);
-        Game.add_puzzle("and(and(x,y),z) |- and(y,z)", pieces_for_2nd_session);
-        Game.add_puzzle("and(and(x,y),z) |- and(x,z)", pieces_for_2nd_session);
+        // Game.add_puzzle("and(and(x,y),z) |- y", pieces_for_2nd_session);
+        // Game.add_puzzle("and(and(x,y),z) |- z", pieces_for_2nd_session);
+        // Game.add_puzzle("and(and(x,y),z) |- and(y,z)", pieces_for_2nd_session);
+        // Game.add_puzzle("and(and(x,y),z) |- and(x,z)", pieces_for_2nd_session);
 
         Game.puzzle_range_end("exercises_at_home");
         Game.puzzle_range_end("game_at_home");
@@ -2541,19 +2541,3 @@ Game = {
 //   return split.join(",")
 // }
 
-Logging = {}
-
-Logging.log = function(message) {
-
-    message.page = window.location.toString();
-
-    $.ajax({   
-        url: "/logs", 
-        type: "POST",
-        data: {message: message}, 
-        success: function() {
-            console.log("Success");
-        }
-    });
-
-}

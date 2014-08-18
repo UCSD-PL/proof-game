@@ -1,17 +1,8 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
+<%= javascript_include_tag "jquery" %>
+<%= javascript_include_tag "logging.js" %>
 <%= javascript_include_tag "process_logs.js" %>
-
-<% @logs.each do |l| %>
-    <div class="log_entry" style="color:<%= l.color %>">
-   {
-     "user":"<%= "#{l.group.name}" if l.group %>",
-     "time":"<%= l.created_at %>",
-     "message": <%= l.message %> 
-   }
-   </div>
-   
-<% end %>
 
 <style>
 
@@ -45,7 +36,22 @@
 
 </style>
 
+<input type="text" id="experiment_name">
+<button onclick="LogProcessor.start_experiment()"> Start Experiment</button>
+<button onclick="LogProcessor.stop_experiment()"> Stop Experiment</button>
+<button onclick="LogProcessor.show_experiment_results()"> Show Results</button>
+
+<% @logs.each do |l| %>
+    <div class="log_entry" style="color:<%= l.color %>">
+   {
+     "user":"<%= "#{l.group.name}" if l.group %>",
+     "time":"<%= l.created_at %>",
+     "message": <%= l.message %> 
+   }
+   </div>
+   
+<% end %>
 
 <script>
-    LogProcessor.process();
+    //LogProcessor.process();
 </script>

@@ -1,6 +1,22 @@
 
 LogProcessor = {};
 
+LogProcessor.start_experiment = function() {
+  var experiment_name = document.getElementById("experiment_name").value;
+  Logging.log({ name: "ExperimentStart", experiment_name: experiment_name}); 
+}
+
+LogProcessor.stop_experiment = function() {
+  var experiment_name = document.getElementById("experiment_name").value;
+  Logging.log({ name: "ExperimentStop", experiment_name: experiment_name }); 
+}
+
+LogProcessor.show_experiment_results = function() {
+  var experiment_name = document.getElementById("experiment_name").value;
+  LogProcessor.parse(experiment_name);
+  LogProcessor.add_plots();
+}
+
 LogProcessor.process = function() {
   LogProcessor.parse();
   // LogProcessor.plot_all_time_entries();
@@ -8,12 +24,13 @@ LogProcessor.process = function() {
   LogProcessor.add_plots();
 }
 
-LogProcessor.parse = function() {
+LogProcessor.parse = function(experiment_name) {
   var start_times = {};
   LogProcessor.time_entries_by_user = {};
   LogProcessor.all_time_entries = [];
   var time_entries_by_user = LogProcessor.time_entries_by_user;
   var all_time_entries = LogProcessor.all_time_entries;
+  var in_experiment = false;
   entries = document.getElementsByClassName("log_entry");
   for (var i = 0; i < entries.length; i++)  {
     entries[i].style.display = "none";
@@ -24,6 +41,16 @@ LogProcessor.parse = function() {
     var msg_name = msg.name;
     var user = entry.user;
     var time = Date.parse(entry.time);
+    if (in_experiment) {
+      if (msg_name === "ExperimentStop" && msg.experiment_name === experiment_name)
+        in_experiment = false;
+    } else {
+      if (msg_name === "ExperimentStart" && msg.experiment_name === experiment_name)
+        in_experiment = true;
+    }
+    if (!in_experiment) {
+      continue;
+    }
     if (msg_name === "PuzzleStart") {
       if (user in start_times) {
         console.log("NOTE: user " + user + " did not solve " + start_times[user].puzzle_id);
@@ -94,29 +121,75 @@ LogProcessor.show_all_entries = function() {
 
 LogProcessor.add_plots = function() {
 
-  var div = d3.select("body").append("div");
+  if (LogProcessor.user_names.length == 0) {
+    return;
+  }
 
-  div.selectAll("input")
+  if (LogProcessor.chart_ui) {
+    LogProcessor.chart_ui.remove()
+  }
+
+  var div = d3.select("body").append("div");
+  LogProcessor.chart_ui = div;
+
+  var u = div.append("div");
+
+  u.selectAll("input")
     .data(LogProcessor.user_names)
     .enter()
     .append('label')
-      .attr('for',function(d) { d; })
+      .attr('for',function(d) { d })
       .text(function(d) { return d; })
     .append("input")
       .attr("type", "checkbox")
-      .attr("id", function(d) { return d; })
-      .attr("onClick", "LogProcessor.plot_selected()");
+      .attr("id", function(d) { return d; });
+      // .attr("onClick", "LogProcessor.plot_selected()");
+
+  u.append("button")
+    .text("Plot users")
+    .attr("onClick", "LogProcessor.plot_users()");
+
+  var a = div.append("div").text("A: ");
+
+  a.selectAll("input")
+    .data(LogProcessor.user_names)
+    .enter()
+    .append('label')
+      .attr('for',function(d) { d + "-a"; })
+      .text(function(d) { return d; })
+    .append("input")
+      .attr("type", "checkbox")
+      .attr("id", function(d) { return d + "-a"; });
+      // .attr("onClick", "LogProcessor.plot_selected()");
+
+  a.append("button")
+    .text("Plot Groups")
+    .attr("onClick", "LogProcessor.plot_groups()");
+
+  var b = div.append("div").text("B: ");
+
+  b.selectAll("input")
+    .data(LogProcessor.user_names)
+    .enter()
+    .append('label')
+      .attr('for',function(d) { d + "-b"; })
+      .text(function(d) { return d; })
+    .append("input")
+      .attr("type", "checkbox")
+      .attr("id", function(d) { return d + "-b"; });
+      // .attr("onClick", "LogProcessor.plot_selected()");
 
   document.getElementById(LogProcessor.user_names[0]).checked = true;
 
-  div.append("button")
-    .text("Show All Entires")
-    .attr("onClick", "LogProcessor.show_all_entries()");
+  // div.append("button")
+  //   .text("Show All Entires")
+  //   .attr("onClick", "LogProcessor.show_all_entries()");
 
-  LogProcessor.plot_selected();
+  // LogProcessor.plot_selected();
+
 }
 
-LogProcessor.plot_selected = function() {
+LogProcessor.plot_users = function() {
   var all_data;
   LogProcessor.user_names.forEach(function (user) {
     if (document.getElementById(user).checked) {
@@ -131,6 +204,22 @@ LogProcessor.plot_selected = function() {
   LogProcessor.plot(all_data, "puzzle_id", "Time (s)");
 }
 
+LogProcessor.plot_groups = function() {
+  var group_a = [];
+  var group_b = [];
+  LogProcessor.user_names.forEach(function (user) {
+    if (document.getElementById(user + "-a").checked) {
+      group_a.push(user)
+    }
+    if (document.getElementById(user + "-b").checked) {
+      group_b.push(user)
+    }
+  });
+  var data_a = LogProcessor.compute_time_averages_for_group(group_a, "Group A");
+  var data_b = LogProcessor.compute_time_averages_for_group(group_b, "Group B");
+  var data = LogProcessor.merge(data_a, data_b);
+  LogProcessor.plot(data, "puzzle_id", "Time (s)");
+}
 
 LogProcessor.compute_time_averages_for_group = function(group, name) {
   var data  = [];
@@ -294,7 +383,7 @@ LogProcessor.plot = function(data, x_key, y_axis_label) {
       .style("fill", function(d) { return color(d.name); });
 
   var legend = svg.selectAll(".legend")
-      .data(y_keys.slice().reverse())
+      .data(y_keys.slice())
     .enter().append("g")
       .attr("class", "legend")
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
