@@ -5,7 +5,8 @@ class LogsController < ApplicationController
           Log.delete_all
         end
       end
-      @logs = Log.all.sort_by(&:created_at)
+      # @logs = Log.all.sort_by(&:created_at)
+      @logs = Log.all
       if(params[:filter])
         @logs = @logs.find_all {|l| l.message.match params[:filter]}
       end

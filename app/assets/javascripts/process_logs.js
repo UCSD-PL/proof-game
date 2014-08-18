@@ -32,6 +32,7 @@ LogProcessor.parse = function(experiment_name) {
   var all_time_entries = LogProcessor.all_time_entries;
   var in_experiment = false;
   entries = document.getElementsByClassName("log_entry");
+  var prev_time;
   for (var i = 0; i < entries.length; i++)  {
     entries[i].style.display = "none";
     var entry = entries[i].innerHTML;
@@ -41,6 +42,12 @@ LogProcessor.parse = function(experiment_name) {
     var msg_name = msg.name;
     var user = entry.user;
     var time = Date.parse(entry.time);
+    if (prev_time) {
+      if (time-prev_time < 0) {
+        alert("Time entries are not sorted. Results cannot be trusted.");
+      }
+    }
+    prev_time = time;
     if (in_experiment) {
       if (msg_name === "ExperimentStop" && msg.experiment_name === experiment_name)
         in_experiment = false;
