@@ -44,7 +44,8 @@ LogProcessor.parse = function(experiment_name) {
     var time = Date.parse(entry.time);
     if (prev_time) {
       if (time-prev_time < 0) {
-        alert("Time entries are not sorted. Results cannot be trusted.");
+        alert("Time entries are not sorted. Results cannot be trusted. Aborting.");
+        return;
       }
     }
     prev_time = time;
