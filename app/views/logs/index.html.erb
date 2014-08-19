@@ -45,7 +45,7 @@
     <div class="log_entry" style="color:<%= l.color %>">
    {
      "user":"<%= "#{l.group.name}" if l.group %>",
-     "time":"<%= l.created_at %>",
+     "time":"<%= l.created_at.strftime("%Y-%m-%d %H:%M:%S.%L %Z") %>",
      "message": <%= l.message %> 
    }
    </div>

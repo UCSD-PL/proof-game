@@ -15,6 +15,7 @@ LogProcessor.show_experiment_results = function() {
   var experiment_name = document.getElementById("experiment_name").value;
   LogProcessor.parse(experiment_name);
   LogProcessor.add_plots();
+  // LogProcessor.plot_all_time_entries();
 }
 
 LogProcessor.process = function() {
