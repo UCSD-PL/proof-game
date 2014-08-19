@@ -7,6 +7,7 @@ Logging.log = function(message) {
   $.ajax({   
     url: "/logs", 
     type: "POST",
+    async: false,
     data: {message: message}, 
     success: function() {
       console.log("Success");
