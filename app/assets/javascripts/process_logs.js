@@ -50,7 +50,9 @@ LogProcessor.parse = function(experiment_name) {
       }
     }
     prev_time = time;
-    if (in_experiment) {
+    if (experiment_name === "") {
+      in_experiment = true;
+    } else if (in_experiment) {
       if (msg_name === "ExperimentStop" && msg.experiment_name === experiment_name)
         in_experiment = false;
     } else {
@@ -61,33 +63,40 @@ LogProcessor.parse = function(experiment_name) {
       continue;
     }
     if (msg_name === "PuzzleStart") {
-      if (user in start_times) {
-        console.log("NOTE: user " + user + " did not solve " + start_times[user].puzzle_id);
+      var puzzle_id = parseInt(msg.puzzle_id);
+      if (start_times[user] === undefined) {
+        start_times[user] = {}
       }
-      start_times[user] = { puzzle_id: parseInt(msg.puzzle_id), start: time }
+      if (start_times[user][puzzle_id] !== undefined) {
+        console.log("NOTE: user " + user + " did not solve " + puzzle_id);
+      } 
+      start_times[user][puzzle_id] = time;
     }
     if (msg_name === "PuzzleSolved") {
-      if (user in start_times) {
-        var puzzle_id = parseInt(msg.puzzle_id);
-        if (start_times[user].puzzle_id == puzzle_id) {
-          var start = start_times[user].start;
-          var end = time;
-          if (!(user in time_entries_by_user)) {
-            time_entries_by_user[user] = [];
-          }
-          var user_time_entries = time_entries_by_user[user];
-          var time_delta = (end-start)/1000;
-          if (time_delta < 100) {
-            user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
-            all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
-          }
-        } else {
-          console.log("WARNING: puzzle_id for PuzzleSolved does not match PuzzleStart");
-        }
-        delete start_times[user];
+      var puzzle_id = parseInt(msg.puzzle_id)
+      if (start_times[user] === undefined || start_times[user][puzzle_id] === undefined) {
+        alert("ERROR: PuzzleSolved without a PuzzleStart; " + 
+              "user: " + user + "; " +
+              "puzzle: " + puzzle_id);
       } else {
-        console.log("WARNING: PuzzleSolved without corresponding PuzzleStart");
+        var start = start_times[user][puzzle_id];
+        var end = time;
+        if (time_entries_by_user[user] === undefined) {
+          time_entries_by_user[user] = [];
+        }
+        var user_time_entries = time_entries_by_user[user];
+        var time_delta = (end-start)/1000;
+        if (time_delta < 100) {
+          user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
+          all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
+        }
+        delete start_times[user][puzzle_id];
       }
+    }
+  }
+  for (var user in start_times) {
+    for (var puzzle_id in start_times[user]) {
+      console.log("NOTE: user " + user + " did not solve " + puzzle_id);
     }
   }
   LogProcessor.user_names = Object.keys(LogProcessor.time_entries_by_user);

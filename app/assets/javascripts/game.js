@@ -2442,7 +2442,7 @@ Game = {
             Logging.log({ name: "PuzzleSolved", puzzle_id: Game.current_puzzle })
             setTimeout(function() {
                 alert("Yay, you solved this puzzle!\nOn to the next one!");
-                Game.next_puzzle();
+                setTimeout(Game.next_puzzle, 250);
                 // if (Game.current_puzzle < Game.puzzles.length-1) {
                 //     alert("Yay, you solved this puzzle!\nOn to the next one!");
                 //     Game.next_puzzle();

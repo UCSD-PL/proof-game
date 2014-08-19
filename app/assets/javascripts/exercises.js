@@ -70,7 +70,8 @@ Exercises.solved_puzzle = function(do_confirm) {
     console.log("Solved puzzle " + Exercises.current_puzzle);
     Logging.log({ name: "PuzzleSolved", puzzle_id: Exercises.current_puzzle });
     Exercises.current_puzzle++;
-    Exercises.start_current_puzzle();
+    Exercises.text.destroy();
+    setTimeout(Exercises.start_current_puzzle, 1000);
   }
 };
 
@@ -82,7 +83,8 @@ Exercises.skip_puzzle = function() {
     console.log("Skipped puzzle " + Exercises.current_puzzle);
     Logging.log({ name: "PuzzleSkip", puzzle_id: Exercises.current_puzzle });
     Exercises.current_puzzle++;
-    Exercises.start_current_puzzle();
+    Exercises.text.destroy();
+    setTimeout(Exercises.start_current_puzzle, 1000);
   }
 };
 
@@ -98,9 +100,6 @@ Exercises.judgement_to_str = function(j) {
 };
 
 Exercises.start_current_puzzle = function() {
-  if (Exercises.text) {
-    Exercises.text.destroy();
-  }
   var display_str;
   if (Exercises.current_puzzle >= Exercises.puzzle_range.start &&
       Exercises.current_puzzle < Exercises.puzzle_range.end) {
