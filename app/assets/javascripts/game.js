@@ -850,7 +850,7 @@ Crafty.c('JudgementPuzzlePiece', {
         this.bind("Dragging", function(e) {
             var dx = (e.clientX - self.drag_x) / Crafty.viewport._scale;
             var dy = (e.clientY - self.drag_y) / Crafty.viewport._scale;
-            console.log(Crafty.viewport._scale);
+            // console.log(Crafty.viewport._scale);
 
             if (self.on_top) {
                 if (self.connected != null) {
@@ -995,7 +995,7 @@ Crafty.c('JudgementPuzzlePiece', {
                                 name:"DoubleClickShape",
                                 puzzle_id: Game.current_puzzle,
                                 piece: this,
-                                shape_id: i2
+                                shape_id: i
                             });
                             Logging.log({ name:"DoubleClickShape" });
                             var i1 = Game.double_clicked_piece.i;
@@ -1591,7 +1591,7 @@ Game = {
 
         Game.puzzles = [];
 
-        // Puzzle 1
+        // Puzzle 0
         Game.puzzle_range_start("game_in_class");
         Game.add_puzzle_with_tutorial("x,y |- x", [], function() {
             Game.shape_sprite_callout(0,2, down_arrow);
@@ -1608,7 +1608,7 @@ Game = {
             Game.callout_transitions.push(first_double_click);
         });
 
-        // Puzzle 2
+        // Puzzle 1
         Game.add_puzzle_with_tutorial("x,y |- y", [], function() {
             Game.clear_callouts();
             Game.shape_sprite_callout(0, 2, down_arrow);
@@ -1624,44 +1624,44 @@ Game = {
             });
         });
 
-        // Puzzle 3
+        // Puzzle 2
         Game.add_puzzle_with_tutorial("x,y,z |- x", [], function() {
             Game.clear_callouts();
             Game.shape_sprite_callout(0,3, down_arrow);
             Game.piece_text_callout_static(0, text("Find the matching yellow shape...", 50, -210))
         });
 
-        // Puzzle 4
+        // Puzzle 3
         Game.add_puzzle_with_tutorial("x,y,z |- y", [], function() {
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("On your own now!", 50, -210));
         });
 
-        // Puzzle 5
+        // Puzzle 4
         Game.add_puzzle_with_tutorial("x,y,z |- z", [], function() {
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("On your own now!", 50, -210));
         });
 
-        // Puzzle 6
+        // Puzzle 5
         Game.add_puzzle_with_tutorial("and(x,z), imp(x,y), z |- imp(x, y)", [], function(){
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("More complex shapes.<br>Same idea...", 50, -210))
         });
 
-        // Puzzle 7
+        // Puzzle 6
         Game.add_puzzle_with_tutorial("and(y,imp(x,z)), imp(x,x), and(z,x) |- and(y, imp(x,z))", [], function(){
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("More complex shapes.<br>Same idea...", 50, -210))
         });
 
-        // Puzzle 8
+        // Puzzle 7
         Game.add_puzzle_with_tutorial("imp(a,a) |- imp(a,a)", [], function() {
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("More complex shapes.<br>Same idea...", 50, -210))
         });
 
-        // Puzzle 9
+        // Puzzle 8
         Game.add_puzzle_with_tutorial("|- x", [], function() {
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("Wait, no yellow shapes? <br> What to do!!!", 0, -210))
@@ -1699,7 +1699,7 @@ Game = {
             },5000);
         })
 
-        // Puzzle 10
+        // Puzzle 9
         Game.add_puzzle_with_tutorial("|- imp(x,y)", [], function() {
             Game.clear_callouts();
             Game.replace_current_rule(["imp(x,y) |- A"], "|- A");
@@ -1709,7 +1709,7 @@ Game = {
 
         })
 
-        // Puzzle 11
+        // Puzzle 10
         Game.add_puzzle_with_tutorial("|- imp(x,y)", [], function() {
             Game.clear_callouts();
             Game.replace_current_rule(["imp(x,y) |- imp(A,B)"], "|- imp(A,B)");
@@ -1719,14 +1719,14 @@ Game = {
 
         })
 
-        // Puzzle 12
+        // Puzzle 11
         Game.add_puzzle_with_tutorial("|- and(x,y)", [], function() {
             Game.clear_callouts();
             Game.replace_current_rule(["and(A,y) |- and(x,B)"], "|- and(A,B)");
             Game.piece_text_callout_static(2, text("Let's try another one!<br>Watch the animation again", 550 , 50));
         })
 
-        // Puzzle 13
+        // Puzzle 12
         Game.add_puzzle_with_tutorial("|- imp(x,x)", [], function() {
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("We need a special piece again!<br>But where do we get it from?", 0, -210))
@@ -1745,11 +1745,11 @@ Game = {
             })
         });
 
-        // Puzzle 14
+        // Puzzle 13
         Game.puzzle_range_start("exercises_in_class_1");
         Game.add_puzzle_with_tutorial("|- imp(y,y)", ["imp-intro"], function() {});
 
-        // Puzzle 15
+        // Puzzle 14
         Game.add_puzzle_with_tutorial("y |- imp(x, y)", ["imp-intro"], function() {
 
             Game.clear_callouts();
@@ -1804,7 +1804,7 @@ Game = {
             });
         });
 
-        // Puzzle 16
+        // Puzzle 15
         Game.add_puzzle_with_tutorial("|- imp(x, imp(y,x))", ["imp-intro", "add-context"], function() {
             Game.clear_callouts();
             Game.piece_text_callout_static(0, text("You try it", 50, -310));
@@ -1814,16 +1814,16 @@ Game = {
                 result: function() {
                     Game.clear_callouts()
                 }
-            })
-        })
+            });
+        });
 
-        // Puzzle 17
+        // Puzzle 16
         Game.add_puzzle_with_tutorial("x,y |- imp(x, y)", ["imp-intro", "add-context"], function() {
-        })
+        });
 
         Game.puzzle_range_end("exercises_in_class_1");
 
-        // Puzzle 18, don't include in paper exercises
+        // Puzzle 17, don't include in paper exercises
         Game.add_puzzle_with_tutorial("y |- and(y, y)", ["imp-intro", "add-context"], function() {
             Game.clear_callouts();
             Game.piece_text_callout(0, text("Try to create & connect a piece of the right size", -100, -410));
@@ -1853,7 +1853,7 @@ Game = {
             });
         });
 
-        // Puzzle 19
+        // Puzzle 18
         Game.puzzle_range_start("exercises_in_class_2");
         Game.add_puzzle_with_tutorial("x,y |- and(x, y)", ["and-intro", "imp-intro", "add-context"], function() {
 
@@ -1869,25 +1869,25 @@ Game = {
 
         });
 
-        // Puzzle 20
+        // Puzzle 19
         Game.add_puzzle_with_tutorial("z,x |- imp(y, z)", ["and-intro", "imp-intro", "add-context"], function() {
         });
 
-        // Puzzle 21
+        // Puzzle 20
         Game.add_puzzle_with_tutorial("z |- imp(y, and(y,z))", ["and-intro", "imp-intro", "add-context"], function() {
         });
 
-        // Puzzle 22
+        // Puzzle 21
         Game.add_puzzle_with_tutorial("z |- and(imp(x,x), z)", ["and-intro", "imp-intro", "add-context"], function() {
         });
 
-        // Puzzle 23
+        // Puzzle 22
         Game.add_puzzle_with_tutorial("|- imp(z, and(z, imp(x,x)))", ["and-intro", "imp-intro", "add-context"], function() {
         });
 
         Game.puzzle_range_end("exercises_in_class_2");
 
-        // Puzzle 24
+        // Puzzle 23
         Game.add_puzzle_with_tutorial("and(y,x) |- y", ["and-intro", "imp-intro", "add-context"], function() {
             Game.piece_text_callout(0, text("Try each piece above.", 50, -400))
 
@@ -1947,18 +1947,18 @@ Game = {
             })
         });
 
-        // Puzzle 25
+        // Puzzle 24
         Game.puzzle_range_start("exercises_in_class_3");
         Game.add_puzzle_with_tutorial("|- imp(and(z,y), z)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
         })
 
-        // Puzzle 26
+        // Puzzle 25
         Game.add_puzzle_with_tutorial("and(z,y), x |- and(x,z)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
         })
 
         Game.puzzle_range_end("exercises_in_class_3");
 
-        // Puzzle 27
+        // Puzzle 26
         Game.add_puzzle_with_tutorial("and(x,z) |- z", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
             Game.piece_text_callout(0, text("For this puzzle, you will need a new kind of piece.", 50, -400))
             Game.make_piece_visible("and-elim-2");
@@ -1972,43 +1972,108 @@ Game = {
             Game.callout_transitions.push(create_piece);
         });
 
-        // Puzzle 28
+        // Puzzle 27
         Game.puzzle_range_start("exercises_in_class_4");
         Game.add_puzzle_with_tutorial("and(z,y) |- z", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"], function() {
             Game.piece_text_callout_static(0, text("Note the restart and undo buttons,<br>which may come in handy.", 50, -300))
             Game.dom_sprite_callout("restart", up_arrow);
             Game.dom_sprite_callout("undo", up_arrow);
-            Game.callout_transitions.push({
-                condition: Game.piece_created_condition(),
-                result: function() {
-                    Game.clear_callouts()
-                }
-            })
-        })
+            setTimeout(function() { Game.clear_callouts(); }, 6000);
+        });
 
-        // Puzzle 29
+        // Puzzle 28
         Game.add_puzzle("and(y,x) |- x", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"]);
 
-        // Puzzle 30
+        // Puzzle 29
         Game.add_puzzle("and(x,y) |- and(y,x)", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"]);
 
         // Session for home
         Game.puzzle_range_switch("exercises_in_class_4", "exercises_at_home");
         Game.puzzle_range_switch("game_in_class", "game_at_home");
         var pieces_for_2nd_session = ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"];
-        Game.add_puzzle("|- imp(y,y)", pieces_for_2nd_session);
-        Game.add_puzzle("x |- imp(z,x)", pieces_for_2nd_session);
-        Game.add_puzzle("|- imp(z,imp(y,z))", pieces_for_2nd_session);
-        Game.add_puzzle("z |- and(z,z)", pieces_for_2nd_session);
-        Game.add_puzzle("y,x |- and(x,y)", pieces_for_2nd_session);
-        Game.add_puzzle("x |- imp(z,and(z,x))", pieces_for_2nd_session);
-        Game.add_puzzle("|- imp(z,and(z,z))", pieces_for_2nd_session);
-        Game.add_puzzle("|- imp(x, imp(y, and(x,y)))", pieces_for_2nd_session);
-        Game.add_puzzle("x,y |- imp(x,y)", pieces_for_2nd_session);
-        Game.add_puzzle("and(y,x) |- y", pieces_for_2nd_session);
-        Game.add_puzzle("and(y,z) |- z", pieces_for_2nd_session);
-        Game.add_puzzle("and(x,y) |- imp(x,y)", pieces_for_2nd_session);
-        Game.add_puzzle("and(and(x,y),z) |- x", pieces_for_2nd_session);
+        Game.add_puzzle("|- imp(y,y)", pieces_for_2nd_session); // 30
+        Game.add_puzzle("x |- imp(z,x)", pieces_for_2nd_session); // 31
+        Game.add_puzzle("|- imp(z,imp(y,z))", pieces_for_2nd_session); // 32
+        Game.add_puzzle("z |- and(z,z)", pieces_for_2nd_session); // 33
+        Game.add_puzzle("y,x |- and(x,y)", pieces_for_2nd_session); // 34
+        Game.add_puzzle("x |- imp(z,and(z,x))", pieces_for_2nd_session); // 35
+        Game.add_puzzle("|- imp(z,and(z,z))", pieces_for_2nd_session); // 36
+        Game.add_puzzle("|- imp(x, imp(y, and(x,y)))", pieces_for_2nd_session); // 37
+        Game.add_puzzle("x,y |- imp(x,y)", pieces_for_2nd_session); // 38
+        Game.add_puzzle("and(y,x) |- y", pieces_for_2nd_session); // 39
+        Game.add_puzzle("and(y,z) |- z", pieces_for_2nd_session); // 40
+        Game.add_puzzle("and(x,y) |- imp(x,y)", pieces_for_2nd_session); // 41
+        // Game.add_puzzle("and(and(x,y),z) |- x", pieces_for_2nd_session); 
+
+        Game.add_puzzle_with_tutorial("x, imp(x,y) |- y", pieces_for_2nd_session, function() {
+            Game.piece_text_callout(0, text("For this puzzle, you will need a new kind of piece.", 50, -300))
+            Game.make_piece_visible("imp-elim");
+            Game.dom_sprite_callout("imp-elim", up_arrow);
+            Game.callout_transitions.push({
+                condition: Game.piece_created_condition(["|- A", "|- imp(A,B)"], "|- B"),
+                result: function() {
+                    Game.clear_callouts();
+                    Game.piece_text_callout(0, text("Extend and connect", 0, -400));
+                    Game.callout_transitions.push({
+                        condition: Game.piece_connected_condition(),
+                        result: function() {
+                            setTimeout(function() {
+                                Game.clear_callouts();
+                                // Game.piece_text_callout(2, text("Note how this will<br>change to a triangle", 400, -225));
+                                // Game.shape_sprite_callout(2,2, down_arrow);
+
+                                // Game.piece_text_callout(3, text("Double click these.<br>Red becomes a triangle", 225, -225));
+                                // Game.shape_sprite_callout(3,1, down_arrow);
+                                // Game.shape_sprite_callout(3,2, down_arrow);
+
+                                Game.piece_text_callout(2, text("Double click these two", 150, -200));
+                                Game.shape_sprite_callout(2,0, down_arrow);
+                                Game.shape_sprite_callout(2,2, down_arrow);
+                                Game.piece_text_callout(3, text("Note how ALL Red ports<br>will change to a triangle", 0, -225));
+                                Game.shape_sprite_callout(3,2, down_arrow);
+
+                                var double_click_1 = {
+                                    condition: Game.double_click_shape_condition({puzzle_id: 42, piece: Game.piece(2), shape_id: 0}),
+                                    result: function() {}
+                                }
+                                var double_click_2 = {
+                                    condition: Game.double_click_shape_condition({puzzle_id: 42, piece: Game.piece(2), shape_id: 2}),
+                                    result: function() {}
+                                }
+                                Game.callout_transitions.push(double_click_1);
+                                Game.callout_transitions.push(double_click_2);
+                                Game.callout_transitions.push({
+                                    condition: Game.piece_connected_condition(),
+                                    predecessors: [double_click_1, double_click_2],
+                                    result: function() {
+                                        setTimeout(function() {
+                                            Game.clear_callouts();
+                                            Game.piece_text_callout(3, text("Now finish the puzzle", 0, -225));
+                                        }, 3000)
+                                    }
+                                })
+                            }, 5000);
+                        }
+                    });
+                }
+            });
+                    
+        }); // 42
+
+        var all_pieces = ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "imp-elim", "add-context", "undo"];
+        Game.add_puzzle_with_tutorial("imp(y,z), y |- z", all_pieces, function(){
+            Game.piece_text_callout(0, text("Again, use this piece.", 50, -300))
+            Game.dom_sprite_callout("imp-elim", up_arrow);
+            Game.callout_transitions.push({
+                condition: Game.piece_created_condition(["|- A", "|- imp(A,B)"], "|- B"),
+                result: function() {
+                    Game.clear_callouts();
+                }
+            });
+        }); // 43
+
+        Game.add_puzzle("|- imp(x, imp(imp(x,y), y))", all_pieces); // 44
+
         // Game.add_puzzle("and(and(x,y),z) |- y", pieces_for_2nd_session);
         // Game.add_puzzle("and(and(x,y),z) |- z", pieces_for_2nd_session);
         // Game.add_puzzle("and(and(x,y),z) |- and(y,z)", pieces_for_2nd_session);
@@ -2148,7 +2213,7 @@ Game = {
     callout_transitions: [],
 
     trigger_callout_transition: function(condition) {
-      
+
         for(var i = 0; i < Game.callout_transitions.length; i++) {
             if(Game.callout_transitions[i].predecessors) {
                 var satisfactions = Game.callout_transitions[i].predecessors.map(function(p){return p.satisfied})
@@ -2309,7 +2374,14 @@ Game = {
             return;
         }
 
-        var goal = build_judgement_piece(Game.puzzles[current_puzzle].goal, 400, 450);
+        var x = 400;
+        var y = 450;
+        var goal_str = Game.puzzles[current_puzzle].goal;
+        // total hack, need better solution
+        if (goal_str === "x, imp(x,y) |- y") { x = 350; }
+        else if (goal_str === "imp(y,z), y |- z") { x = 350; }
+        else if (goal_str === "|- imp(x, imp(imp(x,y), y))") { x = 550; }
+        var goal = build_judgement_piece(goal_str, x, y);
         var pieces = Game.puzzles[current_puzzle].pieces;
         var all_pieces = ["and-intro",
                           "and-elim-1",
