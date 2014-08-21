@@ -11,7 +11,7 @@
 
 <script>
     window.addEventListener('load', function() { 
-       Exercises.start("exercises_at_home");
+       Exercises.start("logic_1");
     });
 </script>
 
@@ -34,8 +34,6 @@
 
 <p>
 
-  <button id="solved-puzzle" onclick="Exercises.solved_puzzle(true)">I solved it!</button>
-  <button id="skip-puzzle" onclick="Exercises.skip_puzzle()">Skip it!</button>
   <span style="float:right;">
   You are: <%= current_user.username %> (<%= link_to "log out", "/session?delete=true", {method: :delete} %>) 
   </span>

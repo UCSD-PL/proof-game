@@ -6,17 +6,22 @@
 
 Globals = {
 
-    VarToShape : { a: "wedge", 
-                   b: "tee",
-                   c: "left_l", 
-                   x: "wedge", 
-                   y: "tee",
-                   z: "left_l", 
-                   imp: "cup", 
-                   and: "vee"},
-    VarToLogicRep : { imp: "\u2192", 
-                      and: "\u2227",
-                      turnstile: "\u22A2"},
+    VarToShape : {
+        a: "wedge", 
+        b: "tee",
+        c: "left_l", 
+        x: "wedge", 
+        y: "tee",
+        z: "left_l", 
+        imp: "cup", 
+        and: "vee"
+    },
+    VarToLogicRep : {
+        // imp: "\u2192", 
+        imp: "\u21D2", 
+        and: "\u2227",
+        turnstile: "\u22A2"
+    },
     LeftFillColor: "rgb(255,255,200)",
     LeftFillColorSelected: "rgb(130,130,130)",
     RightFillColor: "rgb(255,230,255)",
@@ -1592,7 +1597,7 @@ Game = {
         Game.puzzles = [];
 
         // Puzzle 0
-        Game.puzzle_range_start("game_in_class");
+        Game.puzzle_range_start("game_1");
         Game.add_puzzle_with_tutorial("x,y |- x", [], function() {
             Game.shape_sprite_callout(0,2, down_arrow);
             Game.piece_text_callout(0, text("For each pink shape,<br>find a matching yellow one.<br> Double click the pink shape.", 50, -310))
@@ -1746,7 +1751,7 @@ Game = {
         });
 
         // Puzzle 13
-        Game.puzzle_range_start("exercises_in_class_1");
+        Game.puzzle_range_start("logic_1");
         Game.add_puzzle_with_tutorial("|- imp(y,y)", ["imp-intro"], function() {});
 
         // Puzzle 14
@@ -1821,7 +1826,7 @@ Game = {
         Game.add_puzzle_with_tutorial("x,y |- imp(x, y)", ["imp-intro", "add-context"], function() {
         });
 
-        Game.puzzle_range_end("exercises_in_class_1");
+        Game.puzzle_range_end("logic_1");
 
         // Puzzle 17, don't include in paper exercises
         Game.add_puzzle_with_tutorial("y |- and(y, y)", ["imp-intro", "add-context"], function() {
@@ -1854,7 +1859,7 @@ Game = {
         });
 
         // Puzzle 18
-        Game.puzzle_range_start("exercises_in_class_2");
+        Game.puzzle_range_start("logic_2");
         Game.add_puzzle_with_tutorial("x,y |- and(x, y)", ["and-intro", "imp-intro", "add-context"], function() {
 
             Game.clear_callouts()
@@ -1885,7 +1890,7 @@ Game = {
         Game.add_puzzle_with_tutorial("|- imp(z, and(z, imp(x,x)))", ["and-intro", "imp-intro", "add-context"], function() {
         });
 
-        Game.puzzle_range_end("exercises_in_class_2");
+        Game.puzzle_range_end("logic_2");
 
         // Puzzle 23
         Game.add_puzzle_with_tutorial("and(y,x) |- y", ["and-intro", "imp-intro", "add-context"], function() {
@@ -1948,7 +1953,7 @@ Game = {
         });
 
         // Puzzle 24
-        Game.puzzle_range_start("exercises_in_class_3");
+        Game.puzzle_range_start("logic_3");
         Game.add_puzzle_with_tutorial("|- imp(and(z,y), z)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
         })
 
@@ -1956,7 +1961,7 @@ Game = {
         Game.add_puzzle_with_tutorial("and(z,y), x |- and(x,z)", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
         })
 
-        Game.puzzle_range_end("exercises_in_class_3");
+        Game.puzzle_range_end("logic_3");
 
         // Puzzle 26
         Game.add_puzzle_with_tutorial("and(x,z) |- z", ["and-intro", "and-elim-1", "imp-intro", "add-context"], function() {
@@ -1973,7 +1978,7 @@ Game = {
         });
 
         // Puzzle 27
-        Game.puzzle_range_start("exercises_in_class_4");
+        Game.puzzle_range_start("logic_4");
         Game.add_puzzle_with_tutorial("and(z,y) |- z", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"], function() {
             Game.piece_text_callout_static(0, text("Note the restart and undo buttons,<br>which may come in handy.", 50, -300))
             Game.dom_sprite_callout("restart", up_arrow);
@@ -1988,8 +1993,8 @@ Game = {
         Game.add_puzzle("and(x,y) |- and(y,x)", ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"]);
 
         // Session for home
-        Game.puzzle_range_switch("exercises_in_class_4", "exercises_at_home");
-        Game.puzzle_range_switch("game_in_class", "game_at_home");
+        Game.puzzle_range_switch("logic_4", "logic_5");
+        Game.puzzle_range_switch("game_1", "game_2");
         var pieces_for_2nd_session = ["and-intro", "and-elim-1", "and-elim-2", "imp-intro", "add-context", "undo"];
         Game.add_puzzle("|- imp(y,y)", pieces_for_2nd_session); // 30
         Game.add_puzzle("x |- imp(z,x)", pieces_for_2nd_session); // 31
@@ -2079,8 +2084,8 @@ Game = {
         // Game.add_puzzle("and(and(x,y),z) |- and(y,z)", pieces_for_2nd_session);
         // Game.add_puzzle("and(and(x,y),z) |- and(x,z)", pieces_for_2nd_session);
 
-        Game.puzzle_range_end("exercises_at_home");
-        Game.puzzle_range_end("game_at_home");
+        Game.puzzle_range_end("logic_5");
+        Game.puzzle_range_end("game_2");
 
     },
 
