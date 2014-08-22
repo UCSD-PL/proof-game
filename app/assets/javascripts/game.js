@@ -2316,7 +2316,12 @@ Game = {
         MetaVarManager.garbage_collect();
         Game.clear_double_clicking();
         if (Game.finished_text) {
-            Exercises.finished_text.destroy();
+            Game.finished_text.destroy();
+            Game.finished_text = null;
+        }
+        if (Game.puzzle_id_text) {
+            Game.puzzle_id_text.destroy();
+            Game.puzzle_id_text = null;
         }
     },
 
@@ -2379,6 +2384,11 @@ Game = {
             return;
         }
 
+        Game.puzzle_id_text = 
+            Crafty.e("2D, DOM, Text")
+            .attr({ x: 1280, y: 5, w: 20 })
+            .text(current_puzzle.toString())
+            .textFont({ size: '14x', weight: 'bold' });
         var x = 400;
         var y = 450;
         var goal_str = Game.puzzles[current_puzzle].goal;
@@ -2399,7 +2409,7 @@ Game = {
 
         Game.history_count = 0;
         goal.push_state();
-        if (pieces == "all")
+        if (pieces === "all")
             pieces = all_pieces
         else {
             for (var i = 0; i < all_pieces.length; i++) {

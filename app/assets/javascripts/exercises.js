@@ -71,6 +71,7 @@ Exercises.solved_puzzle = function(do_confirm) {
     Logging.log({ name: "PuzzleSolved", puzzle_id: Exercises.current_puzzle });
     Exercises.current_puzzle++;
     Exercises.text.destroy();
+    Exercises.puzzle_id_text.destroy();
     setTimeout(Exercises.start_current_puzzle, 1000);
   }
 };
@@ -84,6 +85,7 @@ Exercises.skip_puzzle = function() {
     Logging.log({ name: "PuzzleSkip", puzzle_id: Exercises.current_puzzle });
     Exercises.current_puzzle++;
     Exercises.text.destroy();
+    Exercises.puzzle_id_text.destroy();
     setTimeout(Exercises.start_current_puzzle, 1000);
   }
 };
@@ -107,10 +109,17 @@ Exercises.start_current_puzzle = function() {
     Logging.log({ name: "PuzzleStart", puzzle_id: Exercises.current_puzzle });
     var j = build_judgement(Game.puzzles[Exercises.current_puzzle].goal);
     display_str = Exercises.judgement_to_str(j);
-  }
-  else {
+
+    Exercises.puzzle_id_text = 
+    Crafty.e("2D, DOM, Text")
+      .attr({ x: 10, y: 5, w: 800 })
+      .text("Exercise id: " + Exercises.current_puzzle + "<br>" +
+            "Write this exercise ID on your paper solution.")
+      .textFont({ size: '20px', weight: 'bold' });
+  } else {
     display_str = "You finished the puzzles in this session!";
   }
+
   Exercises.text = 
     Crafty.e("2D, DOM, Text")
     .attr({ x: 100, y: 100, w: 800 })
