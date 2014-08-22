@@ -821,7 +821,7 @@ Crafty.c('JudgementPuzzlePiece', {
                     self.open_on_top.push(p);
             });
             Game.trigger_callout_transition({name: "StartDrag"});
-            Logging.log({name: "StartDrag"});
+            // Logging.log({name: "StartDrag"});
         });
         this.bind("StopDrag", function(e) {
             var selected_bottom = null;
@@ -847,7 +847,7 @@ Crafty.c('JudgementPuzzlePiece', {
                         name: "PieceConnectionFailed",
                         current: Game.current_rule
                     });
-                    Logging.log({ name: "PieceConnectionFailed" })
+                    Logging.log({ name: "PieceConnectionFailed", puzzle_id: Game.current_puzzle })
                 }
 
             };
@@ -993,7 +993,7 @@ Crafty.c('JudgementPuzzlePiece', {
                             piece: this,
                             shape_id: i
                         });
-                        Logging.log({ name:"DoubleClickShape" });
+                        Logging.log({ name:"DoubleClickShape_1", puzzle_id: Game.current_puzzle });
                     } else {
                         if (Game.double_clicked_piece.piece == self) {
                             Game.trigger_callout_transition({
@@ -1002,13 +1002,13 @@ Crafty.c('JudgementPuzzlePiece', {
                                 piece: this,
                                 shape_id: i
                             });
-                            Logging.log({ name:"DoubleClickShape" });
+                            Logging.log({ name:"DoubleClickShape_2", puzzle_id: Game.current_puzzle });
                             var i1 = Game.double_clicked_piece.i;
                             var i2 = i;
                             var last_pos = self.judgement.left.length;
                             if (i1 != i2 && (i1 == last_pos || i2 == last_pos)) {
                                 var i = (i1 == last_pos) ? i2 : i1;
-                                Game.create_assumption_piece();
+                                Game.create_assumption_piece_for_double_click();
                                 for (var k = 0; k < i; k++)
                                     Game.add_context_left();
                                 for (var k = i+1; k < self.judgement.left.length; k++)
@@ -1022,8 +1022,10 @@ Crafty.c('JudgementPuzzlePiece', {
                                         piece: this,
                                         shape_id: i2
                                     });
-                                    Logging.log({ name: "FailedDoubleClickMatch"});
+                                    Logging.log({ name: "FailedDoubleClickMatch", puzzle_id: Game.current_puzzle });
                                 }
+                            } else {
+                                Logging.log({ name: "FailedDoubleClickMatch", puzzle_id: Game.current_puzzle });
                             }
                         }
                         Game.clear_double_clicking();
@@ -1281,7 +1283,7 @@ Crafty.c('JudgementPuzzlePiece', {
             current: Game.current_rule,
             other: other
         });
-        Logging.log({ name: "PieceConnected" });
+        Logging.log({ name: "PieceConnected", puzzle_id: Game.current_puzzle });
         MetaVarManager.garbage_collect();
         Game.current_rule = null;
         Game.check_if_solved();
@@ -1299,7 +1301,7 @@ Crafty.c('JudgementPuzzlePiece', {
             current: Game.current_rule,
             other: other
         });
-        Logging.log({name: "PieceConnected" });
+        Logging.log({name: "PieceConnected", puzzle_id: Game.current_puzzle });
         MetaVarManager.garbage_collect();
         Game.current_rule = null;
         Game.check_if_solved();
@@ -2491,7 +2493,12 @@ Game = {
         Game.remove_current_rule();
         Game.current_rule = build_inference_rule_piece(top, bottom, x, y);
         Game.trigger_callout_transition({name: "PieceCreated", top:top, bottom:bottom});
-        Logging.log({ name: "PieceCreated", top:top, bottom:bottom});
+        Logging.log({ name: "PieceCreated", puzzle_id: Game.current_puzzle, top:top, bottom:bottom});
+    },
+
+    create_assumption_piece_for_double_click: function() {
+        Game.remove_current_rule();
+        Game.current_rule = build_inference_rule_piece([], "A |- A", 150, 150);
     },
 
     create_assumption_piece: function() {
@@ -2518,10 +2525,14 @@ Game = {
         Game.replace_current_rule(["|- A", "|- imp(A,B)"], "|- B");
     },
 
-    add_context_left: function() {
+    add_context: function() {
         Game.add_context(true);
         Game.trigger_callout_transition({name: 'ContextAdded'})
-        Logging.log({name: 'ContextAdded'})
+        Logging.log({name: 'ContextAdded', puzzle_id: Game.current_puzzle})
+    },
+
+    add_context_left: function() {
+        Game.add_context(true);
     },
 
     add_context_right: function() {
