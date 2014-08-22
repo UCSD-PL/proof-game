@@ -1720,8 +1720,8 @@ Game = {
         Game.add_puzzle_with_tutorial("|- imp(x,y)", [], function() {
             Game.clear_callouts();
             Game.replace_current_rule(["imp(x,y) |- imp(A,B)"], "|- imp(A,B)");
-            Game.piece_text_callout_static(2, text("When a red port is connected to a shape,<br>" +
-                                                   "all red ports transform to that shape.<br>" +
+            Game.piece_text_callout_static(2, text("When a red port is connected<br>to a shape,<br>" +
+                                                   "all red ports transform<br>to that shape.<br><br>" +
                                                    "Same for blue.<br> Same for all colored ports.", 550 , 50));
 
         })
