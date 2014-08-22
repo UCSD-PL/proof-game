@@ -111,11 +111,11 @@ Exercises.start_current_puzzle = function() {
     display_str = Exercises.judgement_to_str(j);
 
     Exercises.puzzle_id_text = 
-    Crafty.e("2D, DOM, Text")
-      .attr({ x: 10, y: 5, w: 800 })
-      .text("Exercise id: " + Exercises.current_puzzle + "<br>" +
-            "Write this exercise ID on your paper solution.")
-      .textFont({ size: '20px', weight: 'bold' });
+      Crafty.e("2D, DOM, Text")
+        .attr({ x: 10, y: 5, w: 800 })
+        .text("Exercise id: " + Exercises.current_puzzle + "<br>" +
+              "Write this exercise ID on your paper solution.")
+        .textFont({ size: '20px', weight: 'bold' });
   } else {
     display_str = "You finished the puzzles in this session!";
   }

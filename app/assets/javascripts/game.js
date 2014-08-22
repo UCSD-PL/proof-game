@@ -1728,16 +1728,19 @@ Game = {
         Game.add_puzzle_with_tutorial("|- and(x,y)", [], function() {
             Game.clear_callouts();
             Game.replace_current_rule(["and(A,y) |- and(x,B)"], "|- and(A,B)");
-            Game.piece_text_callout_static(2, text("Let's try another one!<br>Watch the animation again", 550 , 50));
+            Game.piece_text_callout_static(2, text("Let's try another one!<br>" + 
+                                                   "Watch the animation again", 550 , 50));
         })
 
         // Puzzle 12
         Game.add_puzzle_with_tutorial("|- imp(x,x)", [], function() {
             Game.clear_callouts();
-            Game.piece_text_callout_static(0, text("We need a special piece again!<br>But where do we get it from?", 0, -210))
+            Game.piece_text_callout_static(0, text("We need a special piece again!<br>" + 
+                                                   "But where do we get it from?", 0, -210))
             setTimeout(function() {
                 Game.clear_callouts()
-                Game.piece_text_callout_static(0, text("Buttons create special pieces.<br>Click the button.",0 , -210));
+                Game.piece_text_callout_static(0, text("Buttons create special pieces.<br>" + 
+                                                       "Click the button.",0 , -210));
                 Game.make_piece_visible("imp-intro");
                 Game.dom_sprite_callout("imp-intro", up_arrow);
             }, 3000);
@@ -1757,9 +1760,8 @@ Game = {
         // Puzzle 14
         Game.add_puzzle_with_tutorial("y |- imp(x, y)", ["imp-intro"], function() {
 
-            Game.clear_callouts();
-
-            Game.piece_text_callout(0, text("No matching shapes.<br>Try double clicking anyway.", 0, -210))
+            Game.piece_text_callout(0, text("No matching shapes.<br>" + 
+                                            "Try double clicking anyway.", 0, -210))
             Game.shape_sprite_callout(0,0, down_arrow);
             Game.shape_sprite_callout(0,1, down_arrow);
 
@@ -1791,7 +1793,9 @@ Game = {
                     Game.piece_text_callout_static(0, text("Try to connect the two pieces.", 250, -210))
                     setTimeout(function() {
                         Game.clear_callouts()
-                        Game.piece_text_callout_static(0, text("That didn't work!<br> The piece is not wide enough<br>You have to extend the piece.", 50, -310));
+                        Game.piece_text_callout_static(0, text("That didn't work!<br>" +
+                                                               "The piece is not wide enough<br>" +
+                                                               "You have to extend the piece.", 400, -410));
                         Game.make_piece_visible("add-context");
                         Game.dom_sprite_callout("add-context", up_arrow);
                     }, 6000)
@@ -1804,14 +1808,14 @@ Game = {
                 predecessors: [create_piece],
                 result: function(){
                     Game.clear_callouts()
-                    Game.piece_text_callout_static(0, text("Now connect and solve the puzzle!<br>Keep watching the animations", 0, -310))
+                    Game.piece_text_callout_static(0, text("Now connect and solve the puzzle!<br>" +
+                                                           "Keep watching the animations", 0, -400))
                 }
             });
         });
 
         // Puzzle 15
         Game.add_puzzle_with_tutorial("|- imp(x, imp(y,x))", ["imp-intro", "add-context"], function() {
-            Game.clear_callouts();
             Game.piece_text_callout_static(0, text("You try it", 50, -310));
 
             Game.callout_transitions.push({
@@ -1831,7 +1835,7 @@ Game = {
         // Puzzle 17, don't include in paper exercises
         Game.add_puzzle_with_tutorial("y |- and(y, y)", ["imp-intro", "add-context"], function() {
             Game.clear_callouts();
-            Game.piece_text_callout(0, text("Try to create & connect a piece of the right size", -100, -410));
+            Game.piece_text_callout(0, text("Try to create & connect a piece of the right size", -100, -400));
 
             Game.callout_transitions.push({
                 condition: {name: "PieceConnectionFailed", matches: function(other){return other.name == this.name}},
@@ -1894,62 +1898,79 @@ Game = {
 
         // Puzzle 23
         Game.add_puzzle_with_tutorial("and(y,x) |- y", ["and-intro", "imp-intro", "add-context"], function() {
-            Game.piece_text_callout(0, text("Try each piece above.", 50, -400))
 
-            var piece_connection_failed_1 = {
-                condition: {name: "PieceConnectionFailed", matches: function(other) { return other.name == this.name && 
-                                                                                      other.current.bottom.judgement.right.n == "imp" } },
-                result: function() {
-                    Game.clear_callouts();
-                    Game.piece_text_callout(0, text("Semi-circle doesn't fit.<br>Try the other piece.", 50, -400))
-                }
-            };
-            Game.callout_transitions.push(piece_connection_failed_1)
-
-            var piece_connection_failed_2 = {
-                condition: {name: "PieceConnectionFailed", matches: function(other) { return other.name == this.name && 
-                                                                                      other.current.bottom.judgement.right.n == "and" } },
-                result: function() {
-                    Game.clear_callouts();
-                    Game.piece_text_callout(0, text("Downward triangle doesn't fit.<br>Try the other piece.", 0, -400))
-                }
-            };
-            Game.callout_transitions.push(piece_connection_failed_2)
+            Game.piece_text_callout(0, text("We will soon need something new.<br>But let's first try this piece.", 150, -400));
+            Game.dom_sprite_callout("imp-intro", up_arrow);
 
             Game.callout_transitions.push({
-                condition: Game.condition_satisfied(),
-                predecessors: [piece_connection_failed_1, piece_connection_failed_2],
+                condition: Game.piece_created_condition(["A |- B"], "|- imp(A,B)"),
                 result: function() {
                     Game.clear_callouts();
-                    Game.piece_text_callout(0, text("That doesn't fit either.<br>We need a new kind of piece.", 50, -400))
-                    setTimeout(function() {
-                        Game.make_piece_visible("and-elim-1");
-                        Game.dom_sprite_callout("and-elim-1", up_arrow);
+                    Game.piece_text_callout_static(0, text("Extend and try to connect", 400, -410));
+                    Game.dom_sprite_callout("add-context", up_arrow);
+                    Game.callout_transitions.push({
+                        condition: Game.context_added_condition(),
+                        result: function() {
+                            Game.clear_callouts();
+                            Game.piece_text_callout_static(0, text("Extend and try to connect", 400, -410));
+                            setTimeout(function() {
+                                Game.clear_callouts();
+                                Game.piece_text_callout(0, text("D'oh! Semi-circle doesn't fit.<br>" +
+                                                                "Let's try the other piece.", 50, -400));
+                                Game.dom_sprite_callout("and-intro", up_arrow);
 
-                        var create_piece = {
-                            condition: Game.piece_created_condition(["|- and(A,B)"], "|- A"),
-                            result: function() {
-                                Game.clear_callouts()
-                                Game.piece_text_callout(0, text("Extend, connect, and watch the animation", 0, -400))
-                            }
-                        };
-                        Game.callout_transitions.push(create_piece);
+                                Game.callout_transitions.push({
+                                    condition: Game.piece_created_condition(["|- A", "|- B"], "|- and(A,B)"),
+                                    result: function() {
+                                        Game.clear_callouts();
+                                        Game.piece_text_callout_static(0, text("Extend and try to connect", 400, -410));
+                                        Game.dom_sprite_callout("add-context", up_arrow);
+                                        Game.callout_transitions.push({
+                                            condition: Game.context_added_condition(),
+                                            result: function() {
+                                                Game.clear_callouts();
+                                                Game.piece_text_callout_static(0, text("Extend and try to connect", 400, -410));
+                                                setTimeout(function() {
+                                                    Game.clear_callouts();
+                                                    Game.piece_text_callout(0, text("Downward triangle doesn't fit either.<br>" +
+                                                                                    "We need a new piece!", 50, -400));
 
-                        Game.callout_transitions.push({
-                            condition: Game.piece_connected_condition(),
-                            result: function() {
-                                setTimeout(function() {
-                                    Game.clear_callouts()
-                                    Game.piece_text_callout(0, text("The blue port will take on any shape it is connected to.<br>"+
-                                                                    "Double click the yellow and with pink shapes.", -50, -400));
-                                    Game.shape_sprite_callout(2,0, down_arrow);
-                                    Game.shape_sprite_callout(2,1, down_arrow);
-                                }, 5000)
-                            }
-                        })
-                    }, 2000);
+                                                    setTimeout(function() {
+                                                        Game.make_piece_visible("and-elim-1");
+                                                        Game.dom_sprite_callout("and-elim-1", up_arrow);
+
+                                                        var create_piece = {
+                                                            condition: Game.piece_created_condition(["|- and(A,B)"], "|- A"),
+                                                            result: function() {
+                                                                Game.clear_callouts()
+                                                                Game.piece_text_callout(0, text("Extend, connect, and watch the animation", 0, -400))
+                                                            }
+                                                        };
+                                                        Game.callout_transitions.push(create_piece);
+
+                                                        Game.callout_transitions.push({
+                                                            condition: Game.piece_connected_condition(),
+                                                            result: function() {
+                                                                setTimeout(function() {
+                                                                    Game.clear_callouts()
+                                                                    Game.piece_text_callout(0, text("The blue port will take on any shape it is connected to.<br>"+
+                                                                                                    "Double click the yellow and with pink shapes.", -50, -400));
+                                                                    Game.shape_sprite_callout(2,0, down_arrow);
+                                                                    Game.shape_sprite_callout(2,1, down_arrow);
+                                                                }, 5000);
+                                                            }
+                                                        });
+                                                    }, 2000);
+                                                }, 6000);
+                                            }
+                                        });
+                                    }
+                                });
+                            }, 6000);
+                        }
+                    });
                 }
-            })
+            });
         });
 
         // Puzzle 24
