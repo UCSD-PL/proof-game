@@ -1446,11 +1446,11 @@ function build_judgement(s) {
     }
 }
 
-function build_judgement_piece(s) {
+function build_judgement_piece(s, x_opt, y_opt) {
     var j = build_judgement(s);
     var p = Crafty.e('JudgementPuzzlePiece').set_judgement(j);
     if (arguments.length == 3)
-        p.place(arguments[1],arguments[2]);
+        p.place(x_opt, y_opt);
     return p;
 }
 
@@ -2385,8 +2385,8 @@ Game = {
     },
 
     restart: function(){
-        //Game.restarted = true
-        Game.start_current_puzzle();
+        Game.start_current_puzzle(false);
+        Logging.log({ name: "PuzzleReStart", puzzle_id: Game.current_puzzle });
     },
 
     prev_puzzle: function() {
@@ -2394,7 +2394,11 @@ Game = {
         Game.start_current_puzzle();
     },
 
-    start_current_puzzle: function() {
+    start_current_puzzle: function(do_log_opt /* = true */) {
+        var do_log = true;
+        if (arguments.length == 1) {
+            do_log = do_log_opt;
+        }
         Game.clear();
         var current_puzzle = Game.current_puzzle;
         if (current_puzzle < Game.puzzle_range.start ||
@@ -2454,7 +2458,9 @@ Game = {
             name: "PuzzleStart",
             puzzle_id: Game.current_puzzle
         });
-        Logging.log({ name: "PuzzleStart", puzzle_id: Game.current_puzzle });
+        if (do_log) {
+            Logging.log({ name: "PuzzleStart", puzzle_id: Game.current_puzzle });
+        }
 
         $.ajax({
           type: "PUT",
@@ -2480,14 +2486,12 @@ Game = {
         }
     },
 
-    replace_current_rule: function(top, bottom, x_optional, y_optional) {
-        var x,y;
-        if (arguments.length == 2) {
-            x = 150;
-            y = 150;
-        } else {
-            x = x_optional;
-            y = y_optional;
+    replace_current_rule: function(top, bottom, x_opt /* = 150 */, y_opt /* = 150 */) {
+        var x = 150;
+        var y = 150;
+        if (arguments.length == 4) {
+            x = x_opt;
+            y = y_opt;
         }
         Game.clear_double_clicking();
         Game.remove_current_rule();
@@ -2525,8 +2529,8 @@ Game = {
         Game.replace_current_rule(["|- A", "|- imp(A,B)"], "|- B");
     },
 
-    add_context: function() {
-        Game.add_context(true);
+    add_context_from_ui: function() {
+        Game.add_context_left();
         Game.trigger_callout_transition({name: 'ContextAdded'})
         Logging.log({name: 'ContextAdded', puzzle_id: Game.current_puzzle})
     },
