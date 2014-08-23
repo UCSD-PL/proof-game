@@ -35,6 +35,7 @@
 }
 
 </style>
+<!-- .strftime("%Y-%m-%d %H:%M:%S.%L %Z") -->
 
 <input type="text" id="experiment_name">
 <button onclick="LogProcessor.start_experiment()"> Start Experiment</button>
@@ -45,7 +46,7 @@
     <div class="log_entry" style="color:<%= l.color %>">
    {
      "user":"<%= "#{l.group.name}" if l.group %>",
-     "time":"<%= l.created_at.strftime("%Y-%m-%d %H:%M:%S.%L %Z") %>",
+     "time":"<%= l.created_at %>",
      "message": <%= l.message %> 
    }
    </div>
