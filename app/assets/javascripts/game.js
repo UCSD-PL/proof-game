@@ -2460,6 +2460,7 @@ Game = {
         });
         if (do_log) {
             Logging.log({ name: "PuzzleStart", puzzle_id: Game.current_puzzle });
+            Game.start_time = new Date().getTime();
         }
 
         $.ajax({
@@ -2562,7 +2563,8 @@ Game = {
 
     check_if_solved: function() {
         if (Game.is_puzzle_solved()) {
-            Logging.log({ name: "PuzzleSolved", puzzle_id: Game.current_puzzle })
+            var time_delta = new Date().getTime() - Game.start_time;
+            Logging.log({ name: "PuzzleSolved", puzzle_id: Game.current_puzzle, time_delta: time_delta })
             setTimeout(function() {
                 alert("Yay, you solved this puzzle!\nOn to the next one!");
                 setTimeout(Game.next_puzzle, 250);

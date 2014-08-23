@@ -90,6 +90,16 @@ LogProcessor.parse = function(experiment_name) {
         all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
         delete start_times[user][puzzle_id];
       }
+      if (msg.time_delta !== undefined) {
+        user = user + "_c";
+        if (time_entries_by_user[user] === undefined) {
+          time_entries_by_user[user] = [];
+        }
+        var user_time_entries = time_entries_by_user[user];
+        var time_delta = msg.time_delta/1000;
+        user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
+        all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });  
+      }
     }
   }
   for (var user in start_times) {

@@ -68,7 +68,8 @@ Exercises.solved_puzzle = function(do_confirm) {
       return;
     }
     console.log("Solved puzzle " + Exercises.current_puzzle);
-    Logging.log({ name: "PuzzleSolved", puzzle_id: Exercises.current_puzzle });
+    var time_delta = new Date().getTime() - Exercises.start_time;
+    Logging.log({ name: "PuzzleSolved", puzzle_id: Exercises.current_puzzle, time_delta: time_delta });
     Exercises.current_puzzle++;
     Exercises.text.destroy();
     Exercises.puzzle_id_text.destroy();
@@ -107,6 +108,7 @@ Exercises.start_current_puzzle = function() {
       Exercises.current_puzzle < Exercises.puzzle_range.end) {
     console.log("Starting puzzle " + Exercises.current_puzzle);
     Logging.log({ name: "PuzzleStart", puzzle_id: Exercises.current_puzzle });
+    Exercises.start_time = new Date().getTime();
     var j = build_judgement(Game.puzzles[Exercises.current_puzzle].goal);
     display_str = Exercises.judgement_to_str(j);
 
