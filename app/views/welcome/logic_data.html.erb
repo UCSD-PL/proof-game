@@ -1,0 +1,3183 @@
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<%= javascript_include_tag "jquery" %>
+<%= javascript_include_tag "logging.js" %>
+<%= javascript_include_tag "process_logs.js" %>
+
+<style>
+
+/*body {
+  font: 10px sans-serif;
+}
+*/
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.horizontal-bar {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+}
+
+</style>
+
+<!-- <input type="text" id="experiment_name">
+<button onclick="LogProcessor.start_experiment()"> Start Experiment</button>
+<button onclick="LogProcessor.stop_experiment()"> Stop Experiment</button>
+<button onclick="LogProcessor.show_experiment_results()"> Show Results</button>
+ -->
+
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:35:34.679 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;6&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:35:44.841 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:01.133 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:03.473 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;2363&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:04.536 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:21.098 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:22.111 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;1092&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:23.113 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:31.419 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:34.688 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:35.218 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;315&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-23 21:36:36.017 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:04:57.600 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;0&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:31:42.022 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:31:53.723 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;11433&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:31:54.662 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:31:57.499 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;2669&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:31:58.488 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:32:05.277 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;7163&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:32:06.695 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy3",
+     "time":"2014-08-24 20:32:08.342 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;2037&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy2",
+     "time":"2014-08-24 20:34:45.309 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy1",
+     "time":"2014-08-24 20:36:27.406 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:16.222 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:18.844 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;2604&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:19.830 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:21.144 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;1314&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:22.149 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:23.867 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;1707&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:24.864 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner",
+     "time":"2014-08-24 20:40:25.782 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;910&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"mcstudy6",
+     "time":"2014-08-24 20:58:53.393 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-24 21:08:40.481 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;ExperimentStart&quot;, &quot;experiment_name&quot;=&gt;&quot;Logic&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/logs&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:44:13.694 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:44:47.566 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:45:13.218 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:45:30.516 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;76658&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:45:31.379 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:45:40.058 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:45:44.388 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:45:49.168 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:46:27.692 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:46:34.943 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;55462&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:46:35.948 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:46:55.260 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;101989&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:46:56.435 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:47:02.845 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;77969&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:47:03.533 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:47:12.519 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;100504&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:47:13.155 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 21:47:20.719 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:47:32.705 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;164795&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:47:33.611 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:47:50.779 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;74102&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:47:51.312 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:48:45.183 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;91893&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:48:45.759 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:49:04.561 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;127913&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:49:05.120 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:49:20.162 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;106678&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:49:21.053 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:49:42.687 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;233406&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:49:43.597 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:50:04.674 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;181306&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:50:05.587 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 21:50:23.105 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;96942&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:51:44.287 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;233122&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:51:45.472 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:51:55.519 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;327690&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:51:56.758 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:52:11.637 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;170509&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:52:12.810 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:52:39.736 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;175958&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:52:40.858 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:52:51.025 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;165339&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:52:51.957 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 21:53:39.531 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;114240&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 21:53:56.035 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;time_delta&quot;=&gt;&quot;395212&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 21:53:56.687 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:54:33.343 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;112260&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:54:33.872 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 21:54:42.968 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;150131&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 21:55:43.145 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;170389&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:56:12.407 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;426540&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 21:56:12.925 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 21:56:27.354 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;112688&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:56:40.896 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;284092&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:56:41.525 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:59:45.053 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;time_delta&quot;=&gt;&quot;183168&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 21:59:46.008 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:00:35.742 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;262395&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:02:32.105 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;14&quot;, &quot;time_delta&quot;=&gt;&quot;515317&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:02:32.993 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;15&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:04:11.542 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;16&quot;, &quot;time_delta&quot;=&gt;&quot;265493&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:14:14.849 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:14:15.464 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:14:17.046 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:14:17.200 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:14:21.725 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:14:25.150 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:14:30.853 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:14:33.206 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:15:30.610 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;68302&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:15:31.279 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:15:36.448 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;78862&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:15:37.390 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:15:59.328 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;87929&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:16:00.045 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:16:18.434 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;122851&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:16:19.646 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:16:28.247 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;114571&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:16:28.870 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:16:50.358 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;155404&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:16:51.276 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:16:51.470 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;146190&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:16:52.642 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:17:02.763 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;91133&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:17:03.476 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:17:29.847 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;70059&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:17:30.446 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:17:37.758 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;120353&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:17:38.412 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:17:45.358 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;54104&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:17:46.341 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:17:56.641 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;116336&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:17:57.247 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:18:08.548 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;99367&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:18:09.201 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:18:30.775 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;98036&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:18:31.735 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:19:08.759 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;125114&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:19:09.571 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:19:24.763 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;87149&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:19:25.337 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:19:37.146 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;110399&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:19:37.745 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:19:47.596 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;128783&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:19:48.231 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:20:47.029 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;196371&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:20:47.840 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:21:05.597 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;115938&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:21:06.339 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:21:30.369 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;124923&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:21:31.279 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:21:46.634 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;128794&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:21:47.562 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:21:50.305 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:22:10.128 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;240798&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:22:11.305 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:22:23.957 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;155582&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:22:25.071 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:22:50.704 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;18&quot;, &quot;time_delta&quot;=&gt;&quot;60306&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:22:51.877 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:23:03.584 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;135332&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:23:04.469 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:23:12.359 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;280326&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:23:12.750 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:23:30.254 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;143552&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:23:52.494 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;140756&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:23:57.533 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;129571&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:24:36.543 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;131624&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:26:42.670 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;209744&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:26:43.679 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:27:24.859 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;260561&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:28:15.565 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;363937&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:28:15.991 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:30:39.210 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;235582&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:32:06.270 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;230158&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:10.840 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;19&quot;, &quot;time_delta&quot;=&gt;&quot;558862&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:11.780 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:36.819 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;20&quot;, &quot;time_delta&quot;=&gt;&quot;24975&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:37.806 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:38.298 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;21&quot;, &quot;time_delta&quot;=&gt;&quot;522&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:39.319 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:32:40.541 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;22&quot;, &quot;time_delta&quot;=&gt;&quot;1287&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_2&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:38:06.739 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:38:12.033 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:38:13.459 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:38:15.100 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:38:15.430 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:38:16.032 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:38:18.823 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:38:24.062 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:39:20.705 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;66805&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:39:21.014 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:39:57.217 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;102188&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:39:58.123 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:41:11.466 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;179541&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:41:12.402 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:41:25.842 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;198454&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:41:26.217 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:42:08.087 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;166953&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:42:44.980 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;13&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_1&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:42:48.795 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:43:45.119 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;326072&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:43:46.191 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:44:06.169 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;349996&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:44:07.081 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:44:26.624 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;268188&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:44:53.530 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;207201&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:45:00.243 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;396016&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 22:45:01.114 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:45:41.724 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;269191&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:47:32.175 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;205014&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:48:08.474 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;24&quot;, &quot;time_delta&quot;=&gt;&quot;319248&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:48:09.436 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:49:55.318 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;369260&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:56:36.958 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;25&quot;, &quot;time_delta&quot;=&gt;&quot;507014&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_3&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:59:11.101 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 22:59:11.244 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 22:59:15.169 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 22:59:15.617 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 22:59:15.674 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 22:59:23.329 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 22:59:29.591 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:59:58.281 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;47232&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 22:59:59.355 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:00:36.077 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;72201&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:00:36.881 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:00:43.803 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;92555&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:00:44.998 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:00:53.619 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;54322&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:00:54.985 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:01:26.913 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;131673&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:01:27.813 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:01:34.952 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;138838&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:01:35.540 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:01:53.953 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;68603&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:01:54.610 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:02:12.320 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;176625&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:02:13.234 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:02:27.169 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;177518&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:02:28.085 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:02:48.752 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;132063&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:02:49.697 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:03:24.582 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;149501&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:03:33.926 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;125632&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:03:34.607 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:03:56.377 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:04:01.198 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;145503&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:04:02.527 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:04:32.211 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;138238&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:04:32.476 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:04:35.908 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;161492&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:04:51.314 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;142883&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:04:52.273 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:05:00.228 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;130241&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:06:58.552 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:07:43.483 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:08:06.868 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;271839&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:08:12.902 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:08:16.168 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:08:16.510 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:08:49.305 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;33157&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:08:50.290 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:08:58.953 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;75373&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:08:59.616 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:09:04.987 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;302758&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:09:10.533 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:09:30.465 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;74269&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:09:31.471 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:09:38.648 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;48103&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:09:39.409 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:09:48.445 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;48754&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:09:49.719 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:10:17.398 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;344820&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:10:18.395 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;67525&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:10:19.073 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:10:38.253 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:10:49.809 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;69722&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:10:50.392 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:11:01.399 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;71694&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:11:02.265 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:11:19.670 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;60501&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:11:20.635 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:11:29.332 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;time_delta&quot;=&gt;&quot;39205&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:11:30.582 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:11:49.432 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;70840&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:11:50.146 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:12:21.786 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;449610&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:12:28.496 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:12:30.047 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:12:56.504 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;65899&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:12:57.038 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:13:01.936 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;100938&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:13:02.510 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:13:12.435 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;221203&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:13:12.783 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;time_delta&quot;=&gt;&quot;102111&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:13:13.340 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:13:13.490 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:13:23.203 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;time_delta&quot;=&gt;&quot;141040&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:13:24.105 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:13:40.498 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;71875&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:13:41.388 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:14:12.341 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;75235&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:14:13.247 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:14:14.312 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;27&quot;, &quot;time_delta&quot;=&gt;&quot;617862&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:14:15.241 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:14:26.150 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;115852&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:14:26.522 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;time_delta&quot;=&gt;&quot;72960&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:14:26.956 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:14:27.454 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:14:41.749 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;88040&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:14:42.364 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;time_delta&quot;=&gt;&quot;78151&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"alexa_vizcaino",
+     "time":"2014-08-24 23:14:42.775 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:14:43.621 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:14:46.032 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;time_delta&quot;=&gt;&quot;103410&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:14:47.274 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:14:54.995 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;time_delta&quot;=&gt;&quot;41749&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:14:56.047 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:15:18.938 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;51997&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:15:19.926 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:15:27.993 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;time_delta&quot;=&gt;&quot;60481&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:15:29.249 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:15:46.894 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;time_delta&quot;=&gt;&quot;62875&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:15:47.440 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:16:10.054 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;time_delta&quot;=&gt;&quot;82698&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:16:10.935 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:16:16.179 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;28&quot;, &quot;time_delta&quot;=&gt;&quot;120491&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:16:17.099 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:16:25.272 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;time_delta&quot;=&gt;&quot;88538&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"daniel_flohr",
+     "time":"2014-08-24 23:16:25.835 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:16:30.368 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;70066&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:16:31.327 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:16:38.114 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;176346&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"kevin_telford",
+     "time":"2014-08-24 23:16:38.758 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:16:58.542 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;time_delta&quot;=&gt;&quot;89535&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:16:59.770 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:17:02.242 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;time_delta&quot;=&gt;&quot;74585&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:17:03.173 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:17:31.740 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;time_delta&quot;=&gt;&quot;60311&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:17:33.025 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:17:55.668 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;time_delta&quot;=&gt;&quot;56111&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:17:56.891 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;39&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:18:19.397 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;34&quot;, &quot;time_delta&quot;=&gt;&quot;47028&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:18:20.355 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:18:26.428 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;time_delta&quot;=&gt;&quot;83493&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:18:27.595 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:18:43.720 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;time_delta&quot;=&gt;&quot;152711&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:18:44.635 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:18:52.963 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;39&quot;, &quot;time_delta&quot;=&gt;&quot;56031&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:18:53.642 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;40&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:19:22.759 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;time_delta&quot;=&gt;&quot;54683&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:19:23.236 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;39&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:19:37.328 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;40&quot;, &quot;time_delta&quot;=&gt;&quot;43568&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:19:38.234 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;41&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:20:04.974 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;39&quot;, &quot;time_delta&quot;=&gt;&quot;41961&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:20:05.958 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;40&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:20:20.764 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;35&quot;, &quot;time_delta&quot;=&gt;&quot;119981&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:20:21.869 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:20:53.065 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;41&quot;, &quot;time_delta&quot;=&gt;&quot;74396&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:20:53.645 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;42&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:20:54.022 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;40&quot;, &quot;time_delta&quot;=&gt;&quot;48058&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:20:55.051 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;41&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:21:15.845 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;time_delta&quot;=&gt;&quot;151069&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:21:16.861 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:21:31.164 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;36&quot;, &quot;time_delta&quot;=&gt;&quot;69138&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:21:31.543 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:22:00.730 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;41&quot;, &quot;time_delta&quot;=&gt;&quot;65599&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:22:01.708 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;42&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:23:09.780 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;time_delta&quot;=&gt;&quot;98161&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:23:10.749 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:23:52.631 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;37&quot;, &quot;time_delta&quot;=&gt;&quot;156038&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"sean_lee",
+     "time":"2014-08-24 23:23:53.812 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:24:17.313 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;38&quot;, &quot;time_delta&quot;=&gt;&quot;66488&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:24:18.433 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;39&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:25:13.116 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;39&quot;, &quot;time_delta&quot;=&gt;&quot;54594&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:25:14.127 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;40&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:25:56.251 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;40&quot;, &quot;time_delta&quot;=&gt;&quot;42182&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:25:57.065 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;41&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:27:59.394 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;42&quot;, &quot;time_delta&quot;=&gt;&quot;425525&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:28:00.197 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;43&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:28:40.971 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;41&quot;, &quot;time_delta&quot;=&gt;&quot;163706&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:28:41.864 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;42&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:29:49.584 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;42&quot;, &quot;time_delta&quot;=&gt;&quot;467824&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"jessica_lim",
+     "time":"2014-08-24 23:29:50.779 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;43&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:30:04.805 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;43&quot;, &quot;time_delta&quot;=&gt;&quot;124234&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:30:05.720 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;44&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"madeleine_morales",
+     "time":"2014-08-24 23:32:34.482 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;44&quot;, &quot;time_delta&quot;=&gt;&quot;148655&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:33:01.185 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;29&quot;, &quot;time_delta&quot;=&gt;&quot;1004042&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_4&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:33:12.484 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:37:26.605 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;30&quot;, &quot;time_delta&quot;=&gt;&quot;253976&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:37:27.482 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:39:59.981 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;42&quot;, &quot;time_delta&quot;=&gt;&quot;677636&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:40:00.829 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;43&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:41:37.172 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;31&quot;, &quot;time_delta&quot;=&gt;&quot;249285&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:41:37.784 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:45:23.826 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;43&quot;, &quot;time_delta&quot;=&gt;&quot;322636&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"juwan stanford",
+     "time":"2014-08-24 23:45:24.097 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;44&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:45:41.572 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleSolved&quot;, &quot;puzzle_id&quot;=&gt;&quot;32&quot;, &quot;time_delta&quot;=&gt;&quot;243354&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"elizabeth_gomez",
+     "time":"2014-08-24 23:45:42.189 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;PuzzleStart&quot;, &quot;puzzle_id&quot;=&gt;&quot;33&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/?template=logic_5&quot;} 
+   }
+   </div>
+   
+    <div class="log_entry" style="color:black">
+   {
+     "user":"lerner2",
+     "time":"2014-08-25 00:10:33.152 UTC",
+     "message": {&quot;name&quot;=&gt;&quot;ExperimentStop&quot;, &quot;experiment_name&quot;=&gt;&quot;Logic&quot;, &quot;page&quot;=&gt;&quot;http://logicpuzzle.herokuapp.com/logs&quot;} 
+   }
+   </div>
+   
+<script>
+  LogProcessor.show_experiment_results("Logic");
+</script>
