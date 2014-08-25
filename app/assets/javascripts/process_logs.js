@@ -11,10 +11,15 @@ LogProcessor.stop_experiment = function() {
   Logging.log({ name: "ExperimentStop", experiment_name: experiment_name }); 
 }
 
-LogProcessor.show_experiment_results = function() {
-  var experiment_name = document.getElementById("experiment_name").value;
+LogProcessor.show_experiment_results = function(name) {
+  var experiment_name;
+  if (arguments.length == 0) {
+    experiment_name = document.getElementById("experiment_name").value;
+  } else {
+    experiment_name = name;
+  }
   LogProcessor.parse(experiment_name);
-  LogProcessor.add_plots();
+  LogProcessor.add_ui();
   // LogProcessor.plot_all_time_entries();
 }
 
@@ -22,7 +27,7 @@ LogProcessor.process = function() {
   LogProcessor.parse();
   // LogProcessor.plot_all_time_entries();
   // LogProcessor.compute_time_averages_by_group(["lerner"], ["lerner2"]);
-  LogProcessor.add_plots();
+  LogProcessor.add_ui();
 }
 
 LogProcessor.parse = function(experiment_name) {
@@ -86,12 +91,12 @@ LogProcessor.parse = function(experiment_name) {
         }
         var user_time_entries = time_entries_by_user[user];
         var time_delta = (end-start)/1000;
-        user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
-        all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
+        // user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
+        // all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
         delete start_times[user][puzzle_id];
       }
       if (msg.time_delta !== undefined) {
-        user = user + "_c";
+        // user = user + "_c";
         if (time_entries_by_user[user] === undefined) {
           time_entries_by_user[user] = [];
         }
@@ -145,7 +150,7 @@ LogProcessor.show_all_entries = function() {
 //   console.log(group_b_data);
 // }
 
-LogProcessor.add_plots = function() {
+LogProcessor.add_ui = function() {
 
   if (LogProcessor.user_names.length == 0) {
     return;
@@ -205,7 +210,9 @@ LogProcessor.add_plots = function() {
       .attr("id", function(d) { return d + "-b"; });
       // .attr("onClick", "LogProcessor.plot_selected()");
 
-  document.getElementById(LogProcessor.user_names[0]).checked = true;
+  LogProcessor.user_names.forEach(function(n) {
+    document.getElementById(n).checked = true;
+  });
 
   // div.append("button")
   //   .text("Show All Entires")
@@ -247,33 +254,74 @@ LogProcessor.plot_groups = function() {
   LogProcessor.plot(data, "puzzle_id", "Time (s)");
 }
 
+// LogProcessor.compute_time_averages_for_group = function(group, name) {
+//   var data  = [];
+//   var is_in_group = {};
+//   group.forEach(function (x) { is_in_group[x] = true });
+//   LogProcessor.all_time_entries.forEach(function (entry) {
+//     if (is_in_group[entry.user]) {
+//       var puzzle_id = entry.puzzle_id;
+//       var x = data[puzzle_id];
+//       if (x === undefined) {
+//         x = { puzzle_id: puzzle_id, sum: 0, count: 0};
+//         data[puzzle_id] = x;
+//       }
+//       x.count++;
+//       x.sum += entry.time_delta;
+//     }
+//   });
+//   // for (var i = 0; i < data.length; i++) {
+//   for (var i = 0; i < 45; i++) {
+//     var x = data[i];
+//     if (x === undefined) {
+//       x = { puzzle_id: i };
+//       x[name] = 0;
+//       data[i] = x;
+//     } else {
+//       var avg = x.sum / x.count;
+//       delete x.sum;
+//       delete x.count;
+//       x[name] = avg;
+//     }
+//   }
+//   return data;
+// }
+
 LogProcessor.compute_time_averages_for_group = function(group, name) {
+  return LogProcessor.compute_data_for_group(group, name, function(arr) {
+    return arr.reduce(function(a, b) { return a + b }) / arr.length;
+  });
+}
+
+LogProcessor.compute_data_for_group = function(group, name, fold) {
   var data  = [];
   var is_in_group = {};
   group.forEach(function (x) { is_in_group[x] = true });
   LogProcessor.all_time_entries.forEach(function (entry) {
     if (is_in_group[entry.user]) {
       var puzzle_id = entry.puzzle_id;
-      var x = data[puzzle_id];
-      if (x === undefined) {
-        x = { puzzle_id: puzzle_id, sum: 0, count: 0};
-        data[puzzle_id] = x;
+      var time_delta = entry.time_delta;
+      if (time_delta > 0) {
+        var x = data[puzzle_id];
+        if (x === undefined) {
+          x = { puzzle_id: puzzle_id, time_deltas: [] };
+          data[puzzle_id] = x;
+        }
+        x.time_deltas.push(time_delta);
       }
-      x.count++;
-      x.sum += entry.time_delta;
     }
   });
-  for (var i = 0; i < data.length; i++) {
+  // for (var i = 0; i < data.length; i++) {
+  for (var i = 0; i < 45; i++) {
     var x = data[i];
     if (x === undefined) {
       x = { puzzle_id: i };
       x[name] = 0;
       data[i] = x;
     } else {
-      var avg = x.sum / x.count;
-      delete x.sum;
-      delete x.count;
-      x[name] = avg;
+      var time_deltas = x.time_deltas;
+      delete x.time_deltas;
+      x[name] = fold(time_deltas);
     }
   }
   return data;
@@ -334,7 +382,7 @@ LogProcessor.plot_all_time_entries = function() {
 
 LogProcessor.plot = function(data, x_key, y_axis_label) {
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
-      width = document.body.clientWidth - margin.left - margin.right,
+      width = (document.body.clientWidth*1.5) - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
 
   var x0 = d3.scale.ordinal()

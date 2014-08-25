@@ -47,3 +47,4 @@ gem 'therubyracer'
 gem 'omniauth-oauth2'
 gem 'figaro'
 
+gem 'newrelic_rpm'
