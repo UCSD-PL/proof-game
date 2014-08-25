@@ -46,12 +46,12 @@ private
 
   # Helper to access the current_user. This is fetched from the sso app via the /api/user call.
   def current_user
-    unless @current_user
+    unless session[:current_user]
       if access_token
-        @current_user = OpenStruct.new(access_token.get('/api/user').parsed)
+        session[:current_user] = OpenStruct.new(access_token.get('/api/user').parsed)
       end
     end
-    @current_user
+    session[:current_user]
   end
   helper_method :current_user
 

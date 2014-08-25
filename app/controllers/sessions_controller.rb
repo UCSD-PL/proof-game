@@ -30,6 +30,7 @@ class SessionsController < ApplicationController
 
   def destroy
     session[:access_token] = nil
+    session[:current_user] = nil
     render :template => "sessions/logout" and return
   end
 end
