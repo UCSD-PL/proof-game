@@ -91,12 +91,12 @@ LogProcessor.parse = function(experiment_name) {
         }
         var user_time_entries = time_entries_by_user[user];
         var time_delta = (end-start)/1000;
-        // user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
-        // all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
+        user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
+        all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
         delete start_times[user][puzzle_id];
       }
       if (msg.time_delta !== undefined) {
-        // user = user + "_c";
+        user = user + "_c";
         if (time_entries_by_user[user] === undefined) {
           time_entries_by_user[user] = [];
         }
