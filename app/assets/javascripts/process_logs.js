@@ -91,12 +91,12 @@ LogProcessor.parse = function(experiment_name) {
         }
         var user_time_entries = time_entries_by_user[user];
         var time_delta = (end-start)/1000;
-        user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
-        all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
+        // user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
+        // all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
         delete start_times[user][puzzle_id];
       }
       if (msg.time_delta !== undefined) {
-        user = user + "_c";
+        // user = user + "_c";
         if (time_entries_by_user[user] === undefined) {
           time_entries_by_user[user] = [];
         }
@@ -177,42 +177,46 @@ LogProcessor.add_ui = function() {
       // .attr("onClick", "LogProcessor.plot_selected()");
 
   u.append("button")
-    .text("Plot users")
-    .attr("onClick", "LogProcessor.plot_users()");
+    .text("Plot user times")
+    .attr("onClick", "LogProcessor.plot_user_times()");
 
-  var a = div.append("div").text("A: ");
+  u.append("button")
+    .text("Plot completion counts by problem")
+    .attr("onClick", "LogProcessor.plot_counts()");
 
-  a.selectAll("input")
-    .data(LogProcessor.user_names)
-    .enter()
-    .append('label')
-      .attr('for',function(d) { d + "-a"; })
-      .text(function(d) { return d; })
-    .append("input")
-      .attr("type", "checkbox")
-      .attr("id", function(d) { return d + "-a"; });
-      // .attr("onClick", "LogProcessor.plot_selected()");
+  // var a = div.append("div").text("A: ");
 
-  a.append("button")
-    .text("Plot Groups")
-    .attr("onClick", "LogProcessor.plot_groups()");
+  // a.selectAll("input")
+  //   .data(LogProcessor.user_names)
+  //   .enter()
+  //   .append('label')
+  //     .attr('for',function(d) { d + "-a"; })
+  //     .text(function(d) { return d; })
+  //   .append("input")
+  //     .attr("type", "checkbox")
+  //     .attr("id", function(d) { return d + "-a"; });
 
-  var b = div.append("div").text("B: ");
+  // a.append("button")
+  //   .text("Plot Groups")
+  //   .attr("onClick", "LogProcessor.plot_groups()");
 
-  b.selectAll("input")
-    .data(LogProcessor.user_names)
-    .enter()
-    .append('label')
-      .attr('for',function(d) { d + "-b"; })
-      .text(function(d) { return d; })
-    .append("input")
-      .attr("type", "checkbox")
-      .attr("id", function(d) { return d + "-b"; });
-      // .attr("onClick", "LogProcessor.plot_selected()");
+  // var b = div.append("div").text("B: ");
+
+  // b.selectAll("input")
+  //   .data(LogProcessor.user_names)
+  //   .enter()
+  //   .append('label')
+  //     .attr('for',function(d) { d + "-b"; })
+  //     .text(function(d) { return d; })
+  //   .append("input")
+  //     .attr("type", "checkbox")
+  //     .attr("id", function(d) { return d + "-b"; });
 
   LogProcessor.user_names.forEach(function(n) {
     document.getElementById(n).checked = true;
   });
+
+  document.getElementById("elizabeth_gomez").checked = false;
 
   // div.append("button")
   //   .text("Show All Entires")
@@ -222,7 +226,20 @@ LogProcessor.add_ui = function() {
 
 }
 
-LogProcessor.plot_users = function() {
+LogProcessor.plot_counts = function() {
+  var users = [];
+  LogProcessor.user_names.forEach(function (user) { 
+    if (document.getElementById(user).checked) {
+      users.push(user)
+    }  
+  });
+  var data = LogProcessor.compute_data_for_group(users, "# groups completed", function(arr) {
+    return arr.length;
+  });
+  LogProcessor.plot(data, "puzzle_id", "# groups who completed")
+}
+
+LogProcessor.plot_user_times = function() {
   var all_data;
   LogProcessor.user_names.forEach(function (user) {
     if (document.getElementById(user).checked) {
@@ -450,11 +467,14 @@ LogProcessor.plot = function(data, x_key, y_axis_label) {
   plot.selectAll("rect")
       .data(function(d) { return d.y_values; })
     .enter().append("rect")
+      .attr("class", "bar")
       .attr("width", x1.rangeBand())
       .attr("x", function(d) { return x1(d.name); })
       .attr("y", function(d) { return y(d.value); })
       .attr("height", function(d) { return height - y(d.value); })
-      .style("fill", function(d) { return color(d.name); });
+      .style("fill", function(d) { return color(d.name); })
+      .append("svg:title")
+        .text(function (d) { return d.name + ": " + Math.round(d.value) ; });
 
   var legend = svg.selectAll(".legend")
       .data(y_keys.slice())
