@@ -41,9 +41,13 @@
 </style>
 
 <input type="text" id="experiment_name">
+<label>
+  Show Server Timings
+  <input type="checkbox" id="show_server_timings">
+</label>
 <button onclick="LogProcessor.start_experiment()"> Start Experiment</button>
 <button onclick="LogProcessor.stop_experiment()"> Stop Experiment</button>
-<button onclick="LogProcessor.show_experiment_results()"> Show Results</button>
+<button onclick="LogProcessor.show_experiment_results_from_ui()"> Show Results</button>
 
 <% @logs.each do |l| %>
     <div class="log_entry" style="color:<%= l.color %>">

@@ -11,26 +11,35 @@ LogProcessor.stop_experiment = function() {
   Logging.log({ name: "ExperimentStop", experiment_name: experiment_name }); 
 }
 
-LogProcessor.show_experiment_results = function(name) {
+LogProcessor.show_experiment_results_from_ui = function() {
+  var experiment_name = document.getElementById("experiment_name").value;
+  var show_server_timings = document.getElementById("show_server_timings").checked;
+  LogProcessor.show_experiment_results(experiment_name, show_server_timings);
+}
+LogProcessor.show_experiment_results = function(name, show_server_timings) {
   var experiment_name;
   if (arguments.length == 0) {
     experiment_name = document.getElementById("experiment_name").value;
   } else {
     experiment_name = name;
   }
-  LogProcessor.parse(experiment_name);
+  LogProcessor.parse(experiment_name, show_server_timings);
   LogProcessor.add_ui();
   // LogProcessor.plot_all_time_entries();
 }
 
-LogProcessor.process = function() {
-  LogProcessor.parse();
-  // LogProcessor.plot_all_time_entries();
-  // LogProcessor.compute_time_averages_by_group(["lerner"], ["lerner2"]);
-  LogProcessor.add_ui();
-}
+// LogProcessor.process = function() {
+//   LogProcessor.parse();
+//   LogProcessor.add_ui();
+// }
 
-LogProcessor.parse = function(experiment_name) {
+LogProcessor.parse = function(experiment_name, show_server_timings) {
+  function err_str(header, msg, user, puzzle_id) {
+    var str = (header + ": " + msg + "; " +
+               "user: " + user + "; " +
+               "puzzle: " + puzzle_id);
+    return str;
+  };
   var start_times = {};
   LogProcessor.time_entries_by_user = {};
   LogProcessor.all_time_entries = [];
@@ -39,6 +48,16 @@ LogProcessor.parse = function(experiment_name) {
   var in_experiment = false;
   entries = document.getElementsByClassName("log_entry");
   var prev_time;
+
+  function add_time_entry(user, puzzle_id, time_delta) {
+    if (time_entries_by_user[user] === undefined) {
+      time_entries_by_user[user] = [];
+    }
+    var user_time_entries = time_entries_by_user[user];
+    user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
+    all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
+  }
+
   for (var i = 0; i < entries.length; i++)  {
     entries[i].style.display = "none";
     var entry = entries[i].innerHTML;
@@ -73,43 +92,34 @@ LogProcessor.parse = function(experiment_name) {
         start_times[user] = {}
       }
       if (start_times[user][puzzle_id] !== undefined) {
-        console.log("NOTE: user " + user + " did not solve " + puzzle_id);
+        console.log(err_str("NOTE", "Two consecutive PuzzleStart", user, puzzle_id));
       } 
       start_times[user][puzzle_id] = time;
     }
     if (msg_name === "PuzzleSolved") {
       var puzzle_id = parseInt(msg.puzzle_id);
-      if (start_times[user] === undefined || start_times[user][puzzle_id] === undefined) {
-        alert("ERROR: PuzzleSolved without a PuzzleStart; " + 
-              "user: " + user + "; " +
-              "puzzle: " + puzzle_id);
+
+      // client-side
+      if (msg.time_delta === undefined) {
+        console.log(err_str("WARNING", "No client time_delta", user, puzzle_id));
       } else {
-        var start = start_times[user][puzzle_id];
-        var end = time;
-        if (time_entries_by_user[user] === undefined) {
-          time_entries_by_user[user] = [];
-        }
-        var user_time_entries = time_entries_by_user[user];
-        var time_delta = (end-start)/1000;
-        // user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
-        // all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });
-        delete start_times[user][puzzle_id];
+        add_time_entry(user, puzzle_id, msg.time_delta/1000);
       }
-      if (msg.time_delta !== undefined) {
-        // user = user + "_c";
-        if (time_entries_by_user[user] === undefined) {
-          time_entries_by_user[user] = [];
+
+      // server-side
+      if (start_times[user] === undefined || start_times[user][puzzle_id] === undefined) {
+        alert(err_str("ERROR", "PuzzleSolved without a PuzzleStart", user, puzzle_id));
+      } else {
+        if (show_server_timings) {
+          add_time_entry(user + "_s", puzzle_id, (time-start_times[user][puzzle_id])/1000);
         }
-        var user_time_entries = time_entries_by_user[user];
-        var time_delta = msg.time_delta/1000;
-        user_time_entries.push({ puzzle_id: puzzle_id, time_delta: time_delta });
-        all_time_entries.push({ user: user, puzzle_id: puzzle_id, time_delta: time_delta });  
+        delete start_times[user][puzzle_id];
       }
     }
   }
   for (var user in start_times) {
     for (var puzzle_id in start_times[user]) {
-      console.log("NOTE: user " + user + " did not solve " + puzzle_id);
+      console.log(err_str("NOTE", "PuzzleStart without PuzzleSolved", user, puzzle_id));
     }
   }
   LogProcessor.user_names = Object.keys(LogProcessor.time_entries_by_user);
@@ -216,7 +226,7 @@ LogProcessor.add_ui = function() {
     document.getElementById(n).checked = true;
   });
 
-  document.getElementById("elizabeth_gomez").checked = false;
+  // document.getElementById("elizabeth_gomez").checked = false;
 
   // div.append("button")
   //   .text("Show All Entires")
