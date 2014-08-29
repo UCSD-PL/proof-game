@@ -190,13 +190,16 @@ Judgement.prototype.get_right_width = function () {
     return Globals.FormulaWidth;
 }
 
-Judgement.prototype.draw = function(t, x, y, on_top, selected, greyed_out) {
+Judgement.prototype.draw = function(judgement_piece, t, x, y) {
     var c = t.c;
     var left = this.left;
     var right = this.right;
     var left_w = this.get_left_width();
     var right_w = this.get_right_width();
     var h = Globals.JudgementHeight;
+    var on_top = judgement_piece.on_top;
+    var selected = judgement_piece.selected;
+    var greyed_out = judgement_piece.greyed_out;
 
     t.judgement = this;
     this.clear_meta_var_infos();
@@ -319,13 +322,15 @@ Judgement.prototype.draw = function(t, x, y, on_top, selected, greyed_out) {
         c.font = font_size + "px Arial";
         var text_width = c.measureText(Globals.VarToLogicRep.turnstile).width;
         var text_height = font_size / 2;
-        c.fillText(Globals.VarToLogicRep.turnstile, x + this.get_left_width() - (text_width/2), y + (text_height/2) + (on_top ? 0 : h))
-        c.lineWidth = 3;
-        c.strokeStyle = "rgb(0,0,0)";
-        c.beginPath();
-        t.move_to(x,on_top ? y + h : y);
-        t.right(this.get_width());
-        c.stroke();
+        c.fillText(Globals.VarToLogicRep.turnstile, x + this.get_left_width() - (text_width/2), y + (text_height/2) + (on_top ? 0 : h));
+        if (judgement_piece.inference_rule) {
+            c.lineWidth = 3;
+            c.strokeStyle = "rgb(0,0,0)";
+            c.beginPath();
+            t.move_to(x, on_top ? y + h : y);
+            t.right(this.get_width());
+            c.stroke();
+        }
     }
 }
 
@@ -802,7 +807,7 @@ Crafty.c('JudgementPuzzlePiece', {
         this.inference_rule = null;
         this.connected = null;
         this.selected = false;
-        this.greyed_out = false;
+        this.greyed_out = Game.show_logic;
         this.on_top = true;
         this.history = [];
 
@@ -840,7 +845,12 @@ Crafty.c('JudgementPuzzlePiece', {
             }
             if (selected_bottom != null && selected_bottom != "more than one" &&
                 selected_top != null && selected_top != "more than one") {
-                var success = selected_bottom.connect_if_match_with_animation(selected_top);
+                var success;
+                if (Game.show_animations) {
+                    success = selected_bottom.connect_if_match_with_animation(selected_top);
+                } else {
+                    success = selected_bottom.connect_if_match(selected_top);
+                }
 
                 if(!success) {
                     Game.trigger_callout_transition({
@@ -1041,20 +1051,13 @@ Crafty.c('JudgementPuzzlePiece', {
 
     },
     _draw: function(c, pos) {
-        this.last_draw_pos = pos
-
         var x = pos._x + 1;
         var y = pos._y + 1;
         var w = pos._w - 2;
         var h = pos._h - 2;
-
         
         t = new Turtle(c);
-        if (this.on_top) {
-            this.judgement.draw(t, x, y+Globals.YTopBufferSpace, this.on_top, this.selected, this.greyed_out);
-        } else {
-            this.judgement.draw(t, x, y, this.on_top, this.selected, this.greyed_out);
-        }
+        this.judgement.draw(this, t, x, this.on_top? (y+Globals.YTopBufferSpace): y);
     },
 
     set_judgement: function(j) {
@@ -2127,6 +2130,7 @@ Game = {
         MetaVarManager.init();
         Game.current_rule = null;
         Game.show_logic = false;
+        Game.show_animations = true;
 
         function qs(key) {
             key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
@@ -2627,6 +2631,10 @@ Game = {
         })
     },
 
+    toggle_animations: function() {
+        Game.show_animations = !Game.show_animations;
+    },
+
     zoom_in: function() {
         Crafty.viewport.scale(Crafty.viewport._scale / 0.9);
     },
@@ -2651,7 +2659,7 @@ Game = {
 
     clear_double_clicking: function() {
         if (Game.double_clicked_piece) {
-            Game.foreach_piece(function(p) { p.set_greyed_out(false) });
+            Game.foreach_piece(function(p) { p.set_greyed_out(Game.show_logic) });
             Game.double_clicked_piece.marker.destroy();
             Game.double_clicked_piece = null;
         }

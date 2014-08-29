@@ -16,6 +16,7 @@ LogProcessor.show_experiment_results_from_ui = function() {
   var show_server_timings = document.getElementById("show_server_timings").checked;
   LogProcessor.show_experiment_results(experiment_name, show_server_timings);
 }
+
 LogProcessor.show_experiment_results = function(name, show_server_timings) {
   var experiment_name;
   if (arguments.length == 0) {
