@@ -863,9 +863,9 @@ Crafty.c('JudgementPuzzlePiece', {
             };
         });
         this.bind("Dragging", function(e) {
+            Game.destroy_all_animated_pieces();
             var dx = (e.clientX - self.drag_x) / Crafty.viewport._scale;
             var dy = (e.clientY - self.drag_y) / Crafty.viewport._scale;
-            // console.log(Crafty.viewport._scale);
 
             if (self.on_top) {
                 if (self.connected != null) {
@@ -909,6 +909,16 @@ Crafty.c('JudgementPuzzlePiece', {
                         }
                     }
                 }
+            }
+            // console.log(Crafty.viewport._scale);
+            // Awkward fix to a bug I don't understand. When the canvas is scaled,
+            // there is a trace that is left behind during dragging. It's odd because 
+            // it only happens only when the canvas is scaled. I don't know if this is a
+            // bug in the browser, in Crafty or in the game. It's not fixed by simply
+            // invalidating the dragged piece, but invalidating all pieces somehow
+            // removes this shadow. However, dragging does become slower.
+            if (Crafty.viewport._scale !== 1) {
+                Game.redraw_all();
             }
             
             // var selected_some = false;
@@ -995,6 +1005,21 @@ Crafty.c('JudgementPuzzlePiece', {
                                 w: cube_w,
                                 h: cube_h })
                             .color("cyan");
+
+                        // var formula = self.judgement.left[i];
+                        // if (formula === undefined) {
+                        //     formula = self.judgement.right;
+                        // }
+
+                        // var marker = 
+                        //     Crafty.e("AnimatedFormula")
+                        //     .attr({x: self.x + i * Globals.FormulaWidth,
+                        //            y: self.y-10,
+                        //            w: Globals.FormulaWidth,
+                        //            h: 100})
+                        //     .set_formula(formula)
+                        //     .set_color("chartreuse");
+
                         Game.double_clicked_piece = {piece:self, i:i, marker: marker};
                         Game.foreach_piece(function(p) { if (p != self) p.set_greyed_out(true) });
                         Game.trigger_callout_transition({

@@ -46,7 +46,8 @@ LogProcessor.parse = function(experiment_name, show_server_timings) {
   LogProcessor.all_time_entries = [];
   var time_entries_by_user = LogProcessor.time_entries_by_user;
   var all_time_entries = LogProcessor.all_time_entries;
-  var in_experiment = false;
+  var experiment_names = experiment_name.split(",").map(function (x) { return x.trim(); });
+  var curr_experiment = "";
   entries = document.getElementsByClassName("log_entry");
   var prev_time;
 
@@ -75,20 +76,28 @@ LogProcessor.parse = function(experiment_name, show_server_timings) {
       }
     }
     prev_time = time;
-    if (experiment_name === "") {
-      in_experiment = true;
-    } else if (in_experiment) {
-      if (msg_name === "ExperimentStop" && msg.experiment_name === experiment_name)
-        in_experiment = false;
-    } else {
-      if (msg_name === "ExperimentStart" && msg.experiment_name === experiment_name)
-        in_experiment = true;
+    if (experiment_names.length == 0) {
+      curr_experiment = "All";
+    } else if (msg_name === "ExperimentStart" && experiment_names.indexOf(msg.experiment_name) != -1) {
+      if (curr_experiment !== "") {
+        alert("ERROR: ExperimentStart " + curr_experiment + " followed by ExperimentStart " + msg.experiment_name);
+        return;
+      }
+      curr_experiment = msg.experiment_name;
+    } else if (msg_name === "ExperimentStop" && experiment_names.indexOf(msg.experiment_name) != -1) {
+      if (curr_experiment !== msg.experiment_name) {
+        alert("ERROR: ExperimentStart " + curr_experiment + " followed by ExperimentStop " + msg.experiment_name);
+        return;
+      }
+      curr_experiment = "";
     }
-    if (!in_experiment) {
+    if (curr_experiment === "") {
       continue;
     }
+    user = curr_experiment + "." + user;
     if (msg_name === "PuzzleStart") {
       var puzzle_id = parseInt(msg.puzzle_id);
+      // console.log(err_str("LOG", "PuzzleStart", user, puzzle_id));
       if (start_times[user] === undefined) {
         start_times[user] = {}
       }
@@ -99,6 +108,7 @@ LogProcessor.parse = function(experiment_name, show_server_timings) {
     }
     if (msg_name === "PuzzleSolved") {
       var puzzle_id = parseInt(msg.puzzle_id);
+      // console.log(err_str("LOG", "PuzzleSolved", user, puzzle_id));
 
       // client-side
       if (msg.time_delta === undefined) {
@@ -171,12 +181,11 @@ LogProcessor.add_ui = function() {
     LogProcessor.chart_ui.remove()
   }
 
-  var div = d3.select("body").append("div");
-  LogProcessor.chart_ui = div;
+  var chart_ui = d3.select("body").append("div");
+  LogProcessor.chart_ui = chart_ui;
 
-  var u = div.append("div");
-
-  u.selectAll("input")
+  chart_ui.append("div")
+    .selectAll("input")
     .data(LogProcessor.user_names)
     .enter()
     .append('label')
@@ -187,13 +196,23 @@ LogProcessor.add_ui = function() {
       .attr("id", function(d) { return d; });
       // .attr("onClick", "LogProcessor.plot_selected()");
 
-  u.append("button")
-    .text("Plot user times")
-    .attr("onClick", "LogProcessor.plot_user_times()");
+  var div = chart_ui.append("div");
 
-  u.append("button")
+  div.append("input")
+    .attr("type", "text")
+    .attr("id", "group-a");
+
+  div.append("input")
+    .attr("type", "text")
+    .attr("id", "group-b");
+
+  div.append("button")
+    .text("Plot times")
+    .attr("onClick", "LogProcessor.plot_group_times()");
+
+  div.append("button")
     .text("Plot completion counts by problem")
-    .attr("onClick", "LogProcessor.plot_counts()");
+    .attr("onClick", "LogProcessor.plot_group_counts()");
 
   // var a = div.append("div").text("A: ");
 
@@ -237,6 +256,22 @@ LogProcessor.add_ui = function() {
 
 }
 
+LogProcessor.compute_groups = function(name_a, name_b) {
+  var group_a = [];
+  var group_b = [];
+  LogProcessor.user_names.forEach(function (user) {
+    if (document.getElementById(user).checked) {
+      if (user.indexOf(name_a) != -1) {
+        group_a.push(user);
+      }
+      if (user.indexOf(name_b) != -1) {
+        group_b.push(user);
+      }
+    }
+  });
+  return {a: group_a, b: group_b };
+}
+
 LogProcessor.plot_counts = function() {
   var users = [];
   LogProcessor.user_names.forEach(function (user) { 
@@ -244,10 +279,18 @@ LogProcessor.plot_counts = function() {
       users.push(user)
     }  
   });
-  var data = LogProcessor.compute_data_for_group(users, "# groups completed", function(arr) {
-    return arr.length;
-  });
-  LogProcessor.plot(data, "puzzle_id", "# groups who completed")
+  var data = LogProcessor.compute_counts_for_group(users, "# groups completed");
+  LogProcessor.plot(data, "puzzle_id", "# groups who completed");
+}
+
+LogProcessor.plot_group_counts = function(name_a, name_b) {
+  name_a = name_a || document.getElementById("group-a").value;
+  name_b = name_b || document.getElementById("group-b").value;
+  var groups = LogProcessor.compute_groups(name_a, name_b);
+  var data_a = LogProcessor.compute_counts_for_group(groups.a, name_a);
+  var data_b = LogProcessor.compute_counts_for_group(groups.b, name_b);
+  var data = LogProcessor.merge(data_a, data_b);
+  LogProcessor.plot(data, "puzzle_id", "# groups who completed");
 }
 
 LogProcessor.plot_user_times = function() {
@@ -265,19 +308,12 @@ LogProcessor.plot_user_times = function() {
   LogProcessor.plot(all_data, "puzzle_id", "Time (s)");
 }
 
-LogProcessor.plot_groups = function() {
-  var group_a = [];
-  var group_b = [];
-  LogProcessor.user_names.forEach(function (user) {
-    if (document.getElementById(user + "-a").checked) {
-      group_a.push(user)
-    }
-    if (document.getElementById(user + "-b").checked) {
-      group_b.push(user)
-    }
-  });
-  var data_a = LogProcessor.compute_time_averages_for_group(group_a, "Group A");
-  var data_b = LogProcessor.compute_time_averages_for_group(group_b, "Group B");
+LogProcessor.plot_group_times = function(name_a,name_b) {
+  name_a = name_a || document.getElementById("group-a").value;
+  name_b = name_b || document.getElementById("group-b").value;
+  var groups = LogProcessor.compute_groups(name_a, name_b);
+  var data_a = LogProcessor.compute_time_averages_for_group(groups.a, name_a);
+  var data_b = LogProcessor.compute_time_averages_for_group(groups.b, name_b);
   var data = LogProcessor.merge(data_a, data_b);
   LogProcessor.plot(data, "puzzle_id", "Time (s)");
 }
@@ -317,7 +353,18 @@ LogProcessor.plot_groups = function() {
 
 LogProcessor.compute_time_averages_for_group = function(group, name) {
   return LogProcessor.compute_data_for_group(group, name, function(arr) {
+    var i;
+    while ((i = arr.indexOf(0)) !== -1) {
+      console.log("NOTE: Removing zero entry from average (zero means DID NOT COMPLETE)");
+      arr.splice(i, 1);
+    }
     return arr.reduce(function(a, b) { return a + b }) / arr.length;
+  });
+}
+
+LogProcessor.compute_counts_for_group = function(group, name) {
+  return LogProcessor.compute_data_for_group(group, name, function(arr) {
+    return arr.length/group.length;
   });
 }
 
@@ -410,7 +457,7 @@ LogProcessor.plot_all_time_entries = function() {
 
 LogProcessor.plot = function(data, x_key, y_axis_label) {
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
-      width = (document.body.clientWidth*1.5) - margin.left - margin.right,
+      width = (document.body.clientWidth*1.0) - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
 
   var x0 = d3.scale.ordinal()
