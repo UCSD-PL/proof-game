@@ -44,6 +44,13 @@ LogProcessor.parse = function(experiment_name, show_server_timings) {
   var start_times = {};
   LogProcessor.time_entries_by_user = {};
   LogProcessor.all_time_entries = [];
+  LogProcessor.piece_connection_data = [];
+  LogProcessor.double_click_data = [];
+  LogProcessor.piece_connection_attempts = 0;
+  LogProcessor.piece_connection_failed = 0;
+  LogProcessor.double_click_attempts = 0;
+  LogProcessor.double_click_failed = 0;
+
   var time_entries_by_user = LogProcessor.time_entries_by_user;
   var all_time_entries = LogProcessor.all_time_entries;
   var experiment_names = experiment_name.split(",").map(function (x) { return x.trim(); });
@@ -95,6 +102,50 @@ LogProcessor.parse = function(experiment_name, show_server_timings) {
       continue;
     }
     user = curr_experiment + "." + user;
+    if (user.indexOf("gomez") === -1) {
+      function get(arr, id) {
+        if (arr[id] === undefined) {
+          arr[id] = { puzzle_id: puzzle_id, failed: 0, attempts: 0}
+        }
+        return arr[id];
+      }
+      if (msg_name === "PieceConnectionFailed") {
+        var puzzle_id = parseInt(msg.puzzle_id);
+        var x = get(LogProcessor.piece_connection_data, puzzle_id);
+        x.failed++;
+        x.attempts++;
+        if (puzzle_id > 13 && puzzle_id != 14 && puzzle_id != 17 && puzzle_id != 23 && puzzle_id != 26 && puzzle_id != 42) {
+          LogProcessor.piece_connection_attempts++;
+          LogProcessor.piece_connection_failed++;
+        }
+      } else if (msg_name === "PieceConnected") {
+        var puzzle_id = parseInt(msg.puzzle_id);
+        var x = get(LogProcessor.piece_connection_data, puzzle_id);
+        x.attempts++;
+        if (puzzle_id > 13 && puzzle_id != 14 && puzzle_id != 17 && puzzle_id != 23 && puzzle_id != 26 && puzzle_id != 42) {
+          LogProcessor.piece_connection_attempts++;
+        }
+      } else if (msg_name === "FailedDoubleClickMatch") {
+        var puzzle_id = parseInt(msg.puzzle_id);
+        var x = get(LogProcessor.double_click_data, puzzle_id);
+        x.failed++;
+        if (puzzle_id > 13 && puzzle_id != 14 && puzzle_id != 17 && puzzle_id != 23 && puzzle_id != 26 && puzzle_id != 42 &&
+            puzzle_id != 15 && puzzle_id != 16 && puzzle_id != 18 && puzzle_id != 19 && puzzle_id != 24 &&
+            puzzle_id != 25 && puzzle_id != 27 && puzzle_id != 28 && puzzle_id != 43 && puzzle_id != 44) {
+          LogProcessor.double_click_failed++;
+        }
+      } else if (msg_name === "DoubleClickShape_2") {
+        var puzzle_id = parseInt(msg.puzzle_id);
+        var x = get(LogProcessor.double_click_data, puzzle_id);
+        x.attempts++;
+        if (puzzle_id > 13 && puzzle_id != 14 && puzzle_id != 17 && puzzle_id != 23 && puzzle_id != 26 && puzzle_id != 42 &&
+            puzzle_id != 15 && puzzle_id != 16 && puzzle_id != 18 && puzzle_id != 19 && puzzle_id != 24 &&
+            puzzle_id != 25 && puzzle_id != 27 && puzzle_id != 28 && puzzle_id != 43 && puzzle_id != 44) {
+          LogProcessor.double_click_attempts++;
+        }
+      }
+    }
+
     if (msg_name === "PuzzleStart") {
       var puzzle_id = parseInt(msg.puzzle_id);
       // console.log(err_str("LOG", "PuzzleStart", user, puzzle_id));
@@ -455,7 +506,16 @@ LogProcessor.plot_all_time_entries = function() {
 
 }
 
+LogProcessor.print_data = function(data) {
+  var keys = d3.keys(data[0]);
+  console.log(keys.join(" ") + "\n" + 
+              data.map(function(d) {
+                return keys.map(function(name) { return String(d[name]) }).join(" ");
+              }).join("\n"));
+}
 LogProcessor.plot = function(data, x_key, y_axis_label) {
+  LogProcessor.print_data(data);
+
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
       width = (document.body.clientWidth*1.0) - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;

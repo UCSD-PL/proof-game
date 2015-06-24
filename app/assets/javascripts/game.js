@@ -920,7 +920,7 @@ Crafty.c('JudgementPuzzlePiece', {
             if (Crafty.viewport._scale !== 1) {
                 Game.redraw_all();
             }
-            
+
             // var selected_some = false;
             // Game.foreach_piece(function(other) { 
             //     if (self != other) { 
@@ -2137,6 +2137,12 @@ Game = {
 
         Game.puzzle_range_end("logic_5");
         Game.puzzle_range_end("game_2");
+
+        // These are puzzles for a quick demo for presentation purposes
+        // Game.add_puzzle("x,y |- x", all_pieces); // 45
+        // Game.add_puzzle("x,y,z |- z", all_pieces); // 46
+        // Game.add_puzzle("|- imp(y,y)", all_pieces); // 47
+        // Game.add_puzzle("z |- and(z,z)", all_pieces); // 48
 
     },
 
