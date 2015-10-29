@@ -9,7 +9,7 @@ Logging.log = function(message) {
     type: "POST",
     data: {message: message}, 
     success: function() {
-      console.log("Success");
+      //console.log("Success");
     }
   });
 

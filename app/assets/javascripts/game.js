@@ -13,14 +13,21 @@ Globals = {
         x: "wedge", 
         y: "tee",
         z: "left_l", 
+        zero: "left_l",
         imp: "cup", 
-        and: "vee"
+        and: "vee",
+        sum: "cup",
+        s: "inward_trapezoid",
+        equal: "vee"
     },
     VarToLogicRep : {
         // imp: "\u2192", 
         imp: "\u21D2", 
         and: "\u2227",
-        turnstile: "\u22A2"
+        turnstile: "\u22A2",
+        equal: "=",
+        sum: "+",
+        zero: "0"
     },
     LeftFillColor: "rgb(255,255,200)",
     LeftFillColorSelected: "rgb(130,130,130)",
@@ -28,6 +35,7 @@ Globals = {
     RightFillColorSelected: "rgb(130,130,130)",
     FillColorGreyedOut: "rgb(255,255,255)",
     StrokeColorGreyedOut: "rgb(230,230,230)",
+    RewriteFillColor: "rgb(200,255,200)",
     FormulaWidth: 200,
     JudgementHeight: 50,
     XSpaceBetweenJudgements: 20,
@@ -35,6 +43,32 @@ Globals = {
     YBottomBufferSpace: 20,
     MaxSingleVarWidth: 50
 }
+
+/**************************************************/
+//
+// Overview of Architecture
+//
+/**************************************************/
+
+//
+// InferenceRule: Javascript object
+//   top: list of JudgementPuzzlePiece (Crafty component)
+//   bottom: JudgementPuzzlePiece (Crafy component)
+//
+// JudgementPuzzlePiece: Crafty Component
+//   judgement: Judgement
+//   inference_rule: InferenceRule (Javascript object)
+//   connected: JudgementPuzzlePiece (Crafty Component)
+//   
+// Judgement: Javascript object
+//   left: list of Tree (Javascript object)
+//   right: Tree (Javascript object)
+//   meta_var_info: stores informations about meta vars during Judgement drawing
+//
+// Tree: Javascript object
+//   n: string
+//   left: Tree
+//   right: Tree
 
 /**************************************************/
 //
@@ -49,6 +83,18 @@ function InferenceRule(top, bottom) {
         top[i].set_inference_rule(this);
     }
     bottom.set_inference_rule(this);
+    this.is_rewrite = false;
+}
+
+InferenceRule.prototype.make_into_rewrite = function() {
+    if (this.bottom.judgement.left.length == 0 &&
+        this.top.length == 1 &&
+        this.top[0].judgement.left.length == 0) {
+        this.is_rewrite = true;
+    } else {
+        console.log("InferenceRule.make_into_rewrite(): Rewrite invariant does not hold")
+        this.is_rewrite = false;
+    }
 }
 
 InferenceRule.prototype.place = function(x,y) {
@@ -69,8 +115,12 @@ InferenceRule.prototype.place = function(x,y) {
     bottom.place(bottom_x > x ? bottom_x : x , y + Globals.JudgementHeight+ Globals.YTopBufferSpace);
 }
 
-InferenceRule.prototype.make_fresh = function() {
+InferenceRule.prototype.make_all_fresh = function() {
     MetaVarManager.start_fresh();
+    this.make_fresh();
+}
+
+InferenceRule.prototype.make_fresh = function() {
     this.top.map(function (e) { e.make_fresh() });
     this.bottom.make_fresh();
 }
@@ -190,21 +240,20 @@ Judgement.prototype.get_right_width = function () {
     return Globals.FormulaWidth;
 }
 
-Judgement.prototype.draw = function(judgement_piece, t, x, y) {
+Judgement.prototype.draw = function(judgement_piece, t, x, y, w) {
     var c = t.c;
     var left = this.left;
     var right = this.right;
-    var left_w = this.get_left_width();
-    var right_w = this.get_right_width();
+    var right_w = w / (left.length + 1);
+    var left_w = right_w * left.length;
     var h = Globals.JudgementHeight;
     var on_top = judgement_piece.on_top;
     var selected = judgement_piece.selected;
     var greyed_out = judgement_piece.greyed_out;
+    var is_rewrite = judgement_piece.is_rewrite();
 
     t.judgement = this;
-    this.clear_meta_var_infos();
-    this.clear_spinner_infos();
-    this.clear_logic_infos();
+    this.clear_all_infos();
 
     c.lineWidth = 2;
     c.strokeStyle = "rgb(0,0,0)";
@@ -214,13 +263,14 @@ Judgement.prototype.draw = function(judgement_piece, t, x, y) {
     c.fillStyle = Globals.LeftFillColor;
     if (selected) c.fillStyle = Globals.LeftFillColorSelected;
     if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
+    if (is_rewrite) c.fillStyle = Globals.RewriteFillColor;
     c.beginPath();
     t.move_to(x, y);
     if (!on_top)
         t.down(h)
     for (var i = 0; i < left.length; i++) {
         var item_width = left_w / left.length;
-        if (i == 0) {
+        if (i == 0) { // TODO: remove this
             item_width = left_w - (item_width * (left.length-1));
         }
         left[i].draw(t, item_width, on_top);
@@ -239,6 +289,7 @@ Judgement.prototype.draw = function(judgement_piece, t, x, y) {
     c.fillStyle = Globals.RightFillColor;
     if (selected) c.fillStyle = Globals.RightFillColorSelected;
     if (greyed_out) c.fillStyle = Globals.FillColorGreyedOut;
+    if (is_rewrite) c.fillStyle = Globals.RewriteFillColor;
     c.beginPath();
     t.move_to(x + left_w, y);
     if (!on_top)
@@ -278,16 +329,16 @@ Judgement.prototype.draw = function(judgement_piece, t, x, y) {
         // c.fillRect(meta_var_info.x,meta_var_info.y,meta_var_info.w,-height);
     }
 
-    for (var i = 0; i < this.spinner_infos.length; i++) {
-        var spinner_info = this.spinner_infos[i];
-        var c = t.c;
-        c.lineWidth = 5;
-        c.strokeStyle = MetaVarManager.get_meta_var_color(spinner_info.n);
-        c.beginPath();
-        t.move_to(spinner_info.x, spinner_info.y);
-        spinner_info.tree.draw(t, spinner_info.w, false);
-        c.stroke();
-    }
+    // for (var i = 0; i < this.spinner_infos.length; i++) {
+    //     var spinner_info = this.spinner_infos[i];
+    //     var c = t.c;
+    //     c.lineWidth = 5;
+    //     c.strokeStyle = MetaVarManager.get_meta_var_color(spinner_info.n);
+    //     c.beginPath();
+    //     t.move_to(spinner_info.x, spinner_info.y);
+    //     spinner_info.tree.draw(t, spinner_info.w, false);
+    //     c.stroke();
+    // }
     if (Game.show_logic) {
         var set_font_size_to_match_width = function (ctx, font, str, width) {
             var size = 1;
@@ -322,16 +373,30 @@ Judgement.prototype.draw = function(judgement_piece, t, x, y) {
         c.font = font_size + "px Arial";
         var text_width = c.measureText(Globals.VarToLogicRep.turnstile).width;
         var text_height = font_size / 2;
-        c.fillText(Globals.VarToLogicRep.turnstile, x + this.get_left_width() - (text_width/2), y + (text_height/2) + (on_top ? 0 : h));
+        c.fillText(Globals.VarToLogicRep.turnstile, x + left_w - (text_width/2), y + (text_height/2) + (on_top ? 0 : h));
         if (judgement_piece.inference_rule) {
             c.lineWidth = 3;
             c.strokeStyle = "rgb(0,0,0)";
             c.beginPath();
             t.move_to(x, on_top ? y + h : y);
-            t.right(this.get_width());
+            t.right(w);
             c.stroke();
         }
     }
+}
+
+Judgement.prototype.clear_all_infos = function() {
+    this.clear_position_infos();
+    this.clear_meta_var_infos();
+    this.clear_logic_infos();
+}
+
+Judgement.prototype.clear_position_infos = function () {
+    this.position_infos = [];
+}
+
+Judgement.prototype.add_position_info = function (t, x, y, w) {
+    this.position_infos.push({t: t, x: x, y: y, w: w});
 }
 
 Judgement.prototype.clear_meta_var_infos = function () {
@@ -361,6 +426,11 @@ Judgement.prototype.add_logic_info = function (n, x, y, w) {
 Judgement.prototype.make_fresh = function() {
     this.left = this.left.map(function (e) { return MetaVarManager.fresh_tree(e) });
     this.right = MetaVarManager.fresh_tree(this.right);
+}
+
+Judgement.prototype.rewrite = function(src, dst) {
+    this.left = this.left.map(function(e) { return rewrite_tree(e, src, dst) });
+    this.right = rewrite_tree(this.right, src, dst);
 }
 
 Judgement.prototype.apply = function(s) {
@@ -399,6 +469,10 @@ function Var(n) {
     return new Tree(n, null, null);
 }
 
+function UnaryExpr(n, right) {
+    return new Tree(n, null, right);
+}
+
 function BinExpr(n, left, right) {
     return new Tree(n, left, right);
 }
@@ -406,7 +480,15 @@ function BinExpr(n, left, right) {
 Tree.prototype.is_meta_var = function() {
     if (this.left != null || this.right != null) { return false; }
     var c = this.n[0];
-    return c.toUpperCase() == c;
+    return c.toUpperCase() === c;
+}
+
+Tree.prototype.is_concrete_var = function() {
+    if (this.left != null || this.right != null) { return false; }
+    // explicitly enumerate constants
+    if (this.n === "zero") return false;
+    var c = this.n[0];
+    return c.toUpperCase() !== c;
 }
 
 Tree.prototype.to_string_full_paren = function() {
@@ -437,7 +519,26 @@ Tree.prototype.to_string = function() {
     }
 }
 
+Tree.prototype.to_string_polish = function() {
+    var n = this.n;
+    if (this.left == null && this.right == null) {
+        return n;
+    }
+    if (this.left != null && this.right == null) {
+        return n + "(" + this.left.to_string_polish() + ")"
+    }
+    if (this.left == null && this.right != null) {
+        return n + "(" + this.right.to_string_polish() + ")"
+    }
+    return n + "(" + this.left.to_string_polish() + 
+           ", " + 
+           this.right.to_string_polish() + ")";    
+}
+
 Tree.prototype.draw = function(t, w, on_top) {
+    if (t.judgement) {
+        t.judgement.add_position_info(this, t.x, t.y, w);
+    }
     if (this.left == null && this.right == null) {
         if (this.is_meta_var() && this.n in Game.spinner.subst) {
             var new_tree = Game.spinner.subst[this.n];
@@ -470,17 +571,18 @@ Tree.prototype.draw = function(t, w, on_top) {
             t[Globals.VarToShape[this.n]](token_width);
         }
         t.right(space2);
-    } else if (this.left == null) {
     } else {
+        var num_subexpr = this.left === null ? 1 : 2;
         var bin_op_width = w * 0.15;
         var space_width = w * 0.1;
-        var sub_expr_space = (w - bin_op_width - (space_width * 2))/2;
+        var sub_expr_space = (w - bin_op_width - (space_width * 2))/num_subexpr;
         var space1 = space_width;
-        var space2 = w - space_width - bin_op_width - (sub_expr_space*2);
+        var space2 = w - space_width - bin_op_width - (sub_expr_space*num_subexpr);
         var height_above = w * 0.15 / 2;
         t.right(space1);
         t.up(height_above);
-        this.left.draw(t, sub_expr_space, on_top);
+        if (this.left !== null)
+            this.left.draw(t, sub_expr_space, on_top);
         if (t.judgement)
             t.judgement.add_logic_info(this.n, t.x, t.y, bin_op_width);
         t[Globals.VarToShape[this.n]](bin_op_width);
@@ -492,10 +594,10 @@ Tree.prototype.draw = function(t, w, on_top) {
             var height_below = w * 0.15;
             t.left(space2);
             t.down(height_below);
-            t.left(bin_op_width + (sub_expr_space*2));
+            t.left(bin_op_width + (sub_expr_space*num_subexpr));
             t.up(height_below);
             t.down(height_below);
-            t.right(bin_op_width + (sub_expr_space*2));
+            t.right(bin_op_width + (sub_expr_space*num_subexpr));
             t.up(height_below);
             t.right(space2);
         }
@@ -515,14 +617,29 @@ function has_meta_var(t) {
     return (has_meta_var(t.right));
 }
 
+function rewrite_tree(t, src, dst) {
+    if (t == null)
+        return null;
+    if (t === src)
+        return dst;
+    return new Tree(t.n,
+                    rewrite_tree(t.left, src, dst),
+                    rewrite_tree(t.right, src, dst));
+}
+
 function apply_to_tree(t, s) {
     if (t == null) 
         return null;
-    if (!t.is_meta_var()) 
-        return new Tree(t.n, apply_to_tree(t.left, s), apply_to_tree(t.right, s));
-    if (t.n in s) 
-        return apply_to_tree(s[t.n], s);
-    return Var(t.n);
+    if (t.left == null && t.right == null && t.n in s)
+        //return apply_to_tree(s[t.n], s);
+        return s[t.n];
+    return new Tree(t.n, apply_to_tree(t.left, s), apply_to_tree(t.right, s));
+}
+
+function replace_name(t, name, dst) {
+    var s = {};
+    s[name] = dst;
+    return apply_to_tree(t,s);
 }
 
 function unify_trees(a, b, s) {
@@ -571,14 +688,6 @@ function add_closed_sub_exprs(t, closed_sub_exprs) {
     closed_sub_exprs[t] = t
     return false;
 }
-
-// sorin1 = BinExpr("imp", Var("A"), Var("B"));
-// sorin2 = {A: BinExpr("imp", Var("a"), Var("b")), B: Var("c")};
-// sorin3 = apply_subst(sorin1, sorin2);
-// sorin4 = unify_trees(sorin1, sorin3, {});
-// sorin5 = BinExpr("imp", Var("A"), BinExpr("imp", Var("a"), Var("b")));
-// sorin6 = BinExpr("imp", BinExpr("and", Var("x"), Var("y")), Var("C"));
-// sorin7 = unify_trees(sorin5, sorin6, {});
 
 /**************************************************/
 //
@@ -641,7 +750,25 @@ Turtle.prototype.wedge = function (w) {
     c.lineTo(endx, y);
     this.x = endx;
 }
-Turtle.prototype.hexagon = function (w) {
+Turtle.prototype.inward_trapezoid = function(w) {
+    var c = this.c;
+    var x = this.x;
+    var y = this.y;
+    var endx = x + w;
+    var h = 0.4 * w;
+    var len1 = 0.7 * w;
+    var len2 = 1 * w;
+    var space1 = (w - len1)/2;
+    var space2 = (w - len2)/2;
+    c.lineTo(x + space1, y);
+    c.lineTo(x + space2, y + h);
+    c.lineTo(x + space2 + len2, y + h);
+    c.lineTo(x + space1 + len1, y);
+    c.lineTo(endx, y);
+    this.x = endx;
+
+}
+Turtle.prototype.upward_trapezoid = function (w) {
     var c = this.c;
     var x = this.x;
     var y = this.y;
@@ -673,8 +800,6 @@ Turtle.prototype.tee = function (w) {
     var upper_r = x + (w/2) + (upper_w/2);
     var upper_h = w*0.75;
     var lower_h = w*0.40;
-    // c.font="30px Georgia";
-    // c.fillText("Hello World!&rarr;",x,y);
     c.lineTo(lower_l, y);
     c.lineTo(lower_l, y - lower_h);
     c.lineTo(upper_l, y - lower_h);
@@ -799,6 +924,7 @@ Crafty.c('JudgementPuzzlePiece', {
     /*
      * Initialize the component.
      */
+
     init: function() {
         this.requires("2D, Canvas, Mouse, Draggable");
         //this.addComponent("2D, Canvas, Fourway, Mouse, Tween, Draggable");
@@ -812,94 +938,294 @@ Crafty.c('JudgementPuzzlePiece', {
         this.history = [];
 
         var self = this;
-        this.bind("StartDrag", function(e) {
-            self.drag_x = e.clientX;
-            self.drag_y = e.clientY;
-            self.open_on_bottom = [];
-            Game.foreach_piece(function(p) { 
-                if (p.connected == null && !p.on_top) 
-                    self.open_on_bottom.push(p);
-            });
-            self.open_on_top = [];
-            Game.foreach_piece(function(p) { 
-                if (p.connected == null && p.on_top) 
-                    self.open_on_top.push(p);
-            });
-            Game.trigger_callout_transition({name: "StartDrag"});
-            // Logging.log({name: "StartDrag"});
+        var call_with_coords = function(name, e) {
+            // Ideally we would like to pass in a method (eg: self.f)
+            // but we haven't been able to get that to work properly with
+            // "this", so instead we're passing the name of the method as a
+            // string.
+            var pos = Crafty.DOM.translate(e.clientX, e.clientY);
+            e.cx = pos.x; // cx stands for Crafty X
+            e.cy = pos.y; // cy stands for Crafty Y
+            self[name](e);
+        };
+        this.bind("MouseOver", function(e) { this.mouse_over(e) });
+        this.bind("MouseOut", function(e) { this.mouse_out(e) });
+        this.bind("MouseMove", function(e) { call_with_coords("mouse_move", e) });
+        this.bind("MouseDown", function(e) { call_with_coords("mouse_down", e) });
+        this.bind("MouseUp", function(e) { call_with_coords("mouse_up", e) });
+        this.bind("StartDrag", function(e) { call_with_coords("start_drag", e) });
+        this.bind("StopDrag", function(e) { call_with_coords("stop_drag", e) });
+        this.bind("Dragging", function(e) { call_with_coords("dragging", e) });
+        this.bind("DoubleClick", function(e) { call_with_coords("double_click", e) });
+        this.bind("Draw", function(obj) {
+            //Game.effects_canvas.clearRect(0,0,Crafty.viewport.width, Crafty.viewport.height);
+            self._draw(obj.ctx, obj.pos);
         });
-        this.bind("StopDrag", function(e) {
-            var selected_bottom = null;
-            var selected_top = null;
-            for (var i = 0; i < self.open_on_bottom.length; i++) {
-                var bottom = self.open_on_bottom[i];
-                if (bottom.selected) 
-                    selected_bottom = selected_bottom == null ? bottom : "more than one";
-                bottom.set_selected(false);
-            }
-            for (var i = 0; i < self.open_on_top.length; i++) {
-                var top = self.open_on_top[i];
-                if (top.selected) 
-                    selected_top = selected_top == null ? top : "more than one";
-                top.set_selected(false);
-            }
-            if (selected_bottom != null && selected_bottom != "more than one" &&
-                selected_top != null && selected_top != "more than one") {
-                var success;
-                if (Game.show_animations) {
-                    success = selected_bottom.connect_if_match_with_animation(selected_top);
-                } else {
-                    success = selected_bottom.connect_if_match(selected_top);
-                }
 
-                if(!success) {
-                    Game.trigger_callout_transition({
-                        name: "PieceConnectionFailed",
-                        current: Game.current_rule
-                    });
-                    Logging.log({ name: "PieceConnectionFailed", puzzle_id: Game.current_puzzle })
-                }
+        //this.bind("Click", function(e) { console.log(e) });
+    },
 
+    _draw: function(c, pos) {
+        var x = pos._x + 1;
+        var y = pos._y + 1;
+        var w = pos._w - 2;
+        var h = pos._h - 2;
+        t = new Turtle(c);
+        this.judgement.draw(this, t, x, this.on_top? (y+Globals.YTopBufferSpace): y, w);
+    },
+
+    mouse_over: function(e) {
+        this.induction_var_location = null;
+    },
+
+    mouse_out: function(e) {
+        this.induction_var_location = null;
+        Game.destroy_all_animated_pieces();        
+    },
+
+    mouse_move: function(e) {
+        this.induction_var_location = null;
+        Game.destroy_all_animated_pieces();
+        if (!this.on_top) return;
+        if (this.connected !== null) return;
+        if (this.is_rewrite()) return;
+        var idx = this.translate_into_formula_index(e.cx, e.cy);
+        if (idx !== this.judgement.left.length) return;
+        var best_match = null;
+        for (var i = 0; i < this.judgement.position_infos.length; i++) {
+            var position_info = this.judgement.position_infos[i];
+            if (position_info.t.is_concrete_var() &&
+                e.cx >= position_info.x &&
+                e.cx <= position_info.x + position_info.w &&
+                Math.abs(e.cy - position_info.y) < 20) {
+                if (best_match === null ||
+                    (position_info.x > best_match.x &&
+                     position_info.w < best_match.w)) {
+                    best_match = position_info;
+                }
+            }
+        }
+        if (best_match !== null) {
+            Crafty.e("AnimatedFormula")
+            .attr({x: best_match.x,
+                   y: best_match.y - Globals.YTopBufferSpace,
+                   w: best_match.w,
+                   h: 100})
+            .set_formula(best_match.t)
+            .set_color("green");
+            this.induction_var_location = {
+                induction_var: best_match.t
             };
-        });
-        this.bind("Dragging", function(e) {
-            Game.destroy_all_animated_pieces();
-            var dx = (e.clientX - self.drag_x) / Crafty.viewport._scale;
-            var dy = (e.clientY - self.drag_y) / Crafty.viewport._scale;
+        }
+    },
 
-            if (self.on_top) {
-                if (self.connected != null) {
-                    self.connected.move_from_bottom(dx, dy);
+    mouse_down: function(e) {
+        this.mouse_down_x = e.clientX;
+        this.mouse_down_y = e.clientY;
+    },
+
+    mouse_up: function(e) {
+        if (Math.abs(this.mouse_down_x - e.clientX) < 5 &&
+            Math.abs(this.mouse_down_y - e.clientY) < 5) {
+            if (this.is_rewrite())
+                this.mouse_up_rewrite(e)
+            else
+                this.mouse_up_regular(e)
+        }
+    },
+
+    mouse_up_rewrite: function(e) {
+        var top_piece = this.inference_rule.top[0];
+        var bottom_piece = this.inference_rule.bottom;
+        var tmp = top_piece.judgement;
+        top_piece.judgement = bottom_piece.judgement;
+        bottom_piece.judgement = tmp;
+        top_piece.trigger("Invalidate");
+        bottom_piece.trigger("Invalidate");
+    },
+
+    mouse_up_regular: function(e) {
+        if (this.induction_var_location != null) {
+            console.log("induction on " + this.induction_var_location.induction_var.to_string());
+            var ind_var = this.induction_var_location.induction_var;
+            
+            var base_case = replace_name(this.judgement.right, ind_var.n, Var("zero"));
+            var base_case_judgement = new Judgement(this.judgement.left, base_case);
+            var base_case_piece = Crafty.e('JudgementPuzzlePiece').set_judgement(base_case_judgement);
+
+            var ind_assumption = this.judgement.right;
+            var ind_case = replace_name(this.judgement.right, ind_var.n, UnaryExpr("s", Var(ind_var.n)));
+            var ind_case_judgement = new Judgement(this.judgement.left.concat(ind_assumption), ind_case);
+            var ind_case_piece = Crafty.e('JudgementPuzzlePiece').set_judgement(ind_case_judgement);
+
+            var bottom_piece = Crafty.e('JudgementPuzzlePiece').set_judgement(this.judgement);
+            var rule = new InferenceRule([base_case_piece, ind_case_piece], bottom_piece);
+            Game.remove_current_rule();
+            Game.current_rule = rule;
+            Game.current_rule.place(150,150);
+            var success = Game.current_rule.bottom.connect_if_match(this);
+            if (!success) {
+                Game.remove_current_rule();
+            }
+        } else if (this.on_top && this.connected == null) {
+            var i = this.translate_into_formula_index(e.cx, e.cy);
+            if (i >= 0 && i < this.judgement.left.length) {
+                var rewrite_formula = this.judgement.left[i];
+                if (rewrite_formula.n == "equal") {
+                    var left = rewrite_formula.left.to_string_polish();
+                    var right = rewrite_formula.right.to_string_polish();
+                    Game.replace_current_rule(["|- " + left], "|- " + right);
+                    Game.current_rule.make_into_rewrite();
                 }
-                if (self.inference_rule != null) {
-                    //self.inference_rule.bottom.move_from_top(0, dy);
-                    self.inference_rule.bottom.move_from_top(dx, dy);
-                    for (var i = 0; i < this.inference_rule.top.length; i++) {
-                        var other = self.inference_rule.top[i];
-                        if (other != self) {
-                            //other.move_from_bottom(0, dy);
-                            other.move_from_bottom(dx, dy);
+            }
+        }
+    },
+
+    start_drag: function(e) {
+        this.drag_x = e.cx;
+        this.drag_y = e.cy;
+        this.open_on_bottom = [];
+        var self = this;
+        Game.foreach_piece(function(p) { 
+            if (p.connected == null && !p.on_top) 
+                self.open_on_bottom.push(p);
+        });
+        this.open_on_top = [];
+        Game.foreach_piece(function(p) { 
+            if (p.connected == null && p.on_top) 
+                self.open_on_top.push(p);
+        });
+        if (this.is_rewrite()) {
+            this.rewrite_location = null;
+        }
+        Game.trigger_callout_transition({name: "StartDrag"});
+    },
+
+    stop_drag: function(e) {
+        if (this.is_rewrite())
+            this.stop_drag_rewrite(e)
+        else
+            this.stop_drag_regular(e)
+    },
+    
+    stop_drag_rewrite: function(e) {
+        if (this.rewrite_location !== null) {
+            var top = this.rewrite_location.top_puzzle_piece;
+            var tree = this.rewrite_location.tree_within_puzzle_piece
+            top.apply_rewrite_if_match(this.inference_rule, tree);
+        }
+    },
+
+    stop_drag_regular: function(e) {
+        var selected_bottom = null;
+        var selected_top = null;
+        for (var i = 0; i < this.open_on_bottom.length; i++) {
+            var bottom = this.open_on_bottom[i];
+            if (bottom.selected) 
+                selected_bottom = selected_bottom == null ? bottom : "more than one";
+            bottom.set_selected(false);
+        }
+        for (var i = 0; i < this.open_on_top.length; i++) {
+            var top = this.open_on_top[i];
+            if (top.selected) 
+                selected_top = selected_top == null ? top : "more than one";
+            top.set_selected(false);
+        }
+        if (selected_bottom != null && selected_bottom != "more than one" &&
+            selected_top != null && selected_top != "more than one") {
+            var success;
+            if (Game.show_animations) {
+                success = selected_bottom.connect_if_match_with_animation(selected_top);
+            } else {
+                success = selected_bottom.connect_if_match(selected_top);
+            }
+
+            if(!success) {
+                Game.trigger_callout_transition({
+                    name: "PieceConnectionFailed",
+                    current: Game.current_rule
+                });
+                Logging.log({ name: "PieceConnectionFailed", puzzle_id: Game.current_puzzle })
+            }
+        }
+    },
+
+    dragging: function(e) {
+        Game.destroy_all_animated_pieces();
+
+        var dx = e.cx - this.drag_x;
+        var dy = e.cy - this.drag_y;
+
+        if (this.on_top) {
+            if (this.connected != null) {
+                this.connected.move_from_bottom(dx, dy);
+            }
+            if (this.inference_rule != null) {
+                //this.inference_rule.bottom.move_from_top(0, dy);
+                this.inference_rule.bottom.move_from_top(dx, dy);
+                for (var i = 0; i < this.inference_rule.top.length; i++) {
+                    var other = this.inference_rule.top[i];
+                    if (other != this) {
+                        //other.move_from_bottom(0, dy);
+                        other.move_from_bottom(dx, dy);
+                    }
+                }
+            }
+        } else {
+            if (this.connected != null) {
+                //this.connected.move_from_top_adjusted(dx, dy);
+                this.connected.move_from_top(dx, dy);
+            }
+            if (this.inference_rule != null) {
+                for (var i = 0; i < this.inference_rule.top.length; i++) {
+                    this.inference_rule.top[i].move_from_bottom(dx, dy);
+                }
+            }
+            
+        }
+
+        if (this.is_rewrite()) {
+            console.log("dragging");
+            this.rewrite_location = null;
+            var best_match = null;
+            var best_top = null;
+            var bottom = this.inference_rule.bottom;
+            var bottom_x = bottom.x + (bottom.w / 2);
+            for (var i = 0; i < this.open_on_top.length; i++) {
+                var top = this.open_on_top[i];
+                for (var j = 0; j < top.judgement.position_infos.length; j++) {
+                    var position_info = top.judgement.position_infos[j];
+                    if (bottom_x >= position_info.x &&
+                        bottom_x <= position_info.x + position_info.w &&
+                        Math.abs(bottom.y+50 - position_info.y) < 60) {
+                        if (best_match === null ||
+                            (position_info.x > best_match.x &&
+                             position_info.w < best_match.w)) {
+                            best_match = position_info;
+                            best_top = top;
                         }
                     }
                 }
-            } else {
-                if (self.connected != null) {
-                    //self.connected.move_from_top_adjusted(dx, dy);
-                    self.connected.move_from_top(dx, dy);
-                }
-                if (self.inference_rule != null) {
-                    for (var i = 0; i < this.inference_rule.top.length; i++) {
-                        self.inference_rule.top[i].move_from_bottom(dx, dy);
-                    }
-                }
-                
             }
-
-            for (var i = 0; i < self.open_on_bottom.length; i++) {
-                var bottom = self.open_on_bottom[i];
+            if (best_match !== null) {
+                Crafty.e("AnimatedFormula")
+                .attr({x: best_match.x,
+                       y: best_match.y - Globals.YTopBufferSpace,
+                       w: best_match.w,
+                       h: 100})
+                .set_formula(best_match.t)
+                .set_color("green");
+                this.rewrite_location = {
+                    top_puzzle_piece: best_top,
+                    tree_within_puzzle_piece: best_match.t
+                };
+            }
+        } else {
+            for (var i = 0; i < this.open_on_bottom.length; i++) {
+                var bottom = this.open_on_bottom[i];
                 bottom.set_selected(false);
-                for (var j = 0; j < self.open_on_top.length; j++) {
-                    var top = self.open_on_top[j];
+                for (var j = 0; j < this.open_on_top.length; j++) {
+                    var top = this.open_on_top[j];
                     top.set_selected(false);
                     if (top.superficial_match(bottom)) {
                         var delta = top.distance_from_other(bottom);
@@ -910,179 +1236,109 @@ Crafty.c('JudgementPuzzlePiece', {
                     }
                 }
             }
-            // console.log(Crafty.viewport._scale);
-            // Awkward fix to a bug I don't understand. When the canvas is scaled,
-            // there is a trace that is left behind during dragging. It's odd because 
-            // it only happens only when the canvas is scaled. I don't know if this is a
-            // bug in the browser, in Crafty or in the game. It's not fixed by simply
-            // invalidating the dragged piece, but invalidating all pieces somehow
-            // removes this shadow. However, dragging does become slower.
-            if (Crafty.viewport._scale !== 1) {
-                Game.redraw_all();
-            }
+        }
+        // console.log(Crafty.viewport._scale);
+        // Awkward fix to a bug I don't understand. When the canvas is scaled,
+        // there is a trace that is left behind during dragging. It's odd because 
+        // it only happens only when the canvas is scaled. I don't know if this is a
+        // bug in the browser, in Crafty or in the game. It's not fixed by simply
+        // invalidating the dragged piece, but invalidating all pieces somehow
+        // removes this shadow. However, dragging does become slower.
+        if (Crafty.viewport._scale !== 1) {
+            Game.redraw_all();
+        }
 
-            // var selected_some = false;
-            // Game.foreach_piece(function(other) { 
-            //     if (self != other) { 
-            //         var delta = self.distance_from_other(other);
-            //         if (Math.abs(delta.x) < 30 && Math.abs(delta.y) < 30) {
-            //             if (self.superficial_match(other)) {
-            //                 other.set_selected(true);
-            //                 selected_some = true;
-            //             }
-            //         } else {
-            //             other.set_selected(false);
-            //         }
-            //     }
-            // });
-            // self.set_selected(selected_some);
+        this.drag_x = e.cx;
+        this.drag_y = e.cy;
+    },
 
-            // ids = Crafty("JudgementPuzzlePiece");
-            // for (var i = 0; i < ids.length; i++) {
-            //     Crafty(ids[i]).visited = false;
-            // }
-            // this.visited = true;
-            // if (this.inference_rule != null) {
-            //     //var adjusted_dx = this.on_top && (!this.inference_rule.visited)? 0 : dx;
-            //     var adjusted_dx = dx;
-            //     this.inference_rule.bottom.visit_and_move(adjusted_dx,dy);
-            //     for (var i = 0; i < this.inference_rule.top.length; i++) {
-            //         this.inference_rule.top[i].visit_and_move(adjusted_dx,dy);
-            //     }
-            // }
-            // if (this.connected != null) {
-            //     this.connected.visit_and_move(dx, dy)
-            // }
+    translate_into_formula_index: function(x, y) {
+        var dy = y - this.y;
+        if (dy >= Globals.YTopBufferSpace*2) return -1;
+        var dx = x - this.x;
+        var i = Math.floor(dx/this.get_formula_width());
+        return i;
+    },
 
-            self.drag_x = e.clientX;
-            self.drag_y = e.clientY;
-        });
+    get_formula_width: function() {
+        return (this.w - 2) / (this.judgement.left.length + 1)
+    },
 
-        // self.dragging = false;
-        // this.bind("MouseDown", function(e) {
-        //     self.dragging = true;
-        //     self.drag_x = e.x;
-        //     self.drag_y = e.y
-        //     console.log("MouseDown");
-        // });
-        // this.bind("MouseMove", function(e) {
-        //     if (self.dragging) {
-        //         var delta_x = e.x - self.drag_x;
-        //         var delta_y = e.y - self.drag_y;
-        //         self.connected_move(delta_x, delta_y);
-        //         // self.x = self.x + delta_x;
-        //         // self.y = self.y + delta_y;
-        //         self.drag_x = e.x;
-        //         self.drag_y = e.y;
-        //         console.log("Drag");
-        //     }
-        // });
-        // this.bind("MouseUp", function(e) {
-        //     self.dragging = false;
-        //     console.log("MouseUp");
-        // });
-        // this.bind("Click", function(e) {
-        //     console.log("Click");
-        //     console.log(e);
-        // });
-        this.bind("DoubleClick", function(e) {
-            if (self.on_top && self.connected == null) {
-                var pos = Crafty.DOM.translate(e.clientX, e.clientY);
-                var y = pos.y - self.y;
-                if (y < Globals.YTopBufferSpace*2) {
-                    var x = pos.x - self.x;
-                    var i = Math.floor(x/Globals.FormulaWidth);
-                    var local_x = x%Globals.FormulaWidth;
-                    if (!Game.double_clicked_piece) {
-                        var cube_w = Globals.FormulaWidth *0.9;
-                        var cube_h = Globals.JudgementHeight*1.5;
-                        var marker = 
-                            Crafty.e("2D, Canvas, Color")
-                            .attr({alpha: 0.2})
-                            .attr({
-                                x: self.x + (i+0.5) * Globals.FormulaWidth-(cube_w/2),
-                                y: self.y-10,
-                                w: cube_w,
-                                h: cube_h })
-                            .color("cyan");
+    double_click: function(e) {
+        if (this.on_top && this.connected == null) {
+            var i = this.translate_into_formula_index(e.cx, e.cy);
+            if (i !== -1) {
+                if (!Game.double_clicked_piece) {
+                    var formula_width = this.get_formula_width();
+                    var cube_w = formula_width *0.9;
+                    var cube_h = Globals.JudgementHeight*1.5;
+                    var marker = 
+                        Crafty.e("2D, Canvas, Color")
+                        .attr({alpha: 0.2})
+                        .attr({
+                            x: this.x + (i+0.5) * formula_width-(cube_w/2),
+                            y: this.y-10,
+                            w: cube_w,
+                            h: cube_h })
+                        .color("cyan");
 
-                        // var formula = self.judgement.left[i];
-                        // if (formula === undefined) {
-                        //     formula = self.judgement.right;
-                        // }
+                    // var marker = 
+                    //     Crafty.e("AnimatedFormula")
+                    //     .attr({x: this.x + i * Globals.FormulaWidth,
+                    //            y: this.y-10,
+                    //            w: Globals.FormulaWidth,
+                    //            h: 100})
+                    //     .set_formula(formula)
+                    //     .set_color("chartreuse");
 
-                        // var marker = 
-                        //     Crafty.e("AnimatedFormula")
-                        //     .attr({x: self.x + i * Globals.FormulaWidth,
-                        //            y: self.y-10,
-                        //            w: Globals.FormulaWidth,
-                        //            h: 100})
-                        //     .set_formula(formula)
-                        //     .set_color("chartreuse");
-
-                        Game.double_clicked_piece = {piece:self, i:i, marker: marker};
-                        Game.foreach_piece(function(p) { if (p != self) p.set_greyed_out(true) });
+                    var self = this;
+                    Game.double_clicked_piece = {piece:self, i:i, marker: marker};
+                    Game.foreach_piece(function(p) { if (p != self) p.set_greyed_out(true) });
+                    Game.trigger_callout_transition({
+                        name:"DoubleClickShape",
+                        puzzle_id: Game.current_puzzle,
+                        piece: self,
+                        shape_id: i
+                    });
+                    Logging.log({ name:"DoubleClickShape_1", puzzle_id: Game.current_puzzle });
+                } else {
+                    if (Game.double_clicked_piece.piece == this) {
                         Game.trigger_callout_transition({
                             name:"DoubleClickShape",
                             puzzle_id: Game.current_puzzle,
                             piece: this,
                             shape_id: i
                         });
-                        Logging.log({ name:"DoubleClickShape_1", puzzle_id: Game.current_puzzle });
-                    } else {
-                        if (Game.double_clicked_piece.piece == self) {
-                            Game.trigger_callout_transition({
-                                name:"DoubleClickShape",
-                                puzzle_id: Game.current_puzzle,
-                                piece: this,
-                                shape_id: i
-                            });
-                            Logging.log({ name:"DoubleClickShape_2", puzzle_id: Game.current_puzzle });
-                            var i1 = Game.double_clicked_piece.i;
-                            var i2 = i;
-                            var last_pos = self.judgement.left.length;
-                            if (i1 != i2 && (i1 == last_pos || i2 == last_pos)) {
-                                var i = (i1 == last_pos) ? i2 : i1;
-                                Game.create_assumption_piece_for_double_click();
-                                for (var k = 0; k < i; k++)
-                                    Game.add_context_left();
-                                for (var k = i+1; k < self.judgement.left.length; k++)
-                                    Game.add_context_right();
-                                var success = Game.current_rule.bottom.connect_if_match(self);
-                                if (!success) {
-                                    Game.remove_current_rule();
-                                    Game.trigger_callout_transition({
-                                        name:"FailedDoubleClickMatch",
-                                        puzzle_id: Game.current_puzzle,
-                                        piece: this,
-                                        shape_id: i2
-                                    });
-                                    Logging.log({ name: "FailedDoubleClickMatch", puzzle_id: Game.current_puzzle });
-                                }
-                            } else {
+                        Logging.log({ name:"DoubleClickShape_2", puzzle_id: Game.current_puzzle });
+                        var i1 = Game.double_clicked_piece.i;
+                        var i2 = i;
+                        var last_pos = this.judgement.left.length;
+                        if (i1 != i2 && (i1 == last_pos || i2 == last_pos)) {
+                            var i = (i1 == last_pos) ? i2 : i1;
+                            Game.create_assumption_piece_for_double_click();
+                            for (var k = 0; k < i; k++)
+                                Game.add_context_left();
+                            for (var k = i+1; k < this.judgement.left.length; k++)
+                                Game.add_context_right();
+                            var success = Game.current_rule.bottom.connect_if_match(this);
+                            if (!success) {
+                                Game.remove_current_rule();
+                                Game.trigger_callout_transition({
+                                    name:"FailedDoubleClickMatch",
+                                    puzzle_id: Game.current_puzzle,
+                                    piece: this,
+                                    shape_id: i2
+                                });
                                 Logging.log({ name: "FailedDoubleClickMatch", puzzle_id: Game.current_puzzle });
                             }
+                        } else {
+                            Logging.log({ name: "FailedDoubleClickMatch", puzzle_id: Game.current_puzzle });
                         }
-                        Game.clear_double_clicking();
                     }
+                    Game.clear_double_clicking();
                 }
-            };
-        });
-        this.bind("Draw", function(obj) {
-            //Game.effects_canvas.clearRect(0,0,Crafty.viewport.width, Crafty.viewport.height);
-            this._draw(obj.ctx, obj.pos);
-        });
-
-
-    },
-    _draw: function(c, pos) {
-        var x = pos._x + 1;
-        var y = pos._y + 1;
-        var w = pos._w - 2;
-        var h = pos._h - 2;
-        
-        t = new Turtle(c);
-        this.judgement.draw(this, t, x, this.on_top? (y+Globals.YTopBufferSpace): y);
+            }
+        }
     },
 
     set_judgement: function(j) {
@@ -1104,6 +1360,13 @@ Crafty.c('JudgementPuzzlePiece', {
         this.connected = connected;
         connected.connected = this;
         return this;
+    },
+
+    is_rewrite: function() {
+        if (this.inference_rule != null)
+            return this.inference_rule.is_rewrite;
+        else
+            return false;
     },
 
     place: function(x, y) {
@@ -1279,7 +1542,7 @@ Crafty.c('JudgementPuzzlePiece', {
                 bottom.t.copy_from(s[n]);
                 Crafty.e("AnimatedFormula")
                     .attr({x: bottom.orig_x, 
-                           y: bottom.orig_y - 60, 
+                           y: bottom.orig_y - Globals.YTopBufferSpace, 
                            w: bottom.full_w,
                            h: 100})
                     .set_formula(s[n])
@@ -1293,13 +1556,13 @@ Crafty.c('JudgementPuzzlePiece', {
                                     " })");
                     Crafty.e("AnimatedFormula")
                         .attr({x: bottom.orig_x, 
-                               y: bottom.orig_y - 60, 
+                               y: bottom.orig_y - Globals.YTopBufferSpace, 
                                w: bottom.full_w,
                                h: 100})
                         .set_formula(s[n])
                         .set_color(MetaVarManager.get_meta_var_color(n))
                         .animate_to(mv_by_name[n][i].orig_x, 
-                                    mv_by_name[n][i].orig_y - 60, 
+                                    mv_by_name[n][i].orig_y - Globals.YTopBufferSpace, 
                                     mv_by_name[n][i].full_w, 
                                     100, cont);
                 }
@@ -1317,6 +1580,7 @@ Crafty.c('JudgementPuzzlePiece', {
         Game.check_if_solved();
         return true;
     },
+
     connect_if_match: function(other) {
         if (!this.superficial_match(other)) return false;
         s = this.judgement.unify(other.judgement);
@@ -1334,6 +1598,11 @@ Crafty.c('JudgementPuzzlePiece', {
         Game.current_rule = null;
         Game.check_if_solved();
         return true;
+    },
+
+    make_all_fresh: function() {
+        MetaVarManager.start_fresh();
+        this.make_fresh();
     },
 
     make_fresh: function() {
@@ -1358,6 +1627,33 @@ Crafty.c('JudgementPuzzlePiece', {
 
     add_live_vars: function(live_vars) {
         this.judgement.add_live_vars(live_vars);
+    },
+
+    apply_rewrite_if_match: function(rewrite, tree) {
+        // rewrite: InferenceRule
+
+        if (!rewrite.is_rewrite) {
+           return false;
+        }
+        // bottom must be judgement with no assumptions
+        // top must be a single judgement with no assumptions
+        var src = rewrite.bottom.judgement.right;
+        var dst = rewrite.top[0].judgement.right;
+        var s = unify_trees(src, tree, {});
+        if (s === false) return false;
+        var rewritten_judgement = new Judgement(this.judgement.left, this.judgement.right);
+        rewritten_judgement.rewrite(tree, apply_to_tree(dst, s));
+        var top_puzzle_piece = Crafty.e('JudgementPuzzlePiece').set_judgement(rewritten_judgement);
+        var bottom_puzzle_piece = Crafty.e('JudgementPuzzlePiece').set_judgement(this.judgement);
+        var full_rewrite = new InferenceRule([top_puzzle_piece], bottom_puzzle_piece);
+        Game.remove_current_rule();
+        Game.current_rule = full_rewrite;
+        Game.current_rule.place(150,150);
+        var success = Game.current_rule.bottom.connect_if_match(this);
+        if (!success) {
+            Game.remove_current_rule();
+        }
+        return true;
     }
 
 })
@@ -1383,12 +1679,11 @@ Crafty.c('AnimatedFormula', {
         t = new Turtle(c);
         // hack: dummy judgement so that we can collect meta var infos
         t.judgement = new Judgement();
-        t.judgement.clear_meta_var_infos();
-        t.judgement.clear_logic_infos();
+        t.judgement.clear_all_infos();
         c.lineWidth = 5;
         c.strokeStyle = this.color;
         c.beginPath();
-        t.move_to(x, y+Globals.YTopBufferSpace+10);
+        t.move_to(x, y+Globals.YTopBufferSpace);
         this.formula.draw(t, w, false);
         c.stroke();
 
@@ -1447,6 +1742,7 @@ JudgementConstruction = {
     x: Var("x"),
     y: Var("y"),
     z: Var("z"),
+    zero: Var("zero"),
     imp: function(e1,e2) {
         return BinExpr("imp", e1, e2);
     },
@@ -1455,6 +1751,15 @@ JudgementConstruction = {
     },
     or: function(e1, e1) {
         return BinExpr("or", e1, e2);
+    },
+    equal: function(e1,e2) {
+        return BinExpr("equal", e1, e2);
+    },
+    sum: function(e1, e2) {
+        return BinExpr("sum", e1, e2);
+    },
+    s: function(e) {
+        return UnaryExpr("s", e);
     }
 }
 
@@ -1486,7 +1791,7 @@ function build_inference_rule_piece(top, bottom, x, y) {
     var bottom_judgement = build_judgement_piece(bottom);
     var top_judgements = top.map(function (s) { return build_judgement_piece(s) });
     var r = new InferenceRule(top_judgements, bottom_judgement);
-    r.make_fresh()
+    r.make_all_fresh();
     r.place(x, y);
     return r;
 }
@@ -1557,11 +1862,14 @@ MetaVarManager = {
         }
         return MetaVarManager.fresh_vars[n]
     },
+    // In addition to creating fresh metavars, we also create new nodes for
+    // the entire tree. This is needed so that we can use the object reference
+    // of a sub- tree as the location where to apply a rewrite.
     fresh_tree: function(t) {
         if (t == null)
             return null;
         if (t.is_meta_var()) 
-            return Var(MetaVarManager.fresh_var(t.n))
+            return Var(MetaVarManager.fresh_var(t.n));
         return new Tree(t.n,
                         MetaVarManager.fresh_tree(t.left),
                         MetaVarManager.fresh_tree(t.right));
@@ -2144,6 +2452,9 @@ Game = {
         // Game.add_puzzle("|- imp(y,y)", all_pieces); // 47
         // Game.add_puzzle("z |- and(z,z)", all_pieces); // 48
 
+        // Game.add_puzzle("|- equal(sum(zero,zero),zero)", all_pieces);
+        // Game.add_puzzle("equal(sum(x,zero),x) |- equal(sum(s(x),zero),s(x))", all_pieces);
+        Game.add_puzzle("|- equal(sum(x,zero),x)", all_pieces);
     },
 
     // Initialize and start our game
@@ -2459,6 +2770,7 @@ Game = {
         else if (goal_str === "imp(y,z), y |- z") { x = 350; }
         else if (goal_str === "|- imp(x, imp(imp(x,y), y))") { x = 550; }
         var goal = build_judgement_piece(goal_str, x, y);
+        goal.make_all_fresh();
         var pieces = Game.puzzles[current_puzzle].pieces;
         var all_pieces = ["and-intro",
                           "and-elim-1",
@@ -2563,6 +2875,20 @@ Game = {
 
     create_imp_elim_piece: function() {
         Game.replace_current_rule(["|- A", "|- imp(A,B)"], "|- B");
+    },
+
+    create_special_piece_1: function() {
+        Game.replace_current_rule(["|- A"], "|- sum(zero,A)");
+        Game.current_rule.make_into_rewrite();
+    },
+
+    create_special_piece_2: function() {
+        Game.replace_current_rule(["|- s(sum(A,B))"], "|- sum(s(A),B)");
+        Game.current_rule.make_into_rewrite();
+    },
+
+    create_special_piece_3: function() {
+        Game.replace_current_rule([], "|- equal(A,A)")
     },
 
     add_context_from_ui: function() {
